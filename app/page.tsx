@@ -22,7 +22,7 @@ export default function OnboardingPage() {
               <span className="font-syne text-xl font-extrabold text-white lg:text-3xl">T</span>
             </div>
             <div className="flex flex-col">
-              <span className="font-syne text-lg font-bold tracking-tight lg:text-2xl leading-none">TakeCare AI</span>
+              <span className="font-outfit text-lg font-bold tracking-tight lg:text-2xl leading-none">TakeCare AI</span>
               <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-black/40 lg:text-xs">Intelligence</span>
             </div>
           </div>
