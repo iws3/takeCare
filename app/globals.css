@@ -247,7 +247,12 @@
 }
 
 .mask-edge-side {
-  mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+}
+
+.mask-soft-edge {
+  mask-image: linear-gradient(to bottom, black 80%, transparent 100%), linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+  mask-composite: intersect;
 }
 
 .mask-soft-all {
@@ -291,6 +296,9 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
   --radius-2xl: calc(var(--radius) * 1.8);
+
+  --shadow-medical: 0 8px 30px rgba(0, 0, 0, 0.04);
+  --shadow-medical-hover: 0 8px 30px rgba(0, 0, 0, 0.08);
 }
 
 @layer base {
@@ -307,7 +315,7 @@
   }
 
   .medical-card {
-    @apply rounded-3xl border border-black/5 bg-white p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all;
+    @apply rounded-3xl border border-black/5 bg-white p-6 shadow-medical hover:shadow-medical-hover transition-all;
   }
 
   .btn-primary-round {
