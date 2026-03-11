@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import { Syne, Space_Grotesk, Outfit } from "next/font/google";
+import { Syne, Space_Grotesk, Outfit, Geist } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const syne = Syne({
   subsets: ["latin"],
@@ -36,7 +39,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className={cn("scroll-smooth", "font-sans", geist.variable)}>
       <body
         className={`${syne.variable} ${spaceGrotesk.variable} ${outfit.variable} antialiased bg-[#050811] text-white`}
       >
