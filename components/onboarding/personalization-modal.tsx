@@ -35,24 +35,24 @@ function PersonalizationOption({
     <button
       onClick={onClick}
       className={cn(
-        "group relative flex items-start gap-4 rounded-2xl border border-black/5 bg-white p-5 text-left transition-all hover:border-black/20 hover:bg-neutral-50 active:scale-[0.98] cursor-pointer"
+        "group relative flex items-start gap-3 rounded-2xl border border-black/5 bg-white p-3.5 text-left transition-all hover:border-black/20 hover:bg-neutral-50 active:scale-[0.98] cursor-pointer lg:gap-4 lg:p-5"
       )}
     >
       <div className={cn(
-        "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-colors",
+        "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors lg:h-12 lg:w-12",
         isPrimary ? "bg-black text-white group-hover:bg-primary" : "bg-neutral-100 text-black group-hover:bg-black group-hover:text-white"
       )}>
-        <Icon className="h-6 w-6" />
+        <Icon className="h-5 w-5 lg:h-6 lg:w-6" />
       </div>
-      <div className="flex flex-col gap-1">
-        <span className="text-lg font-bold text-black leading-none">{title}</span>
-        <span className="text-sm text-black/50 leading-relaxed">{description}</span>
+      <div className="flex flex-col gap-0.5">
+        <span className="text-base font-bold text-black leading-tight lg:text-lg">{title}</span>
+        <span className="text-xs text-black/50 leading-snug lg:text-sm lg:leading-relaxed">{description}</span>
         
         {tags && tags.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-2 flex flex-wrap gap-1.5 lg:mt-3 lg:gap-2">
             {tags.map((tag) => (
-              <span key={tag} className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-black/40 bg-black/5 px-2 py-0.5 rounded-full">
-                <CheckCircle2 className="h-2.5 w-2.5 text-primary" />
+              <span key={tag} className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wider text-black/40 bg-black/5 px-1.5 py-0.5 rounded-full lg:text-[10px] lg:px-2">
+                <CheckCircle2 className="h-2 w-2 text-primary lg:h-2.5 lg:w-2.5" />
                 {tag}
               </span>
             ))}
@@ -71,21 +71,21 @@ export function PersonalizationModal({ trigger }: PersonalizationModalProps) {
   return (
     <Dialog>
       <DialogTrigger render={trigger} />
-      <DialogContent className="sm:max-w-[500px] rounded-3xl border-none p-0 overflow-hidden shadow-2xl font-outfit">
-        <div className="relative p-8 pt-12">
+      <DialogContent className="sm:max-w-[460px] max-w-[92vw] rounded-3xl border-none p-0 overflow-hidden shadow-2xl font-outfit">
+        <div className="relative p-6 pt-10 lg:p-8 lg:pt-12">
           {/* Minimalist Background Pattern */}
           <div className="absolute top-0 right-0 -z-10 h-32 w-32 bg-primary/5 blur-3xl opacity-50 rounded-full" />
           
-          <DialogHeader className="mb-8">
-            <DialogTitle className="font-syne text-3xl font-extrabold tracking-tight leading-none text-black">
+          <DialogHeader className="mb-6 lg:mb-8">
+            <DialogTitle className="font-syne text-2xl font-extrabold tracking-tight leading-none text-black lg:text-3xl">
               Start your journey
             </DialogTitle>
-            <DialogDescription className="text-black/50 text-lg mt-2">
+            <DialogDescription className="text-black/50 text-base mt-1.5 lg:text-lg lg:mt-2">
               How would you like to experience TakeCare?
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 mt-6">
+          <div className="grid gap-3 mt-4 lg:gap-4 lg:mt-6">
             <PersonalizationOption
               title="Personalize experience"
               description="Better diagnosis accuracy, tailored health insights, and proactive care reminders."
@@ -104,7 +104,7 @@ export function PersonalizationModal({ trigger }: PersonalizationModalProps) {
             />
           </div>
 
-          <p className="mt-8 text-center text-xs font-medium text-black/30">
+          <p className="mt-6 text-center text-[10px] font-medium text-black/30 lg:mt-8 lg:text-xs">
             You can change these settings at any time in your profile.
           </p>
         </div>
