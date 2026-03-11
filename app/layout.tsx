@@ -41,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("scroll-smooth", "font-sans", geist.variable)}>
       <body
-        className={`${syne.variable} ${spaceGrotesk.variable} ${outfit.variable} antialiased bg-[#050811] text-white`}
+        className={`${syne.variable} ${spaceGrotesk.variable} ${outfit.variable} antialiased`}
       >
         {children}
       </body>
