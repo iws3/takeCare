@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+/* ─── Custom Font Variables ─────────────────────────────────────────────────── */
+:root {
+  --font-syne: "Syne", sans-serif;
+  --font-space-grotesk: "Space Grotesk", sans-serif;
+  --font-outfit: "Outfit", sans-serif;
+
+  /* Palette */
+  --teal-400: #2dd4bf;
+  --teal-500: #14b8a6;
+  --teal-600: #0d9488;
+  --indigo-500: #6366f1;
+  --indigo-600: #4f46e5;
+  --rose-400: #fb7185;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #050811; }
+::-webkit-scrollbar-thumb { background: var(--teal-600); border-radius: 3px; }
+
+/* ─── Animations ────────────────────────────────────────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-18px); }
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(0.9); opacity: 1; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ─── Utility Classes ──────────────────────────────────────────────────────── */
+.animate-float       { animation: float 6s ease-in-out infinite; }
+.animate-pulse-ring  { animation: pulse-ring 2s ease-out infinite; }
+.animate-gradient-x  { animation: gradient-x 4s ease infinite; background-size: 200% 200%; }
+.animate-fade-up     { animation: fade-up 0.8s ease-out forwards; }
+.animate-shimmer     { animation: shimmer 3s linear infinite; }
+.animate-ticker      { animation: ticker 28s linear infinite; }
+
+.font-syne         { font-family: var(--font-syne); }
+.font-space-grotesk { font-family: var(--font-space-grotesk); }
+.font-outfit       { font-family: var(--font-outfit); }
+
+/* ─── Glass Card ────────────────────────────────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ─── Glow Effects ──────────────────────────────────────────────────────────── */
+.glow-teal   { box-shadow: 0 0 40px rgba(45, 212, 191, 0.25); }
+.glow-indigo { box-shadow: 0 0 40px rgba(99, 102, 241, 0.25); }
+.text-glow   { text-shadow: 0 0 40px rgba(45, 212, 191, 0.55); }
