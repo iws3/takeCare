@@ -1,8 +1,7 @@
-"use client";
-
 import Image from "next/image";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PersonalizationModal } from "@/components/onboarding/personalization-modal";
 
 export default function OnboardingPage() {
   return (
@@ -34,8 +33,6 @@ export default function OnboardingPage() {
           {/* Left Content Column */}
           <div className="z-20 flex flex-col items-start justify-center">
             <div className="animate-fade-up">
-
-
               <h1 className="font-syne text-[48px] font-extrabold leading-[0.95] tracking-tighter lg:text-[100px] lg:leading-[0.9]">
                 Tailored care <br />
                 for your <br />
@@ -52,13 +49,17 @@ export default function OnboardingPage() {
 
             {/* CTA Button Section */}
             <div className="mt-10 flex items-center gap-6 lg:mt-16 animate-scale-in">
-              <Button
-                size="lg"
-                className="h-14 rounded-full cursor-pointer bg-black px-8 text-base font-bold text-white transition-all hover:scale-105 hover:bg-black/90 active:scale-95 lg:h-20 lg:px-12 lg:text-xl"
-              >
-                Get Started
-                <ArrowRight className="ml-2 h-5 w-5 lg:h-6 lg:w-6" />
-              </Button>
+              <PersonalizationModal
+                trigger={
+                  <Button
+                    size="lg"
+                    className="h-14 rounded-full cursor-pointer bg-black px-8 text-base font-bold text-white transition-all hover:scale-105 hover:bg-black/90 active:scale-95 lg:h-20 lg:px-12 lg:text-xl"
+                  >
+                    Get Started
+                    <ArrowRight className="ml-2 h-5 w-5 lg:h-6 lg:w-6" />
+                  </Button>
+                }
+              />
 
               <div className="hidden flex-col lg:flex">
                 <span className="text-sm font-bold text-black lg:text-base">Trust by 10k+ users</span>
@@ -72,9 +73,9 @@ export default function OnboardingPage() {
             <div className="relative h-full w-full animate-fade-up [animation-delay:400ms] lg:mask-edge-side lg:mask-edge-bottom">
               <Image
                 src="/onboarding/patient.png"
-                alt="Patient seeking care"
+                alt="Patient in healthcare consultation"
                 fill
-                className="object-contain object-bottom scale-110 lg:scale-100 lg:object-right-bottom transition-transform duration-700 hover:scale-[1.05]"
+                className="object-contain object-bottom scale-110 lg:scale-100 lg:object-bottom-right transition-transform duration-700 hover:scale-[1.05] cursor-pointer"
                 priority
               />
 

@@ -155,6 +155,7 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -166,6 +167,7 @@
     opacity: 0;
     transform: translateX(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -238,13 +240,16 @@
 .text-glow {
   text-shadow: 0 0 40px rgba(45, 212, 191, 0.55);
 }
+
 /* ─── Mask Effects ──────────────────────────────────────────────────────────── */
 .mask-edge-bottom {
   mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
 }
+
 .mask-edge-side {
   mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
 }
+
 .mask-soft-all {
   mask-image: radial-gradient(circle at center, black 50%, transparent 100%);
 }
@@ -302,7 +307,7 @@
   }
 
   .medical-card {
-    @apply rounded-3xl border border-black/5 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all;
+    @apply rounded-3xl border border-black/5 bg-white p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all;
   }
 
   .btn-primary-round {
