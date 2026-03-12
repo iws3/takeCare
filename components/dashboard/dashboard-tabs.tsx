@@ -13,22 +13,28 @@ const TABS = [
   { id: "smart-care", label: "Smart Care", icon: Sparkles },
 ];
 
-export function DashboardTabs() {
+export function DashboardTabs({ 
+  value, 
+  onValueChange 
+}: { 
+  value: string; 
+  onValueChange: (val: string) => void;
+}) {
   return (
-    <div className="px-6 lg:px-12 my-4">
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="bg-black/5 p-1 rounded-2xl w-full lg:w-fit h-auto grid grid-cols-2 lg:flex lg:gap-1">
+    <div className="px-6 lg:px-12 my-6">
+      <Tabs value={value} onValueChange={onValueChange} className="w-full">
+        <TabsList className="bg-black/[0.03] p-1.5 rounded-2xl w-full lg:w-fit h-auto flex gap-1 overflow-x-auto no-scrollbar mask-fade-right">
           {TABS.map((tab) => (
             <TabsTrigger
               key={tab.id}
               value={tab.id}
               className={cn(
-                "rounded-xl px-4 py-2.5 lg:px-8 lg:py-3 transition-all duration-300 cursor-pointer",
-                "data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=active]:scale-[1.02]",
-                "flex items-center justify-center gap-2 font-outfit font-bold text-sm lg:text-base"
+                "rounded-xl px-6 py-3 lg:px-10 lg:py-4 transition-all duration-500 cursor-pointer whitespace-nowrap",
+                "data-active:bg-white/40 data-active:backdrop-blur-xl data-active:text-primary data-active:shadow-[0_8px_32px_rgba(0,0,0,0.04)] data-active:border data-active:border-white/20 data-active:scale-[1.02]",
+                "flex items-center justify-center gap-3 font-outfit font-bold text-sm lg:text-base border border-transparent"
               )}
             >
-              <tab.icon className="h-4 w-4 lg:h-5 lg:w-5" />
+              <tab.icon className="h-5 w-5" />
               {tab.label}
             </TabsTrigger>
           ))}

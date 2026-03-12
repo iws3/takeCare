@@ -1,11 +1,16 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { ActivityTable } from "@/components/dashboard/activity-table";
-import { motion } from "framer-motion";
+import { MessengerSection } from "@/components/dashboard/messenger-section";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function DashboardPage() {
+  const [activeTab, setActiveTab] = useState("overview");
+
   return (
     <div className="flex flex-1 flex-col pb-12">
       <DashboardHeader />
@@ -22,17 +27,45 @@ export default function DashboardPage() {
         </div>
 
         {/* Dashboard Navigation */}
-        <DashboardTabs />
+        <DashboardTabs value={activeTab} onValueChange={setActiveTab} />
 
-        {/* Stats Grid */}
-        <div className="mt-4">
-          <StatsCards />
-        </div>
-
-        {/* Recent Activity Table */}
-        <div className="mt-8">
-          <ActivityTable />
-        </div>
+        <AnimatePresence mode="wait">
+          {activeTab === "overview" ? (
+            <motion.div
+              key="overview"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mt-4">
+                <StatsCards />
+              </div>
+              <div className="mt-8">
+                <ActivityTable />
+              </div>
+            </motion.div>
+          ) : activeTab === "messenger" ? (
+            <motion.div
+              key="messenger"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <MessengerSection />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="placeholder"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center justify-center p-20 text-black/20 font-bold uppercase tracking-widest"
+            >
+              {activeTab} Content Coming Soon
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );
