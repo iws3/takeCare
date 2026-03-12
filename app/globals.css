@@ -9,6 +9,7 @@
   --font-syne: "Syne", sans-serif;
   --font-space-grotesk: "Space Grotesk", sans-serif;
   --font-outfit: "Outfit", sans-serif;
+  --font-bricolage: "Bricolage Grotesque", sans-serif;
 
   /* TakeCare Professional Palette */
   --background: oklch(1 0 0);
@@ -220,6 +221,10 @@
   font-family: var(--font-outfit);
 }
 
+.font-bricolage {
+  font-family: var(--font-bricolage);
+}
+
 /* ─── Glass Card ────────────────────────────────────────────────────────────── */
 .glass {
   background: rgba(255, 255, 255, 0.04);
@@ -265,6 +270,7 @@
   --font-syne: var(--font-syne);
   --font-space-grotesk: var(--font-space-grotesk);
   --font-outfit: var(--font-outfit);
+  --font-bricolage: var(--font-bricolage);
 
   /* Custom Palette for TakeCare */
   --color-vital-orange: var(--vital-orange);

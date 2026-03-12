@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
-import { Syne, Space_Grotesk, Outfit, Geist } from "next/font/google";
+import { Syne, Space_Grotesk, Outfit, Geist, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-bricolage",
+  weight: ["300", "400", "500", "600", "700", "800"],
+});
 
 const syne = Syne({
   subsets: ["latin"],
@@ -41,7 +47,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("scroll-smooth", "font-sans", geist.variable)}>
       <body
-        className={`${syne.variable} ${spaceGrotesk.variable} ${outfit.variable} antialiased`}
+        className={`${syne.variable} ${spaceGrotesk.variable} ${outfit.variable} ${bricolage.variable} antialiased`}
       >
         {children}
       </body>

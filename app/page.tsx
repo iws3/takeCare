@@ -33,7 +33,7 @@ export default function OnboardingPage() {
           {/* Left Content Column */}
           <div className="z-20 flex flex-col items-start justify-center">
             <div className="animate-fade-up">
-              <h1 className="font-syne text-[48px] font-extrabold leading-[0.95] tracking-tighter lg:text-[100px] lg:leading-[0.9]">
+              <h1 className="font-bricolage  text-[48px] font-extrabold leading-[0.95] tracking-tighter lg:text-[100px] lg:leading-[0.9]">
                 Tailored care <br />
                 for your <br />
                 <span className="relative inline-block text-primary">
@@ -71,7 +71,7 @@ export default function OnboardingPage() {
           {/* Right Image Column - Refined with Overlays & Shadows */}
           <div className="relative mt-auto -mx-6 h-[50vh] overflow-visible lg:mt-0 lg:mx-0 lg:h-full lg:w-full">
             <div className="relative h-full w-full animate-fade-up [animation-delay:400ms]">
-              
+
               {/* Background Glow Depth */}
               <div className="absolute top-1/2 left-1/2 -z-10 h-[80%] w-[80%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/5 blur-[120px]" />
 
@@ -89,14 +89,14 @@ export default function OnboardingPage() {
               {/* Advanced Overlays to Hide Edges & Create Depth */}
               {/* 1. Bottom White Edge Fade */}
               <div className="absolute inset-x-0 bottom-0 h-32 bg-linear-to-t from-white via-white/80 to-transparent lg:h-48" />
-              
+
               {/* 2. Side White Fades (Desktop Only) */}
               <div className="absolute inset-y-0 left-0 hidden w-32 bg-linear-to-r from-white to-transparent lg:block" />
               <div className="absolute inset-y-0 right-0 hidden w-48 bg-linear-to-l from-white to-transparent lg:block" />
 
               {/* 3. Radial Softening - Premium Feel */}
               <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_30%,white_90%)] opacity-40" />
-              
+
               {/* 4. Top Soft Shadows for Texture */}
               <div className="absolute top-0 left-0 w-full h-24 bg-linear-to-b from-white to-transparent opacity-60" />
             </div>

@@ -1,16 +1,17 @@
 "use client";
 
 import { CheckCircle2, LucideIcon, UserCircle2, ShieldOff } from "lucide-react";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog";
 import { ReactElement } from "react";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 interface PersonalizationOptionProps {
   title: string;
@@ -47,7 +48,7 @@ function PersonalizationOption({
       <div className="flex flex-col gap-0.5">
         <span className="text-base font-bold text-black leading-tight lg:text-lg">{title}</span>
         <span className="text-xs text-black/50 leading-snug lg:text-sm lg:leading-relaxed">{description}</span>
-        
+
         {tags && tags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5 lg:mt-3 lg:gap-2">
             {tags.map((tag) => (
@@ -68,6 +69,17 @@ interface PersonalizationModalProps {
 }
 
 export function PersonalizationModal({ trigger }: PersonalizationModalProps) {
+  const router = useRouter();
+
+  const handlePersonalize = () => {
+    router.push("/onboarding/personalize");
+  };
+
+  const handleAnonymous = () => {
+    // Navigate back or to dashboard immediately
+    router.push("/");
+  };
+
   return (
     <Dialog>
       <DialogTrigger render={trigger} />
@@ -75,9 +87,9 @@ export function PersonalizationModal({ trigger }: PersonalizationModalProps) {
         <div className="relative p-6 pt-10 lg:p-8 lg:pt-12">
           {/* Minimalist Background Pattern */}
           <div className="absolute top-0 right-0 -z-10 h-32 w-32 bg-primary/5 blur-3xl opacity-50 rounded-full" />
-          
+
           <DialogHeader className="mb-6 lg:mb-8">
-            <DialogTitle className="font-syne text-2xl font-extrabold tracking-tight leading-none text-black lg:text-3xl">
+            <DialogTitle className="font-bricolage text-2xl font-extrabold tracking-tight leading-none text-black lg:text-3xl">
               Start your journey
             </DialogTitle>
             <DialogDescription className="text-black/50 text-base mt-1.5 lg:text-lg lg:mt-2">
@@ -91,7 +103,7 @@ export function PersonalizationModal({ trigger }: PersonalizationModalProps) {
               description="Better diagnosis accuracy, tailored health insights, and proactive care reminders."
               icon={UserCircle2}
               tags={["AI Precision", "Health History", "Smart Alerts"]}
-              onClick={() => {}}
+              onClick={handlePersonalize}
               variant="primary"
             />
 
@@ -99,7 +111,7 @@ export function PersonalizationModal({ trigger }: PersonalizationModalProps) {
               title="Remain anonymous"
               description="Basic AI analysis without storing personal identifiers or health history."
               icon={ShieldOff}
-              onClick={() => {}}
+              onClick={handleAnonymous}
               variant="secondary"
             />
           </div>
