@@ -110,7 +110,7 @@ export function PersonalizationForm() {
       setIsCompleted(true);
       // Simulate submission/analysis
       setTimeout(() => {
-        router.push("/");
+        router.push("/dashboard");
       }, 3000);
     }
   };
@@ -142,7 +142,7 @@ export function PersonalizationForm() {
             </div>
           </div>
         </div>
-        <h2 className="font-bricolage text-4xl font-extrabold tracking-tighter">Profile Synced.</h2>
+        <h2 className="font-bricolage text-4xl font-extrabold tracking-tighter">Profile Completed.</h2>
         <p className="text-lg text-black/50 font-medium leading-relaxed">
           Your Health Blueprint has been securely processed. TakeCare AI is now calibrated to your biological markers.
         </p>

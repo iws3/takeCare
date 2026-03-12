@@ -77,7 +77,7 @@ export function PersonalizationModal({ trigger }: PersonalizationModalProps) {
 
   const handleAnonymous = () => {
     // Navigate back or to dashboard immediately
-    router.push("/");
+    router.push("/dashboard");
   };
 
   return (
