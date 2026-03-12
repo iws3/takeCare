@@ -2,49 +2,81 @@
 
 import * as React from "react";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  ArrowRight, 
-  ArrowLeft, 
-  CheckCircle2, 
-  HeartPulse, 
-  ShieldCheck, 
-  Zap, 
-  MessageSquare, 
-  User, 
-  Calendar as CalendarIcon,
+import {
+  ArrowRight,
+  ArrowLeft,
+  User,
+  ShieldCheck,
+  HeartPulse,
+  MessageSquare,
+  Stethoscope,
+  Bell,
+  ShieldAlert,
+  Target,
+  ChevronDown,
+  CalendarDays,
+  Scale,
+  Ruler,
   AlertTriangle,
+  Focus,
   Activity,
-  Focus
+  CheckCircle2
 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+
+const STEP_IMAGES = {
+  1: "/images/onboarding/step1.png",
+  2: "/images/onboarding/step2.png",
+  3: "/images/onboarding/step3.png",
+  4: "/images/onboarding/step4.png",
+  5: "/images/onboarding/step5.png",
+  success: "/images/onboarding/success.png"
+};
+
+const stepVariants = {
+  initial: { opacity: 0, x: 20 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: -20 },
+};
+
+const visualVariants = {
+  initial: { opacity: 0, scale: 0.8, y: 20 },
+  animate: { opacity: 1, scale: 1, y: 0 },
+  exit: { opacity: 0, scale: 0.8, y: 20 },
+};
 
 // Form Steps Implementation
 const STEPS = [
-  { id: 1, title: "Identity", icon: CheckCircle2 },
+  { id: 1, title: "Identity", icon: User },
   { id: 2, title: "Vitals", icon: HeartPulse },
   { id: 3, title: "Medical", icon: ShieldCheck },
-  { id: 4, title: "Goals", icon: Zap },
+  { id: 4, title: "Goals", icon: Target },
   { id: 5, title: "AI Tone", icon: MessageSquare },
 ];
 
 export function PersonalizationForm() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
-  const [progress, setProgress] = useState(20);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [dobOpen, setDobOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -59,7 +91,8 @@ export function PersonalizationForm() {
     aiTone: "",
     emergencyContact: "",
   });
-  const router = useRouter();
+
+  const progress = (currentStep / 5) * 100;
 
   const handleConditionToggle = (condition: string) => {
     setFormData(prev => ({
@@ -73,7 +106,6 @@ export function PersonalizationForm() {
   const nextStep = () => {
     if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
-      setProgress((currentStep + 1) * 20);
     } else {
       setIsCompleted(true);
       // Simulate submission/analysis
@@ -86,17 +118,22 @@ export function PersonalizationForm() {
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
-      setProgress((currentStep - 1) * 20);
     }
   };
 
   if (isCompleted) {
     return (
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="text-center space-y-6 max-w-md mx-auto"
-      >
+      <div className="relative flex flex-col items-center justify-center space-y-8 py-16 text-center max-w-2xl mx-auto overflow-visible">
+        {/* Animated Success Visual */}
+        <div className="fixed bottom-0 right-0 z-0 h-80 w-80 lg:h-[600px] lg:w-[600px] pointer-events-none p-12 overflow-visible">
+          <Image
+            src={STEP_IMAGES.success}
+            alt="Success"
+            fill
+            className="object-contain"
+          />
+        </div>
+
         <div className="flex justify-center">
           <div className="relative">
             <div className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
@@ -115,12 +152,12 @@ export function PersonalizationForm() {
             Redirecting to Health Hub...
           </div>
         </div>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <div className="w-full max-w-2xl bg-white p-2">
+    <div className="relative w-full max-w-2xl bg-white p-2 overflow-visible">
       {/* Progress Header */}
       <div className="mb-12">
         <div className="mb-4 flex items-center justify-between">
@@ -130,8 +167,8 @@ export function PersonalizationForm() {
                 key={step.id}
                 className={cn(
                   "flex h-10 w-10 items-center justify-center rounded-xl border transition-all duration-500",
-                  currentStep >= step.id 
-                    ? "bg-black text-white border-black" 
+                  currentStep >= step.id
+                    ? "bg-black text-white border-black"
                     : "bg-white text-black/20 border-black/10"
                 )}
               >
@@ -169,12 +206,12 @@ export function PersonalizationForm() {
                     <Label htmlFor="name" className="text-xs font-black uppercase tracking-[0.2em] text-black/30">Full Name</Label>
                     <div className="relative">
                       <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-black/20" />
-                      <Input 
-                        id="name" 
-                        placeholder="John Doe" 
+                      <Input
+                        id="name"
+                        placeholder="John Doe"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="h-14 rounded-2xl border-black/5 bg-black/5 pl-12 text-lg font-bold transition-all focus:bg-white focus:ring-black/5" 
+                        className="h-14 rounded-2xl border-black/5 bg-black/5 pl-12 text-lg font-bold transition-all focus:bg-white focus:ring-black/5"
                       />
                     </div>
                   </div>
@@ -183,13 +220,13 @@ export function PersonalizationForm() {
                     <Label htmlFor="email" className="text-xs font-black uppercase tracking-[0.2em] text-black/30">Email Address</Label>
                     <div className="relative">
                       <MessageSquare className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-black/20" />
-                      <Input 
-                        id="email" 
+                      <Input
+                        id="email"
                         type="email"
-                        placeholder="john@example.com" 
+                        placeholder="john@example.com"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="h-14 rounded-2xl border-black/5 bg-black/5 pl-12 text-lg font-bold transition-all focus:bg-white focus:ring-black/5" 
+                        className="h-14 rounded-2xl border-black/5 bg-black/5 pl-12 text-lg font-bold transition-all focus:bg-white focus:ring-black/5"
                       />
                     </div>
                   </div>
@@ -197,7 +234,7 @@ export function PersonalizationForm() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
                       <Label className="text-xs font-black uppercase tracking-[0.2em] text-black/30">Biological Sex</Label>
-                      <Select value={formData.gender || ""} onValueChange={(val) => setFormData({ ...formData, gender: val })}>
+                      <Select value={formData.gender} onValueChange={(val) => setFormData({ ...formData, gender: val as string })}>
                         <SelectTrigger className="h-14 rounded-2xl border-black/5 bg-black/5 text-lg font-bold focus:bg-white">
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
@@ -208,16 +245,16 @@ export function PersonalizationForm() {
                         </SelectContent>
                       </Select>
                     </div>
-                    
+
                     <div className="grid gap-2">
                       <Label className="text-xs font-black uppercase tracking-[0.2em] text-black/30">Date of Birth</Label>
                       <div className="relative">
-                        <CalendarIcon className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-black/20" />
-                        <Input 
-                          type="date" 
+                        <CalendarDays className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-black/20" />
+                        <Input
+                          type="date"
                           value={formData.dob}
                           onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                          className="h-14 rounded-2xl border-black/5 bg-black/5 pl-12 text-lg font-bold focus:bg-white" 
+                          className="h-14 rounded-2xl border-black/5 bg-black/5 pl-12 text-lg font-bold focus:bg-white"
                         />
                       </div>
                     </div>
@@ -237,29 +274,29 @@ export function PersonalizationForm() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
                       <Label className="text-xs font-black uppercase tracking-[0.2em] text-black/30">Height (cm)</Label>
-                      <Input 
-                        type="number" 
-                        placeholder="175" 
+                      <Input
+                        type="number"
+                        placeholder="175"
                         value={formData.height}
                         onChange={(e) => setFormData({ ...formData, height: e.target.value })}
-                        className="h-14 rounded-2xl border-black/5 bg-black/5 text-lg font-bold focus:bg-white" 
+                        className="h-14 rounded-2xl border-black/5 bg-black/5 text-lg font-bold focus:bg-white"
                       />
                     </div>
                     <div className="grid gap-2">
                       <Label className="text-xs font-black uppercase tracking-[0.2em] text-black/30">Weight (kg)</Label>
-                      <Input 
-                        type="number" 
-                        placeholder="70" 
+                      <Input
+                        type="number"
+                        placeholder="70"
                         value={formData.weight}
                         onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                        className="h-14 rounded-2xl border-black/5 bg-black/5 text-lg font-bold focus:bg-white" 
+                        className="h-14 rounded-2xl border-black/5 bg-black/5 text-lg font-bold focus:bg-white"
                       />
                     </div>
                   </div>
 
                   <div className="grid gap-2">
                     <Label className="text-xs font-black uppercase tracking-[0.2em] text-black/30">Daily Activity Level</Label>
-                    <Select value={formData.activity || ""} onValueChange={(val) => setFormData({ ...formData, activity: val })}>
+                    <Select value={formData.activity} onValueChange={(val) => setFormData({ ...formData, activity: val as string })}>
                       <SelectTrigger className="h-14 rounded-2xl border-black/5 bg-black/5 text-lg font-bold focus:bg-white">
                         <SelectValue placeholder="How active are you?" />
                       </SelectTrigger>
@@ -287,13 +324,13 @@ export function PersonalizationForm() {
                     <Label className="text-xs font-black uppercase tracking-[0.2em] text-black/30">Chronic Conditions</Label>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       {["Diabetes", "Hypertension", "Asthma", "Heart Disease"].map((condition) => (
-                        <div 
-                          key={condition} 
+                        <div
+                          key={condition}
                           onClick={() => handleConditionToggle(condition)}
                           className={cn(
                             "flex items-center space-x-3 rounded-xl border p-4 transition-all cursor-pointer",
-                            formData.conditions.includes(condition) 
-                              ? "bg-black text-white border-black" 
+                            formData.conditions.includes(condition)
+                              ? "bg-black text-white border-black"
                               : "bg-black/5 border-black/5 hover:bg-white hover:border-black/10"
                           )}
                         >
@@ -308,11 +345,11 @@ export function PersonalizationForm() {
                     <Label className="text-xs font-black uppercase tracking-[0.2em] text-black/30">Drug Allergies (if any)</Label>
                     <div className="relative">
                       <AlertTriangle className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-black/20" />
-                      <Input 
-                        placeholder="e.g. Penicillin, Aspirin" 
+                      <Input
+                        placeholder="e.g. Penicillin, Aspirin"
                         value={formData.allergies}
                         onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
-                        className="h-14 rounded-2xl border-black/5 bg-black/5 pl-12 text-lg font-bold focus:bg-white" 
+                        className="h-14 rounded-2xl border-black/5 bg-black/5 pl-12 text-lg font-bold focus:bg-white"
                       />
                     </div>
                   </div>
@@ -328,18 +365,18 @@ export function PersonalizationForm() {
                 </header>
 
                 <div className="grid gap-3 pt-4">
-                   {[
+                  {[
                     { id: "anxiety", title: "Reduce Anxiety", icon: Focus, desc: "Mental wellness & calming exercises" },
                     { id: "meds", title: "Medication Management", icon: ShieldCheck, desc: "Reliable tracking & interaction alerts" },
                     { id: "performance", title: "Peak Performance", icon: Activity, desc: "Fitness, nutrition & sleep optimization" },
                   ].map((goal) => (
-                    <button 
-                      key={goal.id} 
+                    <button
+                      key={goal.id}
                       onClick={() => setFormData({ ...formData, goal: goal.id })}
                       className={cn(
                         "group relative flex items-center gap-4 rounded-2xl border p-4 text-left transition-all active:scale-[0.98]",
-                        formData.goal === goal.id 
-                          ? "bg-black border-black" 
+                        formData.goal === goal.id
+                          ? "bg-black border-black"
                           : "bg-black/5 border-black/5 hover:border-black/20 hover:bg-white"
                       )}
                     >
@@ -373,9 +410,9 @@ export function PersonalizationForm() {
                 </header>
 
                 <div className="grid gap-6 pt-4">
-                   <div className="grid gap-2">
+                  <div className="grid gap-2">
                     <Label className="text-xs font-black uppercase tracking-[0.2em] text-black/30">AI Interaction Tone</Label>
-                    <Select value={formData.aiTone || ""} onValueChange={(val) => setFormData({ ...formData, aiTone: val })}>
+                    <Select value={formData.aiTone} onValueChange={(val) => setFormData({ ...formData, aiTone: val as string })}>
                       <SelectTrigger className="h-14 rounded-2xl border-black/5 bg-black/5 text-lg font-bold focus:bg-white">
                         <SelectValue placeholder="Select tone" />
                       </SelectTrigger>
@@ -389,12 +426,12 @@ export function PersonalizationForm() {
 
                   <div className="grid gap-2">
                     <Label className="text-xs font-black uppercase tracking-[0.2em] text-black/30">Emergency Contact Number</Label>
-                    <Input 
-                      type="tel" 
-                      placeholder="+1 (555) 000-0000" 
+                    <Input
+                      type="tel"
+                      placeholder="+1 (555) 000-0000"
                       value={formData.emergencyContact}
                       onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
-                      className="h-14 rounded-2xl border-black/5 bg-black/5 text-lg font-bold focus:bg-white" 
+                      className="h-14 rounded-2xl border-black/5 bg-black/5 text-lg font-bold focus:bg-white"
                     />
                   </div>
                 </div>
@@ -422,6 +459,33 @@ export function PersonalizationForm() {
           {currentStep === 5 ? "Finish Setup" : "Continue Journey"}
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
+      </div>
+      {/* Firebase-style Floating Visual Container */}
+      <div className="fixed bottom-0 right-0 z-0 h-64 w-64 lg:h-[540px] lg:w-[540px] pointer-events-none p-8 overflow-visible">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            variants={visualVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={{
+              type: "spring",
+              stiffness: 100,
+              damping: 20,
+              duration: 0.6
+            }}
+            className="relative h-full w-full"
+          >
+            <Image
+              src={STEP_IMAGES[currentStep as keyof typeof STEP_IMAGES]}
+              alt={`Step ${currentStep} illustration`}
+              fill
+              className="object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.08)] transition-transform duration-700 hover:scale-105"
+              priority
+            />
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );
