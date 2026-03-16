@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LayoutDashboard, MessageSquare, Bell, Sparkles } from "lucide-react";
+import { LayoutDashboard, MessageSquare, Bell, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -10,7 +10,7 @@ const TABS = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "messenger", label: "Messenger", icon: MessageSquare },
   { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "smart-care", label: "Smart Care", icon: Sparkles },
+  { id: "smart-care", label: "Smart Care", icon: Plus },
 ];
 
 export function DashboardTabs({ 
@@ -37,7 +37,10 @@ export function DashboardTabs({
               )}
             >
               <div className="relative">
-                <tab.icon className="h-5 w-5" />
+                <tab.icon className={cn(
+                  "h-5 w-5",
+                  tab.id === "smart-care" && "text-red-500 fill-red-500/20"
+                )} />
                 {tab.id === "notifications" && notificationCount > 0 && (
                   <motion.span
                     initial={{ scale: 0, opacity: 0 }}
