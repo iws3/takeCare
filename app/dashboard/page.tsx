@@ -6,6 +6,7 @@ import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { ActivityTable } from "@/components/dashboard/activity-table";
 import { MessengerSection } from "@/components/dashboard/messenger-section";
+import { SmartCareSection } from "@/components/dashboard/smart-care-section";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function DashboardPage() {
@@ -60,6 +61,16 @@ export default function DashboardPage() {
             >
               <MessengerSection />
             </motion.div>
+          ) : activeTab === "smart-care" ? (
+            <motion.div
+              key="smart-care"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <SmartCareSection />
+            </motion.div>
           ) : (
             <motion.div
               key="placeholder"
@@ -67,7 +78,7 @@ export default function DashboardPage() {
               animate={{ opacity: 1 }}
               className="flex items-center justify-center p-20 text-black/20 font-bold uppercase tracking-widest"
             >
-              {activeTab} Content Coming Soon
+              Notifications Content Coming Soon
             </motion.div>
           )}
         </AnimatePresence>
