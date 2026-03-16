@@ -261,6 +261,7 @@ function AnalysisView() {
   // Bluetooth State
   const [bleDevice, setBleDevice] = useState<any>(null);
   const [heartRate, setHeartRate] = useState<number | null>(null);
+  const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const intentionalDisconnectRef = useRef(false);
@@ -283,6 +284,7 @@ function AnalysisView() {
   const onDisconnected = async (event: any) => {
     const device = event.target;
     setHeartRate(null);
+    setBatteryLevel(null);
     if (intentionalDisconnectRef.current) {
       setBleDevice(null);
       return;
@@ -317,18 +319,46 @@ function AnalysisView() {
   const setupGattServer = async (device: any) => {
     const server = await device.gatt.connect();
     
+    // Heart Rate
     try {
       const service = await server.getPrimaryService('heart_rate');
       const characteristic = await service.getCharacteristic('heart_rate_measurement');
       
       await characteristic.startNotifications();
       characteristic.addEventListener('characteristicvaluechanged', (event: any) => {
-        const value = event.target.value;
-        const hr = value.getUint8(1);
-        setHeartRate(hr);
+        try {
+          const value = event.target.value;
+          const flags = value.getUint8(0);
+          const rate16Bits = flags & 0x1;
+          let hr: number;
+          if (rate16Bits) {
+             hr = value.getUint16(1, true); // littleEndian
+          } else {
+             hr = value.getUint8(1);
+          }
+          setHeartRate(hr);
+        } catch (e) {
+          console.error("Error parsing heart rate:", e);
+        }
       });
     } catch (serviceErr) {
       console.warn("Heart Rate service not found or could not be loaded.", serviceErr);
+    }
+
+    // Battery Level
+    try {
+      const batService = await server.getPrimaryService('battery_service');
+      const batChar = await batService.getCharacteristic('battery_level');
+      
+      const val = await batChar.readValue();
+      setBatteryLevel(val.getUint8(0));
+      
+      await batChar.startNotifications();
+      batChar.addEventListener('characteristicvaluechanged', (event: any) => {
+        setBatteryLevel(event.target.value.getUint8(0));
+      });
+    } catch (err) {
+      console.warn("Battery service not found.", err);
     }
   };
 
@@ -338,12 +368,14 @@ function AnalysisView() {
       bleDevice.gatt.disconnect();
       setBleDevice(null);
       setHeartRate(null);
+      setBatteryLevel(null);
     }
   };
 
   const connectDevice = async () => {
     setConnectionError(null);
     setHeartRate(null);
+    setBatteryLevel(null);
     intentionalDisconnectRef.current = false;
     
     try {
@@ -644,10 +676,10 @@ function AnalysisView() {
                     <div className="space-y-8 flex-1">
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {[
-                          { icon: Activity, label: "Heart Rate", val: heartRate || "72", unit: "bpm", color: "text-red-500", live: !!heartRate },
-                          { icon: Zap, label: "Energy", val: "84", unit: "%", color: "text-yellow-500", live: false },
-                          { icon: Watch, label: "Steps", val: "8,432", unit: "", color: "text-blue-500", live: false },
-                          { icon: Bot, label: "Stress", val: "Low", unit: "", color: "text-green-500", live: false }
+                          { icon: Activity, label: "Heart Rate", val: heartRate || "--", unit: "bpm", color: "text-red-500", live: !!heartRate },
+                          { icon: Zap, label: "Battery", val: batteryLevel || "--", unit: "%", color: "text-yellow-500", live: !!batteryLevel },
+                          { icon: Watch, label: "Steps", val: "Mock", unit: "", color: "text-blue-500", live: false },
+                          { icon: Bot, label: "Stress", val: "Mock", unit: "", color: "text-green-500", live: false }
                         ].map((metric, i) => (
                           <motion.div
                             initial={{ opacity: 0, scale: 0.9 }}
