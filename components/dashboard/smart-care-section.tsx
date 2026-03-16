@@ -4,18 +4,18 @@ import React, { useState, useRef, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Mic, 
-  MessageSquareText, 
-  BarChart3, 
-  Send, 
-  Paperclip, 
-  Bot, 
-  User, 
-  Activity, 
-  Zap, 
-  Search, 
-  FileText, 
+import {
+  Mic,
+  MessageSquareText,
+  BarChart3,
+  Send,
+  Paperclip,
+  Bot,
+  User,
+  Activity,
+  Zap,
+  Search,
+  FileText,
   Watch,
   X,
   Plus,
@@ -81,7 +81,7 @@ function VoiceAgentView() {
     >
       {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/20 blur-[120px] rounded-full" />
-      
+
       <div className="relative z-10 flex flex-col items-center gap-12 w-full max-w-2xl text-center">
         <div className="space-y-4">
           <h2 className="font-bricolage text-4xl lg:text-6xl font-extrabold tracking-tighter">
@@ -112,7 +112,7 @@ function VoiceAgentView() {
               </>
             )}
           </AnimatePresence>
-          
+
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -132,7 +132,7 @@ function VoiceAgentView() {
               key={prompt}
               className="px-6 py-3 rounded-2xl bg-white/50 border border-black/5 hover:bg-white hover:shadow-xl hover:shadow-black/5 transition-all text-sm font-bold font-outfit"
             >
-              "{prompt}"
+              {`"${prompt}"`}
             </button>
           ))}
         </div>
@@ -162,9 +162,9 @@ function ChatbotView() {
 
     // Mock AI response
     setTimeout(() => {
-      setMessages(prev => [...prev, { 
-        role: "assistant", 
-        content: "I understand. Based on your recent health records, I'd recommend monitoring your activity levels today. Would you like me to analyze your latest blood test results?" 
+      setMessages(prev => [...prev, {
+        role: "assistant",
+        content: "I understand. Based on your recent health records, I'd recommend monitoring your activity levels today. Would you like me to analyze your latest blood test results?"
       }]);
     }, 1000);
   };
@@ -215,8 +215,8 @@ function ChatbotView() {
             </div>
             <div className={cn(
               "px-6 py-4 rounded-4xl",
-              msg.role === "user" 
-                ? "bg-black text-white rounded-tr-none" 
+              msg.role === "user"
+                ? "bg-black text-white rounded-tr-none"
                 : "bg-black/5 text-black rounded-tl-none"
             )}>
               <p className="text-sm font-medium leading-relaxed">{msg.content}</p>
@@ -258,6 +258,13 @@ function AnalysisView() {
   const [showSim, setShowSim] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
 
+  // Bluetooth State
+  const [bleDevice, setBleDevice] = useState<any>(null);
+  const [heartRate, setHeartRate] = useState<number | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const intentionalDisconnectRef = useRef(false);
+
   useEffect(() => {
     if (analyzing) {
       const interval = setInterval(() => {
@@ -272,6 +279,107 @@ function AnalysisView() {
       return () => clearInterval(interval);
     }
   }, [analyzing, progress]);
+
+  const onDisconnected = async (event: any) => {
+    const device = event.target;
+    setHeartRate(null);
+    if (intentionalDisconnectRef.current) {
+      setBleDevice(null);
+      return;
+    }
+    
+    // Auto-reconnect with exponential backoff
+    setConnectionError("Connection lost. Trying to reconnect...");
+    setIsConnecting(true);
+    let attempts = 0;
+    const maxAttempts = 5;
+    
+    while (attempts < maxAttempts && !intentionalDisconnectRef.current) {
+      try {
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempts - 1)));
+        console.log(`Reconnection attempt ${attempts}...`);
+        
+        await setupGattServer(device);
+        setConnectionError(null);
+        setIsConnecting(false);
+        return; // Success
+      } catch (error) {
+        console.error("Reconnection attempt failed:", error);
+      }
+    }
+    
+    setConnectionError("Failed to reconnect after multiple attempts. Please pair again.");
+    setIsConnecting(false);
+    setBleDevice(null);
+  };
+
+  const setupGattServer = async (device: any) => {
+    const server = await device.gatt.connect();
+    
+    try {
+      const service = await server.getPrimaryService('heart_rate');
+      const characteristic = await service.getCharacteristic('heart_rate_measurement');
+      
+      await characteristic.startNotifications();
+      characteristic.addEventListener('characteristicvaluechanged', (event: any) => {
+        const value = event.target.value;
+        const hr = value.getUint8(1);
+        setHeartRate(hr);
+      });
+    } catch (serviceErr) {
+      console.warn("Heart Rate service not found or could not be loaded.", serviceErr);
+    }
+  };
+
+  const handleDisconnect = () => {
+    if (bleDevice && bleDevice.gatt) {
+      intentionalDisconnectRef.current = true;
+      bleDevice.gatt.disconnect();
+      setBleDevice(null);
+      setHeartRate(null);
+    }
+  };
+
+  const connectDevice = async () => {
+    setConnectionError(null);
+    setHeartRate(null);
+    intentionalDisconnectRef.current = false;
+    
+    try {
+      setIsConnecting(true);
+      
+      const bluetooth = navigator.bluetooth;
+      if (!bluetooth) {
+        throw new Error("Web Bluetooth is not supported in this browser. Please use Chrome or Edge.");
+      }
+
+      // Use acceptAllDevices so the native browser picker doesn't hide devices.
+      // Many cheap smart bands do not properly advertise the Heart Rate service UUID, 
+      // preventing them from appearing in filtered searches.
+      let device: any = await bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: ['heart_rate', 'battery_service', 'device_information']
+      });
+
+      setBleDevice(device);
+      device.addEventListener('gattserverdisconnected', onDisconnected);
+      await setupGattServer(device);
+
+    } catch (error: any) {
+      console.error("BLE Connection failed:", error);
+      let msg = "Connection failed.";
+      if (error.name === 'NotAllowedError') msg = "Pairing cancelled or denied.";
+      else if (error.name === 'NotFoundError') msg = "Device not found. Check pairing mode.";
+      else if (error.name === 'SecurityError') msg = "Security error. Must be initiated by user gesture.";
+      else if (error.name === 'NetworkError') msg = "Network/Bluetooth disabled. Please turn on Bluetooth.";
+      else msg = error.message;
+      setConnectionError(msg);
+      setBleDevice(null);
+    } finally {
+      setIsConnecting(false);
+    }
+  };
 
   const cards = [
     {
@@ -299,7 +407,7 @@ function AnalysisView() {
       description: "Connect your smart bracelet, watch or scale for real-time monitoring.",
       icon: Watch,
       color: "bg-orange-500",
-      content: "Connected: 1 Device"
+      content: bleDevice ? "CONNECTED" : "DISCONNECTED"
     }
   ];
 
@@ -319,12 +427,15 @@ function AnalysisView() {
             className="group relative p-8 rounded-[2.5rem] border border-black/5 bg-white shadow-sm overflow-hidden cursor-pointer"
           >
             <div className={cn("absolute -top-12 -right-12 h-32 w-32 blur-[60px] opacity-20", card.color)} />
-            
+
             <div className="relative z-10 h-full flex flex-col gap-10">
               <div className="flex items-start justify-between">
                 <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center", card.color + "10")}>
                   <card.icon className={cn("h-7 w-7", card.color.replace('bg-', 'text-'))} />
                 </div>
+                {card.id === 'wearables' && bleDevice && (
+                  <span className="flex h-2 w-2 rounded-full bg-green-500 animate-ping absolute top-8 right-12" />
+                )}
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black/20">{card.label}</span>
               </div>
 
@@ -334,7 +445,12 @@ function AnalysisView() {
               </div>
 
               <div className="mt-auto flex items-center justify-between">
-                <span className="text-xs font-bold text-black/30">{card.content}</span>
+                <span className={cn(
+                  "text-xs font-bold",
+                  card.id === 'wearables' && bleDevice ? "text-green-500" : "text-black/30"
+                )}>
+                  {card.content}
+                </span>
                 <Button size="icon" className="rounded-full bg-black transform group-hover:scale-110 transition-transform">
                   <Plus className="h-5 w-5 text-white" />
                 </Button>
@@ -346,7 +462,7 @@ function AnalysisView() {
         {/* Main Analysis Status */}
         <div className="lg:col-span-3 p-10 rounded-[2.5rem] border border-primary/10 bg-black text-white flex flex-col lg:flex-row items-center justify-between gap-8 mt-4 overflow-hidden relative">
           <div className="absolute top-0 right-0 h-full w-1/2 bg-linear-to-l from-primary/20 to-transparent pointer-events-none" />
-          
+
           <div className="flex items-center gap-6">
             <div className="h-16 w-16 rounded-3xl bg-primary/20 flex items-center justify-center">
               <Activity className={cn("h-8 w-8 text-primary", analyzing && "animate-bounce")} />
@@ -361,7 +477,7 @@ function AnalysisView() {
             </div>
           </div>
 
-          <Button 
+          <Button
             disabled={analyzing}
             onClick={() => setAnalyzing(true)}
             className="h-14 px-10 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-lg shadow-xl shadow-primary/25 disabled:opacity-50"
@@ -370,7 +486,7 @@ function AnalysisView() {
           </Button>
 
           {analyzing && (
-            <motion.div 
+            <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               className="absolute bottom-0 left-0 h-1 bg-primary"
@@ -394,7 +510,7 @@ function AnalysisView() {
               exit={{ scale: 0.9, y: 20 }}
               className="bg-white rounded-[3rem] p-8 lg:p-12 w-full max-w-4xl shadow-2xl relative overflow-hidden"
             >
-              <button 
+              <button
                 onClick={() => setShowSim(null)}
                 className="absolute top-8 right-8 h-12 w-12 rounded-2xl bg-black/5 flex items-center justify-center hover:bg-black/10 transition-colors"
               >
@@ -418,7 +534,7 @@ function AnalysisView() {
                       { name: "Blood_Test_Mar.pdf", date: "Mar 12, 2026", insight: "LDL Cholesterol is slightly elevated" },
                       { name: "Prescription_X.jpg", date: "Feb 28, 2026", insight: "Interactions check passed" }
                     ].map((doc, i) => (
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.1 }}
@@ -436,9 +552,9 @@ function AnalysisView() {
                       </motion.div>
                     ))}
                   </div>
-                  
+
                   <div className="relative h-40 rounded-3xl bg-blue-50 overflow-hidden flex flex-col items-center justify-center border-2 border-dashed border-blue-200">
-                    <motion.div 
+                    <motion.div
                       animate={{ y: [0, 160, 0] }}
                       transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
                       className="absolute top-0 left-0 w-full h-1 bg-blue-500/50 shadow-[0_0_20px_blue]"
@@ -450,52 +566,137 @@ function AnalysisView() {
               )}
 
               {showSim === "wearables" && (
-                <div className="space-y-8">
+                <div className="space-y-8 min-h-[500px] flex flex-col">
                   <div className="flex items-center gap-4">
                     <div className="h-14 w-14 rounded-2xl bg-orange-500/10 flex items-center justify-center">
                       <Watch className="h-7 w-7 text-orange-500" />
                     </div>
                     <div>
                       <h2 className="text-3xl font-bricolage font-extrabold tracking-tight">Wearable Sync</h2>
-                      <p className="text-black/50 font-medium">Real-time biometrics from your Smart Bracelet</p>
+                      <p className="text-black/50 font-medium">{bleDevice ? `Live data from ${bleDevice.name}` : 'Connect your smart bracelet via Bluetooth'}</p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[
-                      { icon: Activity, label: "Heart Rate", val: "72", unit: "bpm", color: "text-red-500" },
-                      { icon: Zap, label: "Energy", val: "84", unit: "%", color: "text-yellow-500" },
-                      { icon: Watch, label: "Steps", val: "8,432", unit: "", color: "text-blue-500" },
-                      { icon: Bot, label: "Stress", val: "Low", unit: "", color: "text-green-500" }
-                    ].map((metric, i) => (
-                      <motion.div 
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: i * 0.1 }}
-                        key={metric.label}
-                        className="p-6 rounded-3xl bg-black/5 flex flex-col items-center text-center gap-2"
-                      >
-                        <metric.icon className={cn("h-6 w-6 mb-2", metric.color)} />
-                        <span className="text-2xl font-black font-bricolage">{metric.val}</span>
-                        <span className="text-[10px] font-bold text-black/30 uppercase tracking-widest">{metric.label} {metric.unit}</span>
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  <div className="p-8 rounded-4xl bg-orange-50 border border-orange-100 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-full bg-orange-500 flex items-center justify-center text-white">
-                        <Watch className="h-6 w-6" />
+                  {!bleDevice && !isConnecting ? (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex-1 flex flex-col items-center justify-center gap-10 py-10"
+                    >
+                      {/* Radar Animation */}
+                      <div className="relative h-48 w-48 flex items-center justify-center">
+                        <motion.div
+                          animate={{ scale: [1, 2], opacity: [0.5, 0] }}
+                          transition={{ repeat: Infinity, duration: 2, ease: "easeOut" }}
+                          className="absolute inset-0 rounded-full bg-orange-500/20 border border-orange-500/30"
+                        />
+                        <motion.div
+                          animate={{ scale: [1, 1.5], opacity: [0.3, 0] }}
+                          transition={{ repeat: Infinity, duration: 2, ease: "easeOut", delay: 0.5 }}
+                          className="absolute inset-0 rounded-full bg-orange-500/10 border border-orange-500/20"
+                        />
+                        <div className="relative z-10 h-24 w-24 rounded-full bg-white shadow-2xl flex items-center justify-center border border-orange-100">
+                          <Watch className="h-10 w-10 text-orange-500" />
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-bold text-orange-900">TakeCare Bracelet Pro</p>
-                        <p className="text-xs text-orange-700/60 font-medium">Last synced: Just now</p>
+
+                      <div className="text-center space-y-3 max-w-sm">
+                        <h4 className="text-xl font-bold font-bricolage">Ready to pair</h4>
+                        <p className="text-sm font-medium text-black/40">Ensure your TakeCare bracelet is turned on and within 3 feet of this device.</p>
+                        {connectionError && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="p-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-xs font-bold mt-2"
+                          >
+                            ⚠️ {connectionError}
+                          </motion.div>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+                        {[
+                          { step: "01", label: "Turn on BT" },
+                          { step: "02", label: "Keep Proximity" },
+                          { step: "03", label: "Accept Pairing" }
+                        ].map((s) => (
+                          <div key={s.step} className="p-4 rounded-2xl bg-black/2 border border-black/5 flex flex-col items-center gap-1">
+                            <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">{s.step}</span>
+                            <span className="text-xs font-bold text-black/60">{s.label}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex flex-col gap-4 w-full max-w-xs">
+                        <Button
+                          onClick={connectDevice}
+                          className="h-14 px-12 rounded-2xl bg-orange-600 text-white hover:bg-orange-700 shadow-xl shadow-orange-500/25 font-bold text-lg group w-full"
+                        >
+                          Start Scanning
+                          <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                        </Button>
+                        <p className="text-[10px] text-center text-black/30 font-medium">
+                          Tip: If it&apos;s connected to your phone&apos;s app, disconnect it there first.
+                        </p>
+                      </div>
+                    </motion.div>
+                  ) : bleDevice ? (
+                    <div className="space-y-8 flex-1">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {[
+                          { icon: Activity, label: "Heart Rate", val: heartRate || "72", unit: "bpm", color: "text-red-500", live: !!heartRate },
+                          { icon: Zap, label: "Energy", val: "84", unit: "%", color: "text-yellow-500", live: false },
+                          { icon: Watch, label: "Steps", val: "8,432", unit: "", color: "text-blue-500", live: false },
+                          { icon: Bot, label: "Stress", val: "Low", unit: "", color: "text-green-500", live: false }
+                        ].map((metric, i) => (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: i * 0.1 }}
+                            key={metric.label}
+                            className={cn(
+                              "p-6 rounded-3xl bg-black/5 flex flex-col items-center text-center gap-2 border transition-all",
+                              metric.live ? "border-red-200 shadow-lg shadow-red-500/5 bg-red-50/30" : "border-transparent"
+                            )}
+                          >
+                            <metric.icon className={cn("h-6 w-6 mb-2", metric.color, metric.live && "animate-pulse")} />
+                            <span className="text-2xl font-black font-bricolage">{metric.val}</span>
+                            <span className="text-[10px] font-bold text-black/30 uppercase tracking-widest">{metric.label} {metric.unit}</span>
+                          </motion.div>
+                        ))}
+                      </div>
+
+                      <div className="p-8 rounded-4xl bg-green-50 border border-green-100 flex items-center justify-between mt-auto">
+                        <div className="flex items-center gap-4">
+                          <div className="h-12 w-12 rounded-full bg-green-500 flex items-center justify-center text-white shadow-lg shadow-green-500/30">
+                            <Watch className="h-6 w-6" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-green-900">{bleDevice.name || "Smart Bracelet"}</p>
+                            <p className="text-xs text-green-700/60 font-medium flex items-center gap-2">
+                              <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                              Linked and Transmitting
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          onClick={handleDisconnect}
+                          className="rounded-xl border-red-200 text-red-700 hover:bg-red-50"
+                        >
+                          Disconnect
+                        </Button>
                       </div>
                     </div>
-                    <Button variant="outline" className="rounded-xl border-orange-200 text-orange-700 hover:bg-orange-100">
-                      Settings
-                    </Button>
-                  </div>
+                  ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center gap-6">
+                      <div className="h-24 w-24 rounded-full border-4 border-orange-100 border-t-orange-500 animate-spin" />
+                      <div className="text-center">
+                        <h4 className="text-xl font-bold font-bricolage">Searching for devices</h4>
+                        <p className="text-sm font-medium text-black/40">Please follow the browser instructions...</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -511,8 +712,8 @@ function AnalysisView() {
                     </div>
                   </div>
 
-                  <Input 
-                    placeholder="Search symptoms, conditions, or medications..." 
+                  <Input
+                    placeholder="Search symptoms, conditions, or medications..."
                     className="h-16 rounded-2xl border-black/5 bg-black/5 pl-6 text-lg font-bold"
                   />
 
