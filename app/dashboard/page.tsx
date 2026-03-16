@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [unreadNotifications, setUnreadNotifications] = useState(3);
 
   return (
     <div className="flex flex-1 flex-col pb-12">
@@ -27,7 +28,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Dashboard Navigation */}
-        <DashboardTabs value={activeTab} onValueChange={setActiveTab} />
+        <DashboardTabs 
+          value={activeTab} 
+          onValueChange={setActiveTab} 
+          notificationCount={unreadNotifications}
+        />
 
         <AnimatePresence mode="wait">
           {activeTab === "overview" ? (
