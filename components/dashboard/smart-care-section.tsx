@@ -18,7 +18,8 @@ import {
   FileText, 
   Watch,
   X,
-  Plus
+  Plus,
+  ArrowRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -253,8 +254,28 @@ function ChatbotView() {
 }
 
 function AnalysisView() {
+  const [analyzing, setAnalyzing] = useState(false);
+  const [showSim, setShowSim] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (analyzing) {
+      const interval = setInterval(() => {
+        setProgress(prev => (prev < 100 ? prev + 1 : 100));
+      }, 50);
+      if (progress === 100) {
+        setTimeout(() => {
+          setAnalyzing(false);
+          setProgress(0);
+        }, 1000);
+      }
+      return () => clearInterval(interval);
+    }
+  }, [analyzing, progress]);
+
   const cards = [
     {
+      id: "records",
       title: "Analyze Medical Records",
       label: "FULL RECORD SCAN",
       description: "Upload your PDFs, X-rays or prescriptions for a deep AI analysis.",
@@ -263,6 +284,7 @@ function AnalysisView() {
       content: "3 Records found"
     },
     {
+      id: "research",
       title: "Health Research",
       label: "ISSUE EXPLORER",
       description: "Search across 10M+ medical papers validated by specialists.",
@@ -271,6 +293,7 @@ function AnalysisView() {
       content: "Browse Database"
     },
     {
+      id: "wearables",
       title: "Wearables & IoT",
       label: "LIVE CONNECTION",
       description: "Connect your smart bracelet, watch or scale for real-time monitoring.",
@@ -281,62 +304,237 @@ function AnalysisView() {
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-    >
-      {cards.map((card, i) => (
-        <motion.div
-          key={card.title}
-          whileHover={{ y: -8 }}
-          className="group relative p-8 rounded-[2.5rem] border border-black/5 bg-white shadow-sm overflow-hidden"
-        >
-          {/* Decorative Gradient */}
-          <div className={cn("absolute -top-12 -right-12 h-32 w-32 blur-[60px] opacity-20", card.color)} />
-          
-          <div className="relative z-10 h-full flex flex-col gap-10">
-            <div className="flex items-start justify-between">
-              <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center", card.color + "10")}>
-                <card.icon className={cn("h-7 w-7", "text-" + card.color.split('-')[1] + "-500")} />
+    <div className="relative">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+      >
+        {cards.map((card) => (
+          <motion.div
+            key={card.id}
+            whileHover={{ y: -8 }}
+            onClick={() => setShowSim(card.id)}
+            className="group relative p-8 rounded-[2.5rem] border border-black/5 bg-white shadow-sm overflow-hidden cursor-pointer"
+          >
+            <div className={cn("absolute -top-12 -right-12 h-32 w-32 blur-[60px] opacity-20", card.color)} />
+            
+            <div className="relative z-10 h-full flex flex-col gap-10">
+              <div className="flex items-start justify-between">
+                <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center", card.color + "10")}>
+                  <card.icon className={cn("h-7 w-7", card.color.replace('bg-', 'text-'))} />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black/20">{card.label}</span>
               </div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black/20">{card.label}</span>
-            </div>
 
-            <div className="space-y-3">
-              <h3 className="font-bricolage text-2xl font-extrabold tracking-tight">{card.title}</h3>
-              <p className="text-sm font-medium text-black/50 leading-relaxed">{card.description}</p>
-            </div>
+              <div className="space-y-3">
+                <h3 className="font-bricolage text-2xl font-extrabold tracking-tight">{card.title}</h3>
+                <p className="text-sm font-medium text-black/50 leading-relaxed">{card.description}</p>
+              </div>
 
-            <div className="mt-auto flex items-center justify-between">
-              <span className="text-xs font-bold text-black/30">{card.content}</span>
-              <Button size="icon" className="rounded-full bg-black transform group-hover:scale-110 transition-transform">
-                <Plus className="h-5 w-5 text-white" />
-              </Button>
+              <div className="mt-auto flex items-center justify-between">
+                <span className="text-xs font-bold text-black/30">{card.content}</span>
+                <Button size="icon" className="rounded-full bg-black transform group-hover:scale-110 transition-transform">
+                  <Plus className="h-5 w-5 text-white" />
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+
+        {/* Main Analysis Status */}
+        <div className="lg:col-span-3 p-10 rounded-[2.5rem] border border-primary/10 bg-black text-white flex flex-col lg:flex-row items-center justify-between gap-8 mt-4 overflow-hidden relative">
+          <div className="absolute top-0 right-0 h-full w-1/2 bg-linear-to-l from-primary/20 to-transparent pointer-events-none" />
+          
+          <div className="flex items-center gap-6">
+            <div className="h-16 w-16 rounded-3xl bg-primary/20 flex items-center justify-center">
+              <Activity className={cn("h-8 w-8 text-primary", analyzing && "animate-bounce")} />
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-bricolage text-2xl font-bold">
+                {analyzing ? `Analyzing Data... ${progress}%` : "Deep Health Context"}
+              </h4>
+              <p className="text-white/50 text-sm font-medium">
+                {analyzing ? "Synthesizing medical history and wearable metrics." : "Your AI context is 85% complete based on merged data."}
+              </p>
             </div>
           </div>
-        </motion.div>
-      ))}
 
-      {/* Main Analysis Status */}
-      <div className="lg:col-span-3 p-10 rounded-[2.5rem] border border-primary/10 bg-black text-white flex flex-col lg:flex-row items-center justify-between gap-8 mt-4 overflow-hidden relative">
-        <div className="absolute top-0 right-0 h-full w-1/2 bg-linear-to-l from-primary/20 to-transparent pointer-events-none" />
-        
-        <div className="flex items-center gap-6">
-          <div className="h-16 w-16 rounded-3xl bg-primary/20 flex items-center justify-center animate-pulse">
-            <Activity className="h-8 w-8 text-primary" />
-          </div>
-          <div className="space-y-1">
-            <h4 className="font-bricolage text-2xl font-bold">Deep Health Context</h4>
-            <p className="text-white/50 text-sm font-medium">Your AI context is 85% complete based on merged data.</p>
-          </div>
+          <Button 
+            disabled={analyzing}
+            onClick={() => setAnalyzing(true)}
+            className="h-14 px-10 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-lg shadow-xl shadow-primary/25 disabled:opacity-50"
+          >
+            {analyzing ? "Scanning..." : "Run Full Analysis"}
+          </Button>
+
+          {analyzing && (
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              className="absolute bottom-0 left-0 h-1 bg-primary"
+            />
+          )}
         </div>
+      </motion.div>
 
-        <Button className="h-14 px-10 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-lg shadow-xl shadow-primary/25">
-          Run Full Analysis
-        </Button>
-      </div>
-    </motion.div>
+      {/* Simulation Overlay */}
+      <AnimatePresence>
+        {showSim && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-[3rem] p-8 lg:p-12 w-full max-w-4xl shadow-2xl relative overflow-hidden"
+            >
+              <button 
+                onClick={() => setShowSim(null)}
+                className="absolute top-8 right-8 h-12 w-12 rounded-2xl bg-black/5 flex items-center justify-center hover:bg-black/10 transition-colors"
+              >
+                <X className="h-6 w-6 text-black" />
+              </button>
+
+              {showSim === "records" && (
+                <div className="space-y-8">
+                  <div className="flex items-center gap-4">
+                    <div className="h-14 w-14 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                      <FileText className="h-7 w-7 text-blue-500" />
+                    </div>
+                    <div>
+                      <h2 className="text-3xl font-bricolage font-extrabold tracking-tight">Record Intelligence</h2>
+                      <p className="text-black/50 font-medium">Scanning 3 uploaded documents for insights</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[
+                      { name: "Blood_Test_Mar.pdf", date: "Mar 12, 2026", insight: "LDL Cholesterol is slightly elevated" },
+                      { name: "Prescription_X.jpg", date: "Feb 28, 2026", insight: "Interactions check passed" }
+                    ].map((doc, i) => (
+                      <motion.div 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        key={doc.name}
+                        className="p-6 rounded-3xl bg-black/5 border border-black/5 space-y-4"
+                      >
+                        <div className="flex justify-between items-center">
+                          <span className="font-bold font-outfit">{doc.name}</span>
+                          <span className="text-[10px] font-black text-black/20">{doc.date}</span>
+                        </div>
+                        <div className="p-3 bg-white rounded-xl text-xs font-bold text-blue-600 flex items-center gap-2">
+                          <Zap className="h-3 w-3" />
+                          AI Insight: {doc.insight}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                  
+                  <div className="relative h-40 rounded-3xl bg-blue-50 overflow-hidden flex flex-col items-center justify-center border-2 border-dashed border-blue-200">
+                    <motion.div 
+                      animate={{ y: [0, 160, 0] }}
+                      transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+                      className="absolute top-0 left-0 w-full h-1 bg-blue-500/50 shadow-[0_0_20px_blue]"
+                    />
+                    <Plus className="h-8 w-8 text-blue-300 mb-2" />
+                    <p className="text-sm font-bold text-blue-400">Drag more medical records here</p>
+                  </div>
+                </div>
+              )}
+
+              {showSim === "wearables" && (
+                <div className="space-y-8">
+                  <div className="flex items-center gap-4">
+                    <div className="h-14 w-14 rounded-2xl bg-orange-500/10 flex items-center justify-center">
+                      <Watch className="h-7 w-7 text-orange-500" />
+                    </div>
+                    <div>
+                      <h2 className="text-3xl font-bricolage font-extrabold tracking-tight">Wearable Sync</h2>
+                      <p className="text-black/50 font-medium">Real-time biometrics from your Smart Bracelet</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { icon: Activity, label: "Heart Rate", val: "72", unit: "bpm", color: "text-red-500" },
+                      { icon: Zap, label: "Energy", val: "84", unit: "%", color: "text-yellow-500" },
+                      { icon: Watch, label: "Steps", val: "8,432", unit: "", color: "text-blue-500" },
+                      { icon: Bot, label: "Stress", val: "Low", unit: "", color: "text-green-500" }
+                    ].map((metric, i) => (
+                      <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.1 }}
+                        key={metric.label}
+                        className="p-6 rounded-3xl bg-black/5 flex flex-col items-center text-center gap-2"
+                      >
+                        <metric.icon className={cn("h-6 w-6 mb-2", metric.color)} />
+                        <span className="text-2xl font-black font-bricolage">{metric.val}</span>
+                        <span className="text-[10px] font-bold text-black/30 uppercase tracking-widest">{metric.label} {metric.unit}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <div className="p-8 rounded-4xl bg-orange-50 border border-orange-100 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-full bg-orange-500 flex items-center justify-center text-white">
+                        <Watch className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-orange-900">TakeCare Bracelet Pro</p>
+                        <p className="text-xs text-orange-700/60 font-medium">Last synced: Just now</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" className="rounded-xl border-orange-200 text-orange-700 hover:bg-orange-100">
+                      Settings
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {showSim === "research" && (
+                <div className="space-y-8">
+                  <div className="flex items-center gap-4">
+                    <div className="h-14 w-14 rounded-2xl bg-purple-500/10 flex items-center justify-center">
+                      <Search className="h-7 w-7 text-purple-500" />
+                    </div>
+                    <div>
+                      <h2 className="text-3xl font-bricolage font-extrabold tracking-tight">Issue Explorer</h2>
+                      <p className="text-black/50 font-medium">Validated health research for your context</p>
+                    </div>
+                  </div>
+
+                  <Input 
+                    placeholder="Search symptoms, conditions, or medications..." 
+                    className="h-16 rounded-2xl border-black/5 bg-black/5 pl-6 text-lg font-bold"
+                  />
+
+                  <div className="space-y-4">
+                    <p className="text-xs font-black text-black/20 uppercase tracking-widest">Trending Insights for you</p>
+                    {[
+                      "Optimizing Vitamin D for better sleep",
+                      "Recent study on cardio-respiratory health",
+                      "Impact of screen time on eye fatigue"
+                    ].map((topic, i) => (
+                      <div key={topic} className="p-5 rounded-2xl bg-white border border-black/5 flex items-center justify-between hover:border-purple-200 transition-colors cursor-pointer group">
+                        <span className="font-bold text-sm text-black/70 group-hover:text-purple-600 transition-colors">{topic}</span>
+                        <ArrowRight className="h-4 w-4 text-black/20 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
