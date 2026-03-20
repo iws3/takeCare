@@ -30,37 +30,51 @@ export async function POST(req: Request) {
     // Sandesh AI API endpoint
     const url = "https://api.sandeshai.com/whatsapp/campaign/api/";
 
-    // FAANG Practice: Log the outbound intent (masking PI)
-    console.log(`[WhatsApp] Sending invitation to: ${digitsOnly.slice(0, 4)}...${digitsOnly.slice(-2)} using campaign: ${campaignName}`);
+    // FAANG Practice: Add a manual timeout to the fetch controller
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
-    // Template variables: 1 -> Doctor Name, 2 -> Patient Name, 3 -> Interaction Purpose
-    const payload = {
-      apiKey: apiKey,
-      campaignName: campaignName,
-      whatsappNumber: digitsOnly,
-      contactName: contactName || doctorName,
-      templateVariables: [doctorName, "Sarah Jenkins", "Health Consultation"],
-    };
+    try {
+      // FAANG Practice: Log the outbound intent (masking PI)
+      console.log(`[WhatsApp] Sending invitation to: ${digitsOnly.slice(0, 4)}...${digitsOnly.slice(-2)} using campaign: ${campaignName}`);
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+      // Template variables: 1 -> Doctor Name, 2 -> Patient Name, 3 -> Interaction Purpose
+      const payload = {
+        apiKey: apiKey,
+        campaignName: campaignName,
+        whatsappNumber: digitsOnly,
+        contactName: contactName || doctorName,
+        templateVariables: [doctorName, "Sarah Jenkins", "Health Consultation"],
+      };
 
-    const data = await response.json();
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
 
-    // Handle Sandesh AI's specific error responses
-    // They often return 200 but with success: false in some cases, so we check both
-    if (!response.ok || data.success === false) {
-      console.error("[WhatsApp API Error]", data);
-      return NextResponse.json({ 
-        error: data.msg || data.message || "Failed to deliver message via WhatsApp gateway.", 
-        details: data 
-      }, { status: response.status === 200 ? 422 : response.status });
+      clearTimeout(timeoutId);
+      const data = await response.json();
+
+      // Handle Sandesh AI's specific error responses
+      if (!response.ok || data.success === false) {
+        console.error("[WhatsApp API Error]", data);
+        return NextResponse.json({ 
+          error: data.msg || data.message || "Failed to deliver message via WhatsApp gateway.", 
+          details: data 
+        }, { status: response.status === 200 ? 502 : response.status });
+      }
+
+      return NextResponse.json({ success: true, data });
+    } catch (fetchError: any) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        console.error("[WhatsApp] Gateway Timeout Error - 15s limit reached.");
+        return NextResponse.json({ error: "Gateway Timeout: SandeshAI API is taking too long to respond. Please check your internet connection or SandeshAI status." }, { status: 504 });
+      }
+      throw fetchError; // Re-throw for parent catch
     }
-
-    return NextResponse.json({ success: true, data });
   } catch (error: any) {
     console.error("[WhatsApp Route Panic]", error);
     return NextResponse.json({ error: "Internal Gateway Error", message: error.message }, { status: 500 });
