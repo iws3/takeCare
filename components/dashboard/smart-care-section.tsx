@@ -116,18 +116,14 @@ function VoiceAgentView() {
     try {
       const result = await getVapiConfiguration();
       if (result.success && result.config) {
-        // Stabilize: Ensure public key is fresh
-        const publicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY;
-        if (!publicKey) throw new Error("Public Key Missing");
-
-        // Re-init or check instance to prevent WASM errors
-        const v = vapiInstance || new Vapi(publicKey);
-        if (!vapiInstance) setVapiInstance(v);
-
-        // Add a slight delay for signaling layers to warm up
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        await v.start({
+        // Essential: Standardize the start call to avoid SDK ejection
+        // Using the most simple initialization pattern
+        await vapiInstance?.start({
+          transcriber: {
+            provider: "deepgram",
+            model: "nova-2",
+            language: "en-US",
+          },
           model: {
             provider: "openai",
             model: "gpt-4",
@@ -135,10 +131,9 @@ function VoiceAgentView() {
           },
           voice: {
             provider: "playht",
-            // Using a more robust, standard ID for testing to avoid resource ejection
             voiceId: "jennifer", 
           },
-          // USER REQUEST: Welcome message
+          // Ensure first message is prioritized
           firstMessage: `Hello ${SYNTHETIC_DOCTOR_DATA.patientName}! I am your TakeCare AI medical assistant. I've received an update from ${SYNTHETIC_DOCTOR_DATA.doctorName} regarding your recent health data. I'm here to walk you through it. How are you feeling today?`,
         });
       }
