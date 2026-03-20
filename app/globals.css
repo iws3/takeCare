@@ -233,17 +233,38 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+@layer utilities {
+  .bg-grid {
+    background-color: white;
+    /* Visible light-black lines as requested */
+    background-image: 
+      linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+    background-size: 40px 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .bg-grid::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    /* Subtle dots at intersections for a futuristic touch */
+    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.15) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.4;
+  }
+}
+
 /* ─── Glow Effects ──────────────────────────────────────────────────────────── */
+.glow-primary {
+  box-shadow: 0 0 60px -15px var(--primary);
+}
+
 .glow-teal {
   box-shadow: 0 0 40px rgba(45, 212, 191, 0.25);
-}
-
-.glow-indigo {
-  box-shadow: 0 0 40px rgba(99, 102, 241, 0.25);
-}
-
-.text-glow {
-  text-shadow: 0 0 40px rgba(45, 212, 191, 0.55);
 }
 
 /* ─── Mask Effects ──────────────────────────────────────────────────────────── */
@@ -309,22 +330,51 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: var(--border);
+    outline-color: var(--ring);
   }
 
-  body {
-    @apply bg-background text-foreground;
-  }
-
-  html {
-    @apply font-sans;
+  html, body {
+    background-color: transparent !important;
+    color: var(--foreground);
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
   }
 
   .medical-card {
-    @apply rounded-3xl border border-black/5 bg-white p-6 shadow-medical hover:shadow-medical-hover transition-all;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    background-color: white;
+    padding: 1.5rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+  }
+  
+  .medical-card:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
   }
 
   .btn-primary-round {
-    @apply flex h-16 w-16 items-center justify-center rounded-full bg-black text-white transition-all hover:scale-110 active:scale-95 shadow-xl;
+    display: flex;
+    height: 4rem;
+    width: 4rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background-color: black;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-primary-round:hover {
+    transform: scale(1.1);
+  }
+
+  .btn-primary-round:active {
+    transform: scale(0.95);
   }
 }

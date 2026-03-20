@@ -12,11 +12,17 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [unreadNotifications, setUnreadNotifications] = useState(3);
+  const [messengerUnreadCount, setMessengerUnreadCount] = useState(0);
 
   return (
-    <div className="flex flex-1 flex-col pb-12">
-      <DashboardHeader />
-      
+    <div className="flex flex-1 flex-col pb-12 min-h-screen relative overflow-hidden bg-transparent">
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/2 rounded-full blur-[120px] -translate-y-1/2 pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-primary/2 rounded-full blur-[120px] translate-y-1/2 pointer-events-none" />
+
+      <div className="relative z-10 w-full">
+        <DashboardHeader />
+      </div>
+
       <main className="flex flex-1 flex-col">
         {/* Welcome Section */}
         <div className="px-6 py-6 lg:px-12 lg:py-10 animate-fade-up">
@@ -29,10 +35,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Dashboard Navigation */}
-        <DashboardTabs 
-          value={activeTab} 
-          onValueChange={setActiveTab} 
+        <DashboardTabs
+          value={activeTab}
+          onValueChange={setActiveTab}
           notificationCount={unreadNotifications}
+          messengerCount={messengerUnreadCount}
         />
 
         <AnimatePresence mode="wait">
@@ -59,7 +66,7 @@ export default function DashboardPage() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
             >
-              <MessengerSection />
+              <MessengerSection onNotificationSync={setMessengerUnreadCount} />
             </motion.div>
           ) : activeTab === "smart-care" ? (
             <motion.div

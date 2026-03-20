@@ -41,6 +41,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { BackgroundGrid } from "@/components/ui/background-grid";
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -49,6 +51,7 @@ export default function RootLayout({
       <body
         className={`${syne.variable} ${spaceGrotesk.variable} ${outfit.variable} ${bricolage.variable} antialiased`}
       >
+        <BackgroundGrid />
         {children}
       </body>
     </html>

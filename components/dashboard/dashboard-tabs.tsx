@@ -16,11 +16,13 @@ const TABS = [
 export function DashboardTabs({ 
   value, 
   onValueChange,
-  notificationCount = 0
+  notificationCount = 0,
+  messengerCount = 0
 }: { 
   value: string; 
   onValueChange: (val: string) => void;
   notificationCount?: number;
+  messengerCount?: number;
 }) {
   return (
     <div className="px-6 lg:px-12 my-6">
@@ -41,6 +43,17 @@ export function DashboardTabs({
                   "h-5 w-5",
                   tab.id === "smart-care" && "text-red-500 fill-red-500/20"
                 )} />
+                {/* Messenger Badge */}
+                {tab.id === "messenger" && messengerCount > 0 && (
+                  <motion.span
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#25D366] text-[10px] font-bold text-white shadow-[0_2px_8px_rgba(37,211,102,0.4)]"
+                  >
+                    {messengerCount}
+                  </motion.span>
+                )}
+                {/* Notifications Badge */}
                 {tab.id === "notifications" && notificationCount > 0 && (
                   <motion.span
                     initial={{ scale: 0, opacity: 0 }}
