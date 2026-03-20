@@ -9,15 +9,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields: whatsappNumber or doctorName" }, { status: 400 });
     }
 
-    // Standardize to E.164 format (remove everything except digits)
-    const digitsOnly = whatsappNumber.replace(/\D/g, "");
+    // USER explicitly requested the plus (+) sign
+    const cleanNumbers = whatsappNumber.replace(/\D/g, "");
+    const formattedNumber = `+${cleanNumbers}`;
     
-    // Most WhatsApp APIs expect the number WITHOUT the leading "+" for the parameter, 
-    // but WITH the country code. We'll ensure it's at least 10 digits.
-    if (digitsOnly.length < 10) {
-      return NextResponse.json({ error: "Invalid phone number format. Please include country code." }, { status: 400 });
-    }
-
+    // Sandesh AI configuration
     const apiKey = process.env.SANDESH_API_KEY;
     const campaignName = process.env.SANDESH_CAMPAIGN_NAME;
 
@@ -35,17 +31,18 @@ export async function POST(req: Request) {
     const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
     try {
-      // FAANG Practice: Log the outbound intent (masking PI)
-      console.log(`[WhatsApp] Sending invitation to: ${digitsOnly.slice(0, 4)}...${digitsOnly.slice(-2)} using campaign: ${campaignName}`);
+      console.log(`[WhatsApp Debug] Normalized Number: ${formattedNumber}`);
 
-      // Template variables: 1 -> Doctor Name, 2 -> Patient Name, 3 -> Interaction Purpose
       const payload = {
         apiKey: apiKey,
         campaignName: campaignName,
-        whatsappNumber: digitsOnly,
+        whatsappNumber: formattedNumber,
         contactName: contactName || doctorName,
-        templateVariables: [doctorName, "Sarah Jenkins", "Health Consultation"],
+        // Simplified to just the doctor name string for max compatibility
+        templateVariables: doctorName,
       };
+
+      console.log("[WhatsApp Debug] Final Payload:", JSON.stringify(payload, null, 2));
 
       const response = await fetch(url, {
         method: "POST",
@@ -56,6 +53,7 @@ export async function POST(req: Request) {
 
       clearTimeout(timeoutId);
       const data = await response.json();
+      console.log("[WhatsApp Response]", JSON.stringify(data, null, 2));
 
       // Handle Sandesh AI's specific error responses
       if (!response.ok || data.success === false) {
