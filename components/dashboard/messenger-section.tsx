@@ -111,18 +111,13 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
 
       if (response.ok) {
         setIsInvited(true);
+        // After showing the success modal, we stay on this page 
+        // and just reset the form after a while, per user request.
         setTimeout(() => {
           setIsInvited(false);
-          setIsChatActive(true);
-          setLastSeenTimestamp(new Date().toISOString());
-          
-          setMessages([{
-            id: "1",
-            text: `Invitation successfully sent to ${doctorName}. Waiting for real WhatsApp incoming traffic...`,
-            sender: "user",
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }]);
-        }, 3000);
+          setDoctorName("");
+          setPhoneNumber("");
+        }, 5000);
       } else {
         alert(`WhatsApp Delivery Error: ${result.error}. Check campaign: ${process.env.NEXT_PUBLIC_CAMPAIGN || 'health_check'}`);
       }
