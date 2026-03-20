@@ -33,13 +33,13 @@ export async function POST(req: Request) {
     // FAANG Practice: Log the outbound intent (masking PI)
     console.log(`[WhatsApp] Sending invitation to: ${digitsOnly.slice(0, 4)}...${digitsOnly.slice(-2)} using campaign: ${campaignName}`);
 
-    // Template variables: 1 -> Doctor Name, 2 -> Platform Name
+    // Template variables: 1 -> Doctor Name, 2 -> Patient Name (Dynamic), 3 -> Platform/Link
     const payload = {
       apiKey: apiKey,
       campaignName: campaignName,
       whatsappNumber: digitsOnly,
       contactName: contactName || doctorName,
-      templateVariables: [doctorName, "TakeCare AI Platform"],
+      templateVariables: [doctorName, "Sarah Jenkins", "TakeCare AI Platform"], // Variable 2 is now Patient Name
     };
 
     const response = await fetch(url, {
@@ -50,9 +50,8 @@ export async function POST(req: Request) {
 
     const data = await response.json();
 
-    // Handle Sandesh AI's specific error responses
-    // They often return 200 but with success: false in some cases, so we check both
-    if (!response.ok || data.success === false) {
+    // SandeshAI success check: Either data.success true or msg containing "Successfully"
+    if (!response.ok || (data.success === false && !data.msg?.includes("Successfully"))) {
       console.error("[WhatsApp API Error]", data);
       return NextResponse.json({ 
         error: data.msg || data.message || "Failed to deliver message via WhatsApp gateway.", 
