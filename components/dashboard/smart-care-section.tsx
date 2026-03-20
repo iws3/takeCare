@@ -79,8 +79,13 @@ function VoiceAgentView() {
   const [vapiInstance, setVapiInstance] = useState<any>(null);
 
   useEffect(() => {
-    // Initialize Vapi client on mount
-    const v = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || "your-public-key");
+    // Initialize Vapi client using the environment variable
+    const publicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY;
+    if (!publicKey) {
+      console.error("Vapi Public Key is missing in environment variables!");
+      return;
+    }
+    const v = new Vapi(publicKey);
     setVapiInstance(v);
 
     v.on("call-start", () => setCallStatus("active"));
@@ -122,6 +127,8 @@ function VoiceAgentView() {
             provider: "playht",
             voiceId: "s3://voice-training-east-1/adele_african_v2/manifest.json", // High quality synthetic African voice
           },
+          // USER REQUEST: Welcome message before explaining the report
+          firstMessage: `Hello ${SYNTHETIC_DOCTOR_DATA.patientName}! I am your TakeCare AI medical assistant. I've received an update from ${SYNTHETIC_DOCTOR_DATA.doctorName} regarding your recent health data. I'm here to walk you through it. How are you feeling today?`,
         });
       }
     } catch (error) {
