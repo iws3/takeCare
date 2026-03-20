@@ -33,16 +33,28 @@ export async function POST(req: Request) {
     try {
       console.log(`[WhatsApp Debug] Normalized Number: ${formattedNumber}`);
 
+      // Mapping the "Cart" template variables to "Medical Consultation" context:
+      // {{1}} -> Doctor Name
+      // {{2}} -> Timeframe (e.g., 24 hours for feedback)
+      // {{3}} -> Record count (e.g., 3 clinical insights)
+      // {{4}} -> Clinical Urgency / Priority (e.g., "High Priority")
       const payload = {
         apiKey: apiKey,
         campaignName: campaignName,
         whatsappNumber: formattedNumber,
         contactName: contactName || doctorName,
-        // Simplified to just the doctor name string for max compatibility
-        templateVariables: doctorName,
+        templateVariables: [
+          doctorName,           // {{1}}
+          "24",                 // {{2}}
+          "5 New Patient",      // {{3}}
+          "Urgent Review"       // {{4}}
+        ],
+        // Adding the Call-to-Action Buttons for the medical dashboard
+        buttonUrl: `https://takecare-ai.com/dr/dashboard?dr=${encodeURIComponent(doctorName)}`,
+        buttonText: "Join Dashboard"
       };
 
-      console.log("[WhatsApp Debug] Final Payload:", JSON.stringify(payload, null, 2));
+      console.log("[WhatsApp Debug] Final Medical Payload:", JSON.stringify(payload, null, 2));
 
       const response = await fetch(url, {
         method: "POST",
