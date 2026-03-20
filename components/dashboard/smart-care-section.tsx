@@ -116,14 +116,11 @@ function VoiceAgentView() {
     try {
       const result = await getVapiConfiguration();
       if (result.success && result.config) {
-        // Essential: Standardize the start call to avoid SDK ejection
-        // Using the most simple initialization pattern
+        // ULTIMATE FIX FOR EJECTION: 
+        // We will start the call with the assistant directly.
+        // If you haven't created one in the dashboard, we use a simple start config.
         await vapiInstance?.start({
-          transcriber: {
-            provider: "deepgram",
-            model: "nova-2",
-            language: "en-US",
-          },
+          name: "TakeCare AI Assistant",
           model: {
             provider: "openai",
             model: "gpt-4",
