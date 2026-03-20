@@ -21,8 +21,12 @@ import {
   Plus,
   ArrowRight
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { SYNTHETIC_DOCTOR_DATA } from "@/lib/doctor-data";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import Vapi from "@vapi-ai/web";
+import { getVapiConfiguration } from "@/app/actions/vapi";
 
 const SMART_CARE_TABS = [
   { id: "talk", label: "Talk", icon: Mic, description: "Voice interaction with AI medical agent" },
@@ -71,43 +75,112 @@ export function SmartCareSection() {
 
 function VoiceAgentView() {
   const [isListening, setIsListening] = useState(false);
+  const [callStatus, setCallStatus] = useState<"inactive" | "connecting" | "active">("inactive");
+  const [vapiInstance, setVapiInstance] = useState<any>(null);
+
+  useEffect(() => {
+    // Initialize Vapi client on mount
+    const v = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || "your-public-key");
+    setVapiInstance(v);
+
+    v.on("call-start", () => setCallStatus("active"));
+    v.on("call-end", () => {
+      setCallStatus("inactive");
+      setIsListening(false);
+    });
+    v.on("error", (e) => {
+      console.error("Vapi Error:", e);
+      setCallStatus("inactive");
+      setIsListening(false);
+    });
+
+    return () => {
+      v.stop();
+    };
+  }, []);
+
+  const toggleVoiceConsultation = async () => {
+    if (callStatus === "active") {
+      vapiInstance?.stop();
+      return;
+    }
+
+    setCallStatus("connecting");
+    setIsListening(true);
+
+    try {
+      const result = await getVapiConfiguration();
+      if (result.success && result.config) {
+        // Start the call with the synthetic doctor context
+        vapiInstance?.start({
+          model: {
+            provider: "openai",
+            model: "gpt-4",
+            messages: [{ role: "system", content: result.config.systemPrompt }],
+          },
+          voice: {
+            provider: "playht",
+            voiceId: "s3://voice-training-east-1/adele_african_v2/manifest.json", // High quality synthetic African voice
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to start voice:", error);
+      setCallStatus("inactive");
+      setIsListening(false);
+    }
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="relative flex flex-col items-center justify-center p-12 lg:p-24 rounded-[3rem] border border-white/20 bg-linear-to-br from-primary/5 via-primary/10 to-transparent backdrop-blur-3xl overflow-hidden min-h-[500px]"
+      className="relative flex flex-col items-center justify-center p-12 lg:p-24 rounded-[4rem] border border-white/20 bg-linear-to-br from-primary/10 via-white to-primary/5 shadow-2xl backdrop-blur-3xl overflow-hidden min-h-[600px]"
     >
-      {/* Background Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/20 blur-[120px] rounded-full" />
+      {/* Dynamic Background Glow */}
+      <motion.div 
+        animate={{ 
+          scale: callStatus === "active" ? [1, 1.2, 1] : 1,
+          opacity: callStatus === "active" ? [0.2, 0.4, 0.2] : 0.2
+        }}
+        transition={{ duration: 4, repeat: Infinity }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/30 blur-[130px] rounded-full" 
+      />
 
       <div className="relative z-10 flex flex-col items-center gap-12 w-full max-w-2xl text-center">
-        <div className="space-y-4">
-          <h2 className="font-bricolage text-4xl lg:text-6xl font-extrabold tracking-tighter">
-            {isListening ? "Listening..." : "How can I help you today?"}
+        <div className="space-y-6">
+          <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest animate-pulse">
+            {callStatus === "active" ? "Live Medical Agent" : callStatus === "connecting" ? "Connecting to Doctor..." : "Ready for Consultation"}
+          </Badge>
+          <h2 className="font-bricolage text-5xl lg:text-7xl font-extrabold tracking-tight leading-none text-black">
+            {callStatus === "active" ? "Consulting..." : "How can I help you, Sarah?"}
           </h2>
-          <p className="text-black/50 font-medium text-lg lg:text-xl">
-            Talk to our AI Medical Agent about your symptoms or medical concerns.
+          <p className="text-black/60 font-medium text-lg lg:text-xl max-w-lg mx-auto leading-relaxed">
+            Discuss your latest medical results and {SYNTHETIC_DOCTOR_DATA.doctorName}'s plan in real-time.
           </p>
         </div>
 
-        {/* Voice Visualizer */}
-        <div className="relative h-64 w-64 flex items-center justify-center">
+        {/* Premium Voice Visualizer */}
+        <div className="relative h-72 w-72 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center">
+             <div className="h-full w-full rounded-full border border-black/5 animate-spin-slow opacity-50" />
+          </div>
+
           <AnimatePresence>
-            {isListening && (
+            {callStatus === "active" && (
               <>
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1.5, opacity: 0 }}
+                  animate={{ scale: 1.8, opacity: 0 }}
                   transition={{ repeat: Infinity, duration: 2, ease: "easeOut" }}
-                  className="absolute inset-0 bg-primary/20 rounded-full"
+                  className="absolute inset-0 bg-primary/30 rounded-full"
                 />
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 2, opacity: 0 }}
+                  animate={{ scale: 2.5, opacity: 0 }}
                   transition={{ repeat: Infinity, duration: 2.5, ease: "easeOut", delay: 0.5 }}
-                  className="absolute inset-0 bg-primary/10 rounded-full"
+                  className="absolute inset-0 bg-primary/20 rounded-full"
                 />
               </>
             )}
@@ -116,25 +189,42 @@ function VoiceAgentView() {
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setIsListening(!isListening)}
+            onClick={toggleVoiceConsultation}
             className={cn(
-              "z-10 h-32 w-32 rounded-full flex items-center justify-center transition-all duration-500 cursor-pointer",
-              isListening ? "bg-primary shadow-[0_0_50px_rgba(var(--primary),0.5)]" : "bg-black"
+              "z-10 h-40 w-40 rounded-full flex flex-col items-center justify-center transition-all duration-700 cursor-pointer border-8 border-white shadow-2xl",
+              callStatus === "active" ? "bg-primary glow-primary" : "bg-black hover:bg-primary/90"
             )}
           >
-            <Mic className={cn("h-12 w-12 text-white", isListening && "animate-pulse")} />
+            {callStatus === "connecting" ? (
+              <div className="h-10 w-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Mic className={cn("h-14 w-14 text-white transition-all duration-500", callStatus === "active" && "scale-110")} />
+            )}
+            <span className="mt-2 text-[10px] font-bold text-white/60 uppercase tracking-widest leading-none">
+              {callStatus === "active" ? "End Call" : "Connect"}
+            </span>
           </motion.div>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-4">
-          {["Tell me about my reports", "Schedule a follow-up", "Check symptom"].map((prompt) => (
-            <button
-              key={prompt}
-              className="px-6 py-3 rounded-2xl bg-white/50 border border-black/5 hover:bg-white hover:shadow-xl hover:shadow-black/5 transition-all text-sm font-bold font-outfit"
-            >
-              {`"${prompt}"`}
-            </button>
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+          <div className="px-6 py-4 rounded-3xl bg-white/40 border border-white backdrop-blur-md text-left flex items-start gap-4">
+            <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+               <Activity className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-black/40 uppercase tracking-wider mb-1">Medication Context</p>
+              <p className="text-sm font-bold text-black leading-tight">Propranolol: 10mg Twice Daily</p>
+            </div>
+          </div>
+          <div className="px-6 py-4 rounded-3xl bg-white/40 border border-white backdrop-blur-md text-left flex items-start gap-4">
+            <div className="h-10 w-10 rounded-2xl bg-vital-orange/10 flex items-center justify-center shrink-0">
+               <Zap className="h-5 w-5 text-vital-orange" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-black/40 uppercase tracking-wider mb-1">Doctor's Observation</p>
+              <p className="text-sm font-bold text-black leading-tight">Variability is slightly low.</p>
+            </div>
+          </div>
         </div>
       </div>
     </motion.div>
