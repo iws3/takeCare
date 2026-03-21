@@ -19,7 +19,11 @@ import {
   Watch,
   X,
   Plus,
-  ArrowRight
+  ArrowRight,
+  PhoneOff,
+  Video,
+  MicOff,
+  Circle
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SYNTHETIC_DOCTOR_DATA } from "@/lib/doctor-data";
@@ -74,8 +78,9 @@ export function SmartCareSection() {
 }
 
 function VoiceAgentView() {
-  const [isListening, setIsListening] = useState(false);
   const [callStatus, setCallStatus] = useState<"inactive" | "connecting" | "active">("inactive");
+  const [isDoctorSpeaking, setIsDoctorSpeaking] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const [vapiInstance, setVapiInstance] = useState<any>(null);
 
   useEffect(() => {
@@ -91,12 +96,14 @@ function VoiceAgentView() {
     v.on("call-start", () => setCallStatus("active"));
     v.on("call-end", () => {
       setCallStatus("inactive");
-      setIsListening(false);
+      setIsDoctorSpeaking(false);
     });
+    v.on("speech-start", () => setIsDoctorSpeaking(true));
+    v.on("speech-end", () => setIsDoctorSpeaking(false));
     v.on("error", (e) => {
       console.error("Vapi Error:", e);
       setCallStatus("inactive");
-      setIsListening(false);
+      setIsDoctorSpeaking(false);
     });
 
     return () => {
@@ -111,7 +118,7 @@ function VoiceAgentView() {
     }
 
     setCallStatus("connecting");
-    setIsListening(true);
+    setIsDoctorSpeaking(false);
 
     try {
       const result = await getVapiConfiguration();
@@ -120,7 +127,6 @@ function VoiceAgentView() {
       if (!result.success || !result.config) {
         console.warn("Failed to retrieve Vapi config", result.error);
         setCallStatus("inactive");
-        setIsListening(false);
         return;
       }
 
@@ -130,7 +136,6 @@ function VoiceAgentView() {
       if (!assistantId) {
         console.warn("Missing NEXT_PUBLIC_VAPI_ASSISTANT_ID in .env!");
         setCallStatus("inactive");
-        setIsListening(false);
         return;
       }
 
@@ -153,109 +158,183 @@ function VoiceAgentView() {
     } catch (error) {
       console.error("Failed to start voice:", error);
       setCallStatus("inactive");
-      setIsListening(false);
     }
-    };
+  };
 
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        className="relative flex flex-col items-center justify-center p-12 lg:p-24 rounded-[4rem] border border-white/20 bg-linear-to-br from-primary/10 via-white to-primary/5 shadow-2xl backdrop-blur-3xl overflow-hidden min-h-[600px]"
-      >
-        {/* Dynamic Background Glow */}
-        <motion.div
-          animate={{
-            scale: callStatus === "active" ? [1, 1.2, 1] : 1,
-            opacity: callStatus === "active" ? [0.2, 0.4, 0.2] : 0.2
-          }}
-          transition={{ duration: 4, repeat: Infinity }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/30 blur-[130px] rounded-full"
-        />
+  const toggleMute = () => {
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    vapiInstance?.setMuted(nextMuted);
+  };
 
-        <div className="relative z-10 flex flex-col items-center gap-12 w-full max-w-2xl text-center">
-          <div className="space-y-6">
-            <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest animate-pulse">
-              {callStatus === "active" ? "Live Medical Agent" : callStatus === "connecting" ? "Connecting to Doctor..." : "Ready for Consultation"}
-            </Badge>
-            <h2 className="font-bricolage text-5xl lg:text-7xl font-extrabold tracking-tight leading-none text-black">
-              {callStatus === "active" ? "Consulting..." : "How can I help you, Sarah?"}
-            </h2>
-            <p className="text-black/60 font-medium text-lg lg:text-xl max-w-lg mx-auto leading-relaxed">
-              Discuss your latest medical results and {SYNTHETIC_DOCTOR_DATA.doctorName}'s plan in real-time.
-            </p>
+  const endCall = () => {
+    vapiInstance?.stop();
+    setCallStatus("inactive");
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="relative flex flex-col lg:flex-row p-6 lg:p-12 rounded-[3.5rem] border border-black/5 bg-white shadow-2xl overflow-hidden min-h-[600px] gap-8 lg:gap-12"
+    >
+      {/* Background Decor */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl -mr-64 -mt-64 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-vital-orange/5 rounded-full blur-3xl -ml-40 -mb-40 pointer-events-none" />
+
+      {/* LEFT SIDE: Doctor Image & Call Controls */}
+      <div className="w-full lg:w-5/12 flex flex-col items-center justify-center gap-6 relative z-10">
+        {/* Dynamic Doctor Avatar Container */}
+        <div className="relative h-72 w-72 lg:h-96 lg:w-full lg:max-w-sm rounded-[3rem] overflow-hidden shadow-2xl border-[6px] border-white group">
+          <AnimatePresence>
+            {isDoctorSpeaking && (
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1.5, opacity: 0 }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: "easeOut" }}
+                className="absolute inset-0 bg-primary/30 rounded-[3rem] z-0 blur-lg"
+              />
+            )}
+          </AnimatePresence>
+
+          <img 
+            src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=800&auto=format&fit=crop" 
+            alt="Dr. Leah"
+            className={cn(
+               "absolute inset-0 h-full w-full object-cover transition-all duration-700 z-10", 
+               callStatus === "active" ? "scale-105" : "scale-100 grayscale-[20%]"
+            )}
+          />
+
+          <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/90 via-black/40 to-transparent p-6 z-20 flex flex-col justify-end h-1/2">
+             <div className="flex items-center gap-3">
+               <div className="relative flex items-center justify-center">
+                 {callStatus === "active" ? (
+                   <>
+                     <div className="h-3 w-3 bg-green-500 rounded-full" />
+                     <div className="absolute h-3 w-3 bg-green-500 rounded-full animate-ping" />
+                   </>
+                 ) : (
+                   <div className="h-3 w-3 bg-white/40 rounded-full" />
+                 )}
+               </div>
+               <h3 className="font-bricolage text-2xl font-bold text-white tracking-tight">Dr. Leah</h3>
+             </div>
+             <p className="text-white/60 text-sm font-medium mt-1">TakeCare Clinical AI</p>
           </div>
+        </div>
 
-          {/* Premium Voice Visualizer */}
-          <div className="relative h-72 w-72 flex items-center justify-center">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-full w-full rounded-full border border-black/5 animate-spin-slow opacity-50" />
-            </div>
+        {/* Floating Call Controls Dashboard */}
+        <div className="flex flex-wrap items-center justify-center gap-2 lg:gap-3 bg-white/80 backdrop-blur-2xl p-3 lg:p-4 rounded-[2rem] border border-black/5 shadow-xl w-fit relative z-20">
+          <button 
+            onClick={toggleMute} 
+            disabled={callStatus !== "active"}
+            className={cn(
+              "h-12 w-12 lg:h-14 lg:w-14 rounded-2xl flex items-center justify-center transition-all", 
+              isMuted ? "bg-red-50 text-red-500" : "bg-black/5 text-black hover:bg-black/10",
+              callStatus !== "active" && "opacity-40 cursor-not-allowed"
+            )}
+            title="Mute Microphone"
+          >
+            {isMuted ? <MicOff className="h-5 w-5 lg:h-6 lg:w-6" /> : <Mic className="h-5 w-5 lg:h-6 lg:w-6" />}
+          </button>
+          <button 
+            disabled={callStatus !== "active"} 
+            className="h-12 w-12 lg:h-14 lg:w-14 rounded-2xl flex items-center justify-center transition-all bg-black/5 text-black hover:bg-black/10 disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Share Camera"
+          >
+            <Video className="h-5 w-5 lg:h-6 lg:w-6" />
+          </button>
+          <button 
+            disabled={callStatus !== "active"} 
+            className="h-12 w-12 lg:h-14 lg:w-14 rounded-2xl flex items-center justify-center transition-all bg-black/5 text-black hover:bg-black/10 disabled:opacity-40 disabled:cursor-not-allowed hidden sm:flex"
+            title="Record Call"
+          >
+            <Circle className="h-5 w-5 lg:h-6 lg:w-6 text-red-500 fill-red-500/20" />
+          </button>
+          <button 
+            disabled={callStatus !== "active"} 
+            className="h-12 w-12 lg:h-14 lg:w-14 rounded-2xl flex items-center justify-center transition-all bg-black/5 text-black hover:bg-black/10 disabled:opacity-40 disabled:cursor-not-allowed hidden sm:flex"
+            title="View Transcript"
+          >
+            <FileText className="h-5 w-5 lg:h-6 lg:w-6" />
+          </button>
+          
+          <div className="w-[1px] h-8 bg-black/10 mx-1 hidden sm:block" />
 
-            <AnimatePresence>
-              {callStatus === "active" && (
-                <>
-                  <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1.8, opacity: 0 }}
-                    transition={{ repeat: Infinity, duration: 2, ease: "easeOut" }}
-                    className="absolute inset-0 bg-primary/30 rounded-full"
-                  />
-                  <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 2.5, opacity: 0 }}
-                    transition={{ repeat: Infinity, duration: 2.5, ease: "easeOut", delay: 0.5 }}
-                    className="absolute inset-0 bg-primary/20 rounded-full"
-                  />
-                </>
-              )}
-            </AnimatePresence>
-
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={toggleVoiceConsultation}
-              className={cn(
-                "z-10 h-40 w-40 rounded-full flex flex-col items-center justify-center transition-all duration-700 cursor-pointer border-8 border-white shadow-2xl",
-                callStatus === "active" ? "bg-primary glow-primary" : "bg-black hover:bg-primary/90"
-              )}
+          {callStatus === "active" ? (
+            <button 
+              onClick={endCall} 
+              className="h-12 px-4 lg:h-14 lg:px-6 rounded-2xl flex items-center gap-2 transition-all bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20 font-bold tracking-wide"
+            >
+              <PhoneOff className="h-5 w-5" />
+              <span className="hidden sm:inline">End</span>
+            </button>
+          ) : (
+            <button 
+              disabled={callStatus === "connecting"} 
+              onClick={toggleVoiceConsultation} 
+              className="h-12 px-6 lg:h-14 lg:px-8 rounded-2xl flex items-center gap-2 transition-all bg-black hover:scale-105 text-white shadow-xl shadow-black/20 font-bold tracking-wide"
             >
               {callStatus === "connecting" ? (
-                <div className="h-10 w-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                <Mic className={cn("h-14 w-14 text-white transition-all duration-500", callStatus === "active" && "scale-110")} />
+                <Mic className="h-5 w-5" />
               )}
-              <span className="mt-2 text-[10px] font-bold text-white/60 uppercase tracking-widest leading-none">
-                {callStatus === "active" ? "End Call" : "Connect"}
-              </span>
-            </motion.div>
-          </div>
+              {callStatus === "connecting" ? "Connecting..." : "Connect"}
+            </button>
+          )}
+        </div>
+      </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-            <div className="px-6 py-4 rounded-3xl bg-white/40 border border-white backdrop-blur-md text-left flex items-start gap-4">
-              <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-                <Activity className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-black/40 uppercase tracking-wider mb-1">Medication Context</p>
-                <p className="text-sm font-bold text-black leading-tight">Propranolol: 10mg Twice Daily</p>
-              </div>
+      {/* RIGHT SIDE: Interactive Clinical Context */}
+      <div className="w-full lg:w-7/12 flex flex-col justify-center gap-8 relative z-10 px-0 lg:px-4 text-center lg:text-left mt-4 lg:mt-0">
+        <div className="space-y-4 flex flex-col items-center lg:items-start">
+          <Badge 
+            className={cn(
+              "px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] w-fit", 
+              callStatus === "active" ? "bg-green-500/10 text-green-600 border border-green-500/20" : "bg-black/5 text-black/40 shadow-inner",
+              callStatus !== "inactive" && "animate-pulse"
+            )}
+          >
+            {callStatus === "active" ? (isDoctorSpeaking ? "Doctor is Speaking..." : "Listening...") : callStatus === "connecting" ? "Secure Connection..." : "AI Voice Consultation"}
+          </Badge>
+          
+          <h2 className="font-bricolage text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-black max-w-xl">
+            {callStatus === "active" ? "How can I help you, Sarah?" : "Start your session."}
+          </h2>
+          <p className="text-black/40 font-bold text-base sm:text-xl max-w-md leading-relaxed">
+            Securely discuss your latest medical results and {SYNTHETIC_DOCTOR_DATA.doctorName}'s plan in real-time.
+          </p>
+        </div>
+
+        {/* Insight Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+          <div className="p-5 lg:p-6 rounded-3xl bg-black/[0.02] border border-black/5 text-left flex flex-col gap-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
+            <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+              <Activity className="h-5 w-5 lg:h-6 lg:w-6 text-primary" />
             </div>
-            <div className="px-6 py-4 rounded-3xl bg-white/40 border border-white backdrop-blur-md text-left flex items-start gap-4">
-              <div className="h-10 w-10 rounded-2xl bg-vital-orange/10 flex items-center justify-center shrink-0">
-                <Zap className="h-5 w-5 text-vital-orange" />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-black/40 uppercase tracking-wider mb-1">Doctor's Observation</p>
-                <p className="text-sm font-bold text-black leading-tight">Variability is slightly low.</p>
-              </div>
+            <div>
+              <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1.5">Medication Target</p>
+              <p className="text-sm lg:text-base font-bold text-black leading-snug">Propranolol: 10mg Twice Daily</p>
+            </div>
+          </div>
+          
+          <div className="p-5 lg:p-6 rounded-3xl bg-black/[0.02] border border-black/5 text-left flex flex-col gap-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
+            <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+              <Zap className="h-5 w-5 lg:h-6 lg:w-6 text-vital-orange" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-vital-orange uppercase tracking-[0.2em] mb-1.5">Doctor's Observation</p>
+              <p className="text-sm lg:text-base font-bold text-black leading-snug">Variability remains slightly low.</p>
             </div>
           </div>
         </div>
-      </motion.div>
-    );
-  }
+      </div>
+    </motion.div>
+  );
+}
 
   function ChatbotView() {
     const [messages, setMessages] = useState([
