@@ -117,40 +117,29 @@ function VoiceAgentView() {
       const result = await getVapiConfiguration();
       const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID;
 
-      if (!assistantId) {
-        console.warn("Assistant ID missing, falling back to transient config...");
-      }
-
-      // PRE-CONNECTION SAFEGUARD: Stop any stale calls
-      if (callStatus === "active") {
-        vapiInstance?.stop();
+      if (!result.success || !result.config) {
+        console.warn("Failed to retrieve Vapi config", result.error);
+        setCallStatus("inactive");
+        setIsListening(false);
         return;
       }
 
-      // STARTING THE CALL USING THE PERSISTED ASSISTANT ID
-      // This is the most stable way to prevent "no-room" or ejection errors
-      await vapiInstance?.start(assistantId || {
+      // STARTING THE CALL USING THE PERSISTED ASSISTANT ID WITH DYNAMIC OVERRIDES
+      // This allows Vapi to use the base configuration from the dashboard but injects
+      // our dynamic context seamlessly as an override at runtime.
+      await vapiInstance?.start("441901c3-c190-4d87-9bd6-e6a6e12a871d", {
         name: "TakeCare AI Doctor",
+        firstMessage: `Hello ${SYNTHETIC_DOCTOR_DATA.patientName}, this is your TakeCare AI Assistant calling on behalf of ${SYNTHETIC_DOCTOR_DATA.doctorName}. How are you feeling today?`,
         model: {
           provider: "openai",
-          model: "gpt-4",
+          model: "gpt-4o",
           messages: [{ role: "system", content: result.config.systemPrompt }],
+          temperature: 0.6,
         },
-        voice: {
-          provider: "playht",
-          voiceId: "jennifer", 
-        },
-      }, {
-        // ASSISTANT OVERRIDES: 
-        // We use the ID for stability, but we inject Sarah's data dynamically
-        variableValues: {
-          patientName: SYNTHETIC_DOCTOR_DATA.patientName,
-          doctorName: SYNTHETIC_DOCTOR_DATA.doctorName,
-          medication: SYNTHETIC_DOCTOR_DATA.medicationPlan[0].name
-        }
+        backgroundDenoisingEnabled: true,
       });
-      
-      
+
+
     } catch (error) {
       console.error("Failed to start voice:", error);
       setCallStatus("inactive");
@@ -166,13 +155,13 @@ function VoiceAgentView() {
       className="relative flex flex-col items-center justify-center p-12 lg:p-24 rounded-[4rem] border border-white/20 bg-linear-to-br from-primary/10 via-white to-primary/5 shadow-2xl backdrop-blur-3xl overflow-hidden min-h-[600px]"
     >
       {/* Dynamic Background Glow */}
-      <motion.div 
-        animate={{ 
+      <motion.div
+        animate={{
           scale: callStatus === "active" ? [1, 1.2, 1] : 1,
           opacity: callStatus === "active" ? [0.2, 0.4, 0.2] : 0.2
         }}
         transition={{ duration: 4, repeat: Infinity }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/30 blur-[130px] rounded-full" 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/30 blur-[130px] rounded-full"
       />
 
       <div className="relative z-10 flex flex-col items-center gap-12 w-full max-w-2xl text-center">
@@ -191,7 +180,7 @@ function VoiceAgentView() {
         {/* Premium Voice Visualizer */}
         <div className="relative h-72 w-72 flex items-center justify-center">
           <div className="absolute inset-0 flex items-center justify-center">
-             <div className="h-full w-full rounded-full border border-black/5 animate-spin-slow opacity-50" />
+            <div className="h-full w-full rounded-full border border-black/5 animate-spin-slow opacity-50" />
           </div>
 
           <AnimatePresence>
@@ -236,7 +225,7 @@ function VoiceAgentView() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
           <div className="px-6 py-4 rounded-3xl bg-white/40 border border-white backdrop-blur-md text-left flex items-start gap-4">
             <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-               <Activity className="h-5 w-5 text-primary" />
+              <Activity className="h-5 w-5 text-primary" />
             </div>
             <div>
               <p className="text-[10px] font-bold text-black/40 uppercase tracking-wider mb-1">Medication Context</p>
@@ -245,7 +234,7 @@ function VoiceAgentView() {
           </div>
           <div className="px-6 py-4 rounded-3xl bg-white/40 border border-white backdrop-blur-md text-left flex items-start gap-4">
             <div className="h-10 w-10 rounded-2xl bg-vital-orange/10 flex items-center justify-center shrink-0">
-               <Zap className="h-5 w-5 text-vital-orange" />
+              <Zap className="h-5 w-5 text-vital-orange" />
             </div>
             <div>
               <p className="text-[10px] font-bold text-black/40 uppercase tracking-wider mb-1">Doctor's Observation</p>
@@ -406,19 +395,19 @@ function AnalysisView() {
       setBleDevice(null);
       return;
     }
-    
+
     // Auto-reconnect with exponential backoff
     setConnectionError("Connection lost. Trying to reconnect...");
     setIsConnecting(true);
     let attempts = 0;
     const maxAttempts = 5;
-    
+
     while (attempts < maxAttempts && !intentionalDisconnectRef.current) {
       try {
         attempts++;
         await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempts - 1)));
         console.log(`Reconnection attempt ${attempts}...`);
-        
+
         await setupGattServer(device);
         setConnectionError(null);
         setIsConnecting(false);
@@ -427,7 +416,7 @@ function AnalysisView() {
         console.error("Reconnection attempt failed:", error);
       }
     }
-    
+
     setConnectionError("Failed to reconnect after multiple attempts. Please pair again.");
     setIsConnecting(false);
     setBleDevice(null);
@@ -435,12 +424,12 @@ function AnalysisView() {
 
   const setupGattServer = async (device: any) => {
     const server = await device.gatt.connect();
-    
+
     // Heart Rate
     try {
       const service = await server.getPrimaryService('heart_rate');
       const characteristic = await service.getCharacteristic('heart_rate_measurement');
-      
+
       await characteristic.startNotifications();
       characteristic.addEventListener('characteristicvaluechanged', (event: any) => {
         try {
@@ -449,9 +438,9 @@ function AnalysisView() {
           const rate16Bits = flags & 0x1;
           let hr: number;
           if (rate16Bits) {
-             hr = value.getUint16(1, true); // littleEndian
+            hr = value.getUint16(1, true); // littleEndian
           } else {
-             hr = value.getUint8(1);
+            hr = value.getUint8(1);
           }
           setHeartRate(hr);
         } catch (e) {
@@ -466,10 +455,10 @@ function AnalysisView() {
     try {
       const batService = await server.getPrimaryService('battery_service');
       const batChar = await batService.getCharacteristic('battery_level');
-      
+
       const val = await batChar.readValue();
       setBatteryLevel(val.getUint8(0));
-      
+
       await batChar.startNotifications();
       batChar.addEventListener('characteristicvaluechanged', (event: any) => {
         setBatteryLevel(event.target.value.getUint8(0));
@@ -494,10 +483,10 @@ function AnalysisView() {
     setHeartRate(null);
     setBatteryLevel(null);
     intentionalDisconnectRef.current = false;
-    
+
     try {
       setIsConnecting(true);
-      
+
       const bluetooth = navigator.bluetooth;
       if (!bluetooth) {
         throw new Error("Web Bluetooth is not supported in this browser. Please use Chrome or Edge.");
