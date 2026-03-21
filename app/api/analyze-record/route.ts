@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       files.map(async (file) => {
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
-        
+
         // Use type: "file" for PDFs, and "image" for images
         if (file.type.startsWith("image/")) {
           return {
@@ -52,7 +52,7 @@ Output the result in beautiful, clear Markdown formatting.
 
     // Request analysis using Gemini 1.5 Flash from Google AI SDK
     const result = await generateText({
-      model: google("gemini-1.5-flash"),
+      model: google("gemini-2.5-flash"),
       messages: [
         {
           role: "user",
