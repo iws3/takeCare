@@ -115,25 +115,42 @@ function VoiceAgentView() {
 
     try {
       const result = await getVapiConfiguration();
-      if (result.success && result.config) {
-        // ULTIMATE FIX FOR EJECTION: 
-        // We will start the call with the assistant directly.
-        // If you haven't created one in the dashboard, we use a simple start config.
-        await vapiInstance?.start({
-          name: "TakeCare AI Assistant",
-          model: {
-            provider: "openai",
-            model: "gpt-4",
-            messages: [{ role: "system", content: result.config.systemPrompt }],
-          },
-          voice: {
-            provider: "playht",
-            voiceId: "jennifer", 
-          },
-          // Ensure first message is prioritized
-          firstMessage: `Hello ${SYNTHETIC_DOCTOR_DATA.patientName}! I am your TakeCare AI medical assistant. I've received an update from ${SYNTHETIC_DOCTOR_DATA.doctorName} regarding your recent health data. I'm here to walk you through it. How are you feeling today?`,
-        });
+      const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID;
+
+      if (!assistantId) {
+        console.warn("Assistant ID missing, falling back to transient config...");
       }
+
+      // PRE-CONNECTION SAFEGUARD: Stop any stale calls
+      if (callStatus === "active") {
+        vapiInstance?.stop();
+        return;
+      }
+
+      // STARTING THE CALL USING THE PERSISTED ASSISTANT ID
+      // This is the most stable way to prevent "no-room" or ejection errors
+      await vapiInstance?.start(assistantId || {
+        name: "TakeCare AI Doctor",
+        model: {
+          provider: "openai",
+          model: "gpt-4",
+          messages: [{ role: "system", content: result.config.systemPrompt }],
+        },
+        voice: {
+          provider: "playht",
+          voiceId: "jennifer", 
+        },
+      }, {
+        // ASSISTANT OVERRIDES: 
+        // We use the ID for stability, but we inject Sarah's data dynamically
+        variableValues: {
+          patientName: SYNTHETIC_DOCTOR_DATA.patientName,
+          doctorName: SYNTHETIC_DOCTOR_DATA.doctorName,
+          medication: SYNTHETIC_DOCTOR_DATA.medicationPlan[0].name
+        }
+      });
+      
+      
     } catch (error) {
       console.error("Failed to start voice:", error);
       setCallStatus("inactive");
