@@ -117,6 +117,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
           setIsInvited(false);
           setDoctorName("");
           setPhoneNumber("");
+          setIsChatActive(true); // Auto-activate chat for demo or real use
         }, 5000);
       } else {
         alert(`WhatsApp Delivery Error: ${result.error}. Check campaign: ${process.env.NEXT_PUBLIC_CAMPAIGN || 'health_check'}`);
@@ -140,7 +141,6 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
     
     setMessages(prev => [...prev, userMsg]);
     setNewMessage("");
-    // Message sent to gateway...
   };
 
   useEffect(() => {
@@ -151,7 +151,6 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
 
   return (
     <div className="px-6 lg:px-12 mt-4 flex flex-col gap-8 relative">
-      {/* Top Header */}
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-2xl font-bricolage font-black tracking-tighter">Communications Center</h2>
         <div className="relative group cursor-pointer" onClick={clearNotifications}>
@@ -170,7 +169,6 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
         </div>
       </div>
 
-      {/* Main Container */}
       {!isChatActive ? (
         <Tabs value={platform} onValueChange={setPlatform} className="w-full">
           <TabsList className="bg-black/5 p-1 rounded-2xl w-full lg:w-fit h-auto flex gap-1">
@@ -199,11 +197,9 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
                   transition={{ duration: 0.4 }}
                   className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center rounded-[3rem] border border-black/5 bg-white p-8 lg:p-12 shadow-2xl relative overflow-hidden"
                 >
-                  {/* Modern Glass Background Decor */}
                   <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32" />
                   <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -ml-32 -mb-32" />
 
-                  {/* Left Side: Large Logo/Icon */}
                   <div className="flex items-center justify-center lg:justify-start">
                     <div className={cn("relative flex h-56 w-56 lg:h-80 lg:w-80 items-center justify-center rounded-4xl shadow-2xl transition-transform hover:scale-105 duration-500", p.bg)}>
                       <div className="absolute inset-0 animate-pulse-ring rounded-4xl bg-current opacity-20" />
@@ -211,7 +207,6 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
                     </div>
                   </div>
 
-                  {/* Right Side: Form */}
                   <div className="flex flex-col gap-10">
                     <div className="space-y-3">
                       <div className="inline-flex items-center px-3 py-1 rounded-full bg-black/5 text-[10px] font-black tracking-widest uppercase text-black/40">
@@ -242,7 +237,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
 
                       <div className="grid gap-3">
                         <Label htmlFor={`phone-${p.id}`} className="text-xs font-black uppercase tracking-[0.2em] text-black/30">
-                          WhatsApp Number (with Country Code)
+                          WhatsApp Number
                         </Label>
                         <Input
                           id={`phone-${p.id}`}
@@ -256,9 +251,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
                       </div>
 
                       <Button type="submit" className="h-20 rounded-4xl bg-black text-white font-black text-xl hover:scale-[1.02] shadow-2xl mt-4">
-                        <span className="relative flex items-center justify-center gap-2">
-                          Send WhatsApp Invitation
-                        </span>
+                        Send WhatsApp Invitation
                       </Button>
                     </form>
                   </div>
@@ -273,7 +266,6 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
           animate={{ opacity: 1, scale: 1 }}
           className="flex flex-col h-[750px] w-full bg-white rounded-4xl border border-black/5 shadow-2xl overflow-hidden relative"
         >
-          {/* Pro Chat Header */}
           <div className="p-6 bg-white border-b border-black/5 flex justify-between items-center z-10">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-[#25D366]/10 flex items-center justify-center shadow-inner relative">
@@ -291,7 +283,6 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
             </div>
           </div>
 
-          {/* Multi-modal Messages Area */}
           <div 
             ref={scrollRef}
             className="flex-1 overflow-y-auto p-8 space-y-8 bg-black/[0.02]"
@@ -301,35 +292,25 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
                 key={m.id}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={cn(
-                  "flex flex-col max-w-[85%]",
-                  m.sender === "user" ? "ml-auto items-end" : "items-start"
-                )}
+                className={`flex flex-col max-w-[85%] ${m.sender === "user" ? "ml-auto items-end" : "items-start"}`}
               >
                 <div className={cn(
-                  "p-5 rounded-3xl text-base leading-relaxed shadow-sm overflow-hidden",
+                  "p-5 rounded-3xl text-sm leading-relaxed shadow-sm overflow-hidden",
                   m.sender === "user" 
-                    ? "bg-black text-white rounded-tr-none shadow-black/10" 
+                    ? "bg-black text-white rounded-tr-none" 
                     : "bg-white text-black border border-black/5 rounded-tl-none"
                 )}>
-                  
-                  {/* Handle Image Messages */}
                   {m.type === "image" && m.mediaUrl && (
                     <div className="mb-3 rounded-xl overflow-hidden shadow-lg border border-black/5">
-                      <img src={m.mediaUrl} alt="Clinical Attachment" className="w-full h-auto max-h-80 object-cover hover:scale-105 transition-transform duration-500" />
+                      <img src={m.mediaUrl} alt="Clinical Attachment" className="w-full h-auto max-h-80 object-cover" />
                     </div>
                   )}
-
-                  {/* Handle Audio/Voice Messages */}
                   {(m.type === "audio" || m.type === "voice") && m.mediaUrl && (
                     <div className="mb-3 p-4 bg-black/5 rounded-2xl flex items-center gap-3">
-                       <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                          <Mic className="w-5 h-5 text-primary" />
-                       </div>
+                       <Mic className="w-5 h-5 text-primary" />
                        <audio src={m.mediaUrl} controls className="h-10 w-48" />
                     </div>
                   )}
-
                   <p className="font-medium">{m.text}</p>
                 </div>
                 <span className="text-[10px] font-black text-black/20 mt-2 px-2 uppercase tracking-widest">{m.timestamp}</span>
@@ -351,13 +332,12 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
             )}
           </div>
 
-          {/* Professional Input */}
           <form onSubmit={sendMessage} className="p-6 bg-white border-t border-black/5 flex gap-4 items-center">
             <Button type="button" variant="ghost" size="icon" className="rounded-xl opacity-40"><Smile /></Button>
             <Button type="button" variant="ghost" size="icon" className="rounded-xl opacity-40"><Paperclip /></Button>
             <div className="flex-1 relative">
               <Input
-                placeholder="Direct message to Doctor's WhatsApp..."
+                placeholder="Direct message to Doctor..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 className="h-14 rounded-2xl border-black/5 bg-black/5 pl-6 text-base font-bold transition-all focus:bg-white focus:ring-0 shadow-inner"
@@ -370,44 +350,26 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
         </motion.div>
       )}
 
-      {/* Invitation Modal */}
       <AnimatePresence>
         {isInvited && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-xl px-6"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xl px-6"
           >
             <motion.div
               initial={{ scale: 0.85, opacity: 0, y: 30 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.85, opacity: 0, y: 30 }}
-              className="flex flex-col items-center justify-center gap-6 rounded-4xl bg-white p-10 lg:p-14 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] border border-white/20 w-full max-w-lg text-center relative overflow-hidden"
+              className="flex flex-col items-center justify-center gap-6 rounded-4xl bg-white p-10 lg:p-14 shadow-2xl border border-black/5 w-full max-w-lg text-center relative overflow-hidden"
             >
               <div className="absolute top-0 inset-x-0 h-1.5 bg-[#25D366] animate-progress" />
-              
-              <div className="relative">
-                <div className="absolute inset-0 bg-[#25D366]/20 blur-2xl rounded-full" />
-                <div className="relative flex h-24 w-24 items-center justify-center rounded-4xl bg-[#25D366]/10 shadow-inner">
-                  <CheckCircle2 className="h-12 w-12 text-[#25D366]" />
-                </div>
-              </div>
-
+              <CheckCircle2 className="h-12 w-12 text-[#25D366]" />
               <div className="space-y-2">
-                <h3 className="font-bricolage text-4xl font-extrabold tracking-tighter text-black">Invitation Sent!</h3>
-                <p className="text-lg font-medium text-black/40">
-                  Connecting to <span className="text-black font-bold">{doctorName}</span>...
-                </p>
+                <h3 className="font-bricolage text-2xl font-extrabold text-black">Invitation Sent!</h3>
+                <p className="text-sm font-medium text-black/40">Connecting to {doctorName}...</p>
               </div>
-
-              <div className="w-full bg-black/5 rounded-2xl p-6 text-sm font-bold text-black/40 leading-relaxed border border-black/5 italic">
-                "You have been invited to TakeCare to give patients some diagnoses."
-              </div>
-
-              <p className="text-[11px] font-black text-black/20 uppercase tracking-[0.3em] animate-pulse">
-                Awaiting Doctor Authorization
-              </p>
             </motion.div>
           </motion.div>
         )}
@@ -426,7 +388,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
           100% { transform: translateX(0); }
         }
         .animate-progress {
-          animation: progress 3s linear;
+          animation: progress 5s linear;
         }
       `}</style>
     </div>

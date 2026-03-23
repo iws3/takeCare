@@ -47,7 +47,7 @@ function StatCard({ title, value, subtitle, icon: Icon, delay = 0 }: StatCardPro
 
 export function StatsCards() {
   return (
-    <div className="grid grid-cols-1 gap-6 px-6 md:grid-cols-2 lg:grid-cols-3 lg:px-12">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 px-6 lg:px-0">
       <StatCard
         title="Invitations"
         value="2"
@@ -72,3 +72,4 @@ export function StatsCards() {
     </div>
   );
 }
+

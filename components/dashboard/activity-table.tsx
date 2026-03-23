@@ -48,49 +48,49 @@ const ACTIVITIES = [
 export function ActivityTable() {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4, duration: 0.5 }}
-      className="mx-6 mt-8 mb-12 overflow-hidden rounded-3xl border border-black/5 bg-white shadow-sm lg:mx-12"
+      transition={{ delay: 0.5, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="mx-6 mt-4 mb-20 overflow-hidden rounded-[2.5rem] border border-black/5 bg-white shadow-medical lg:mx-0 flex flex-col"
     >
-      <div className="flex items-center justify-between border-b border-black/5 bg-black/2 px-6 py-4 lg:px-8">
-        <div className="flex flex-col">
-          <h3 className="font-outfit text-lg font-bold lg:text-xl">Health Activity</h3>
-          <p className="text-xs font-medium text-black/40">Your recent medical visits and records</p>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-black/5 bg-black/1 px-8 py-7 gap-4">
+        <div className="flex flex-col gap-1">
+          <h3 className="font-bricolage text-xl font-bold lg:text-3xl tracking-tight">Health History</h3>
+          <p className="text-xs font-medium text-black/30 lg:text-sm">Your recent medical visits & record updates</p>
         </div>
-        <Button variant="outline" size="sm" className="rounded-full border-black/10 font-bold hover:bg-black hover:text-white transition-all">
-          View All History
+        <Button variant="outline" className="rounded-2xl border-black/5 bg-black/5 font-black text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-all px-8 h-12 shadow-sm">
+          View Full Timeline
         </Button>
       </div>
 
       <div className="overflow-x-auto">
-        <Table>
-          <TableHeader className="bg-black/5">
+        <Table className="w-full min-w-[700px] sm:min-w-0">
+          <TableHeader className="bg-black/3">
             <TableRow className="hover:bg-transparent border-none">
-              <TableHead className="py-4 font-bold text-black uppercase tracking-wider text-[10px]">Date</TableHead>
-              <TableHead className="py-4 font-bold text-black uppercase tracking-wider text-[10px]">Doctor</TableHead>
-              <TableHead className="py-4 font-bold text-black uppercase tracking-wider text-[10px]">Hospital</TableHead>
-              <TableHead className="py-4 font-bold text-black uppercase tracking-wider text-[10px]">Details</TableHead>
-              <TableHead className="py-4 font-bold text-black uppercase tracking-wider text-[10px] text-right">Action</TableHead>
+              <TableHead className="py-5 pl-10 font-black text-black/40 uppercase tracking-[0.2em] text-[10px]">Date</TableHead>
+              <TableHead className="py-5 font-black text-black/40 uppercase tracking-[0.2em] text-[10px]">Medical Professional</TableHead>
+              <TableHead className="py-5 font-black text-black/40 uppercase tracking-[0.2em] text-[10px] hidden md:table-cell">Facility</TableHead>
+              <TableHead className="py-5 font-black text-black/40 uppercase tracking-[0.2em] text-[10px]">Consultation Details</TableHead>
+              <TableHead className="py-5 pr-10 font-black text-black/40 uppercase tracking-[0.2em] text-[10px] text-right">Records</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {ACTIVITIES.map((activity, idx) => (
-              <TableRow key={idx} className="group hover:bg-black/1 border-black/5 transition-colors">
-                <TableCell className="py-5 font-medium text-sm lg:text-base">{activity.date}</TableCell>
-                <TableCell className="py-5 font-bold text-sm lg:text-base">{activity.doctor}</TableCell>
-                <TableCell className="py-5 font-medium text-black/60 text-sm lg:text-base">{activity.hospital}</TableCell>
-                <TableCell className="py-5">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-black/80 text-sm lg:text-base">{activity.details}</span>
-                    <Badge variant="outline" className="rounded-full bg-primary/5 text-primary border-primary/20 text-[10px] py-0">
+              <TableRow key={idx} className="group hover:bg-black/2 border-black/5 transition-all duration-300">
+                <TableCell className="py-6 pl-10 font-bold text-sm">{activity.date}</TableCell>
+                <TableCell className="py-6 font-black text-sm lg:text-base text-primary/80 group-hover:text-primary transition-colors">{activity.doctor}</TableCell>
+                <TableCell className="py-6 font-medium text-black/40 text-sm hidden md:table-cell italic">{activity.hospital}</TableCell>
+                <TableCell className="py-6">
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-black text-sm">{activity.details}</span>
+                    <Badge variant="outline" className="rounded-full bg-black/5 text-black border-transparent font-black text-[9px] px-3 py-0.5">
                       {activity.status}
                     </Badge>
                   </div>
                 </TableCell>
-                <TableCell className="py-5 text-right">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                    <FileText className="h-4 w-4 text-primary" />
+                <TableCell className="py-6 pr-10 text-right">
+                  <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl bg-black shadow-lg text-white opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+                    <FileText className="h-5 w-5" />
                   </Button>
                 </TableCell>
               </TableRow>
@@ -101,3 +101,4 @@ export function ActivityTable() {
     </motion.div>
   );
 }
+

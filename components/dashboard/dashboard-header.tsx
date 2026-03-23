@@ -7,7 +7,7 @@ import { Bell, Search, Settings } from "lucide-react";
 
 export function DashboardHeader() {
   return (
-    <header className="flex items-center justify-between px-6 py-4 lg:px-12 lg:py-8 animate-slide-right">
+    <header className="flex items-center justify-between px-6 py-6 lg:px-0 lg:py-10 animate-slide-right w-full">
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black shadow-2xl lg:h-12 lg:w-12">
           <span className="font-syne text-xl font-extrabold text-white lg:text-2xl">T</span>

@@ -29,10 +29,18 @@ import {
   Loader2,
   Trash2,
   ChevronDown,
-  ExternalLink
+  ExternalLink,
+  Heart,
+  Brain,
+  Pill,
+  Clock,
+  ChevronRight,
+  FileDown,
+  ArrowLeft
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { SYNTHETIC_DOCTOR_DATA } from "@/lib/doctor-data";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -47,6 +55,57 @@ const SMART_CARE_TABS = [
 
 export function SmartCareSection() {
   const [activeTab, setActiveTab] = useState("text");
+  const [medicalContext, setMedicalContext] = useState<any>(null);
+
+  // Automatically load the extracted context from screenshots for demonstration
+  useEffect(() => {
+    // Extracted from the provided hospital screenshots
+    const extractedData = {
+      patient_summary: {
+        name: "Sarah Jenkins",
+        id: "TC-8291",
+        latest_vitals: {
+          weight: "57kg",
+          height: "1.58m",
+          bmi: "22.83",
+          blood_pressure: "113/63 mmHg",
+          heart_rate: "74 bpm",
+          resp_rate: "15 c/m",
+          temperature: "36.5°C"
+        },
+        lab_results: {
+          malaria_test_mp: "NEGATIVE",
+          widal_test: "Positive",
+          titers: {
+            "TO": "1/320",
+            "BO": "1/320",
+            "AO": "1/160",
+            "CO": "1/160",
+            "TH": "1/160",
+            "CH": "1/160"
+          }
+        },
+        diagnosis: "Severe Salmonellosis (Typhoid Fever)",
+        symptoms: [
+          "Headache (H/A)",
+          "Bitter mouth",
+          "Fever (+)",
+          "Insomnia (+)",
+          "Stomach grumbling (3 weeks duration)",
+          "Nausea (+)"
+        ],
+        medications: [
+          { name: "Cipro", dosage: "750mg", frequency: "Twice daily" },
+          { name: "Metro", dosage: "500mg", frequency: "Twice daily" },
+          { name: "Dexa", dosage: "0.5mg", frequency: "Twice daily" },
+          { name: "Quick Reliever", frequency: "As needed" }
+        ],
+        clinical_history: "Patient previously had poorly treated malaria symptoms. Latest MP test is negative, but Widal is strongly positive for Salmonellosis."
+      }
+    };
+    setMedicalContext(extractedData);
+  }, []);
+
 
   return (
     <div className="px-6 lg:px-12 mt-4 flex flex-col gap-6">
@@ -70,21 +129,23 @@ export function SmartCareSection() {
 
         <AnimatePresence mode="wait">
           <TabsContent value="talk" key="talk">
-            <VoiceAgentView />
+            <VoiceAgentView medicalContext={medicalContext} />
           </TabsContent>
           <TabsContent value="text" key="text">
             <ChatbotView />
           </TabsContent>
           <TabsContent value="analyze" key="analyze">
-            <AnalysisView />
+            <AnalysisView medicalContext={medicalContext} onContextUpdate={setMedicalContext} />
           </TabsContent>
+
         </AnimatePresence>
       </Tabs>
     </div>
   );
 }
 
-function VoiceAgentView() {
+function VoiceAgentView({ medicalContext }: { medicalContext: any }) {
+
   const [callStatus, setCallStatus] = useState<"inactive" | "connecting" | "active">("inactive");
   const [isDoctorSpeaking, setIsDoctorSpeaking] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -146,13 +207,30 @@ function VoiceAgentView() {
         return;
       }
 
+      // Create dynamic context-aware prompt
+      const contextPrompt = medicalContext ? `
+        PATIENT MEDICAL CONTEXT (JSON):
+        ${JSON.stringify(medicalContext, null, 2)}
+        
+        INSTRUCTIONS:
+        You are Sarah's AI Medical Assistant. You have her latest hospital records from July and August 2022.
+        - She has been diagnosed with Salmonellosis (Typhoid).
+        - Her recent vitals: BP ${medicalContext.patient_summary.latest_vitals.blood_pressure}, Temp ${medicalContext.patient_summary.latest_vitals.temperature}.
+        - Her Widal test was Positive (TO 1/320).
+        - She is on Cipro, Metro, and Dexa.
+        - Talk to her about her symptoms (stomach grumbling, nausea) and ensure she is taking her medicine correctly.
+        - Be professional, empathetic, and clear.
+      ` : result.config.systemPrompt;
+
       await vapiInstance?.start(assistantId, {
         name: "TakeCare AI Doctor",
-        firstMessage: `Hello ${SYNTHETIC_DOCTOR_DATA.patientName}, this is your TakeCare AI Assistant calling on behalf of ${SYNTHETIC_DOCTOR_DATA.doctorName}. How are you feeling today?`,
+        firstMessage: medicalContext 
+          ? `Hello Sarah, I've reviewed your latest results from the hospital. It looks like we're dealing with Salmonellosis. How are you feeling after starting the Cipro and Metro? Is the stomach discomfort still there?`
+          : `Hello ${SYNTHETIC_DOCTOR_DATA.patientName}, this is your TakeCare AI Assistant. How are you feeling today?`,
         model: {
           provider: "openai",
           model: "gpt-4o",
-          messages: [{ role: "system", content: result.config.systemPrompt }],
+          messages: [{ role: "system", content: contextPrompt }],
           temperature: 0.6,
         },
         voice: {
@@ -161,6 +239,7 @@ function VoiceAgentView() {
         },
         backgroundDenoisingEnabled: true,
       });
+
 
     } catch (error) {
       console.error("Failed to start voice:", error);
@@ -312,8 +391,11 @@ function VoiceAgentView() {
             {callStatus === "active" ? "How can I help you, Sarah?" : "Start your session."}
           </h2>
           <p className="text-black/40 font-bold text-base sm:text-xl max-w-md leading-relaxed">
-            Securely discuss your latest medical results and {SYNTHETIC_DOCTOR_DATA.doctorName}'s plan in real-time.
+            {medicalContext 
+              ? `Ready to discuss your Salmonellosis treatment and latest vitals.`
+              : `Securely discuss your latest medical results in real-time.`}
           </p>
+
         </div>
 
         {/* Insight Cards Grid */}
@@ -455,7 +537,9 @@ function ChatbotView() {
   );
 }
 
-function AnalysisView() {
+function AnalysisView({ medicalContext, onContextUpdate }: { medicalContext: any, onContextUpdate: (ctx: any) => void }) {
+  const [analysisTab, setAnalysisTab] = useState<"upload" | "results">("upload");
+
   const [analyzing, setAnalyzing] = useState(false);
   const [showSim, setShowSim] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
@@ -636,6 +720,8 @@ function AnalysisView() {
     selectedFiles.forEach(file => formData.append("file", file));
 
     try {
+      // For simulation purposes, we'll use the hardcoded context if it matches our demo
+      // In a real app, this would use the Gemini response
       const response = await fetch("/api/analyze-record", {
         method: "POST",
         body: formData,
@@ -647,11 +733,22 @@ function AnalysisView() {
 
       const data = await response.json();
       setAnalysisResult(data.analysis);
+      
+      // If we got structured data, update the global context
+      if (data.structuredData) {
+        onContextUpdate(data.structuredData);
+      }
+      
+      // Auto-transition to results tab
+      setTimeout(() => {
+        setAnalysisTab("results");
+      }, 1500);
     } catch (err: any) {
       setAnalysisError(err.message || "Failed to analyze record.");
     } finally {
       setIsIngesting(false);
     }
+
   };
 
   const cards = [
@@ -686,87 +783,336 @@ function AnalysisView() {
 
   return (
     <div className="relative">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-      >
-        {cards.map((card) => (
+      <div className="flex gap-2 mb-8 bg-black/5 p-1 rounded-2xl w-fit">
+        <button
+          onClick={() => setAnalysisTab("upload")}
+          className={cn(
+            "px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+            analysisTab === "upload" ? "bg-white text-black shadow-sm" : "text-black/40 hover:text-black/60"
+          )}
+        >
+          Source Records
+        </button>
+        <button
+          onClick={() => setAnalysisTab("results")}
+          disabled={!medicalContext}
+          className={cn(
+            "px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+            analysisTab === "results" ? "bg-white text-black shadow-sm" : "text-black/40 hover:text-black/60",
+            !medicalContext && "opacity-30 cursor-not-allowed"
+          )}
+        >
+          Clinical Results
+        </button>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {analysisTab === "upload" ? (
           <motion.div
-            key={card.id}
-            whileHover={{ y: -8 }}
-            onClick={() => setShowSim(card.id)}
-            className="group relative p-8 rounded-[2.5rem] border border-black/5 bg-white shadow-sm overflow-hidden cursor-pointer"
+            key="upload"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="grid grid-cols-1 lg:grid-cols-3 gap-6"
           >
-            <div className={cn("absolute -top-12 -right-12 h-32 w-32 blur-[60px] opacity-20", card.color)} />
-
-            <div className="relative z-10 h-full flex flex-col gap-10">
-              <div className="flex items-start justify-between">
-                <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center", card.color + "10")}>
-                  <card.icon className={cn("h-7 w-7", card.color.replace('bg-', 'text-'))} />
+            {cards.map((card) => (
+              <motion.div
+                key={card.id}
+                whileHover={{ y: -8 }}
+                onClick={() => setShowSim(card.id)}
+                className="group relative p-8 rounded-[2.5rem] border border-black/5 bg-white shadow-sm overflow-hidden cursor-pointer"
+              >
+                <div className={cn("absolute -top-12 -right-12 h-32 w-32 blur-[60px] opacity-20", card.color)} />
+                <div className="relative z-10 h-full flex flex-col gap-10">
+                  <div className="flex items-start justify-between">
+                    <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center", card.color + "10")}>
+                      <card.icon className={cn("h-7 w-7", card.color.replace('bg-', 'text-'))} />
+                    </div>
+                    {card.id === 'wearables' && bleDevice && (
+                      <span className="flex h-2 w-2 rounded-full bg-green-500 animate-ping absolute top-8 right-12" />
+                    )}
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black/20">{card.label}</span>
+                  </div>
+                  <div className="space-y-3">
+                    <h3 className="font-bricolage text-2xl font-extrabold tracking-tight">{card.title}</h3>
+                    <p className="text-sm font-medium text-black/50 leading-relaxed">{card.description}</p>
+                  </div>
+                  <div className="mt-auto flex items-center justify-between">
+                    <span className={cn(
+                      "text-xs font-bold",
+                      card.id === 'wearables' && bleDevice ? "text-green-500" : "text-black/30"
+                    )}>
+                      {card.content}
+                    </span>
+                    <Button size="icon" className="rounded-full bg-black transform group-hover:scale-110 transition-transform">
+                      <Plus className="h-5 w-5 text-white" />
+                    </Button>
+                  </div>
                 </div>
-                {card.id === 'wearables' && bleDevice && (
-                  <span className="flex h-2 w-2 rounded-full bg-green-500 animate-ping absolute top-8 right-12" />
-                )}
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black/20">{card.label}</span>
-              </div>
+              </motion.div>
+            ))}
 
-              <div className="space-y-3">
-                <h3 className="font-bricolage text-2xl font-extrabold tracking-tight">{card.title}</h3>
-                <p className="text-sm font-medium text-black/50 leading-relaxed">{card.description}</p>
+            <div className="lg:col-span-3 p-10 rounded-[2.5rem] border border-primary/10 bg-black text-white flex flex-col lg:flex-row items-center justify-between gap-8 mt-4 overflow-hidden relative">
+              <div className="absolute top-0 right-0 h-full w-1/2 bg-linear-to-l from-primary/20 to-transparent pointer-events-none" />
+              <div className="flex items-center gap-6">
+                <div className="h-16 w-16 rounded-3xl bg-primary/20 flex items-center justify-center">
+                  <Activity className={cn("h-8 w-8 text-primary", analyzing && "animate-bounce")} />
+                </div>
+                <div className="space-y-1" >
+                  <h4 className="font-bricolage text-2xl font-bold">
+                    {analyzing ? `Analyzing Data... ${progress}%` : "Deep Health Context"}
+                  </h4>
+                  <p className="text-white/50 text-sm font-medium">
+                    {analyzing ? "Synthesizing medical history and wearable metrics." : "Your AI context is 85% complete based on merged data."}
+                  </p>
+                </div>
               </div>
-
-              <div className="mt-auto flex items-center justify-between">
-                <span className={cn(
-                  "text-xs font-bold",
-                  card.id === 'wearables' && bleDevice ? "text-green-500" : "text-black/30"
-                )}>
-                  {card.content}
-                </span>
-                <Button size="icon" className="rounded-full bg-black transform group-hover:scale-110 transition-transform">
-                  <Plus className="h-5 w-5 text-white" />
-                </Button>
-              </div>
+              <Button
+                disabled={analyzing}
+                onClick={() => setAnalyzing(true)}
+                className="h-14 px-10 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-lg shadow-xl shadow-primary/25 disabled:opacity-50"
+              >
+                {analyzing ? "Scanning..." : "Run Full Analysis"}
+              </Button>
+              {analyzing && (
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  className="absolute bottom-0 left-0 h-1 bg-primary"
+                />
+              )}
             </div>
           </motion.div>
-        ))}
-
-        {/* Main Analysis Status */}
-        <div className="lg:col-span-3 p-10 rounded-[2.5rem] border border-primary/10 bg-black text-white flex flex-col lg:flex-row items-center justify-between gap-8 mt-4 overflow-hidden relative">
-          <div className="absolute top-0 right-0 h-full w-1/2 bg-linear-to-l from-primary/20 to-transparent pointer-events-none" />
-
-          <div className="flex items-center gap-6">
-            <div className="h-16 w-16 rounded-3xl bg-primary/20 flex items-center justify-center">
-              <Activity className={cn("h-8 w-8 text-primary", analyzing && "animate-bounce")} />
-            </div>
-            <div className="space-y-1">
-              <h4 className="font-bricolage text-2xl font-bold">
-                {analyzing ? `Analyzing Data... ${progress}%` : "Deep Health Context"}
-              </h4>
-              <p className="text-white/50 text-sm font-medium">
-                {analyzing ? "Synthesizing medical history and wearable metrics." : "Your AI context is 85% complete based on merged data."}
-              </p>
-            </div>
-          </div>
-
-          <Button
-            disabled={analyzing}
-            onClick={() => setAnalyzing(true)}
-            className="h-14 px-10 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-lg shadow-xl shadow-primary/25 disabled:opacity-50"
+        ) : (
+          <motion.div
+            key="results"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            className="flex flex-col gap-6"
           >
-            {analyzing ? "Scanning..." : "Run Full Analysis"}
-          </Button>
+            {/* Clinical Dashboard Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/40 backdrop-blur-xl p-6 rounded-[2rem] border border-black/5 shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <Heart className="h-7 w-7 text-primary animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="font-bricolage text-2xl font-black tracking-tight">Clinical Intelligence</h3>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="h-2 w-2 rounded-full bg-green-500" />
+                    <span className="text-xs font-bold text-black/40 uppercase tracking-widest">Digital Health Twin Synchronized</span>
+                  </div>
+                </div>
+              </div>
 
-          {analyzing && (
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              className="absolute bottom-0 left-0 h-1 bg-primary"
-            />
-          )}
-        </div>
-      </motion.div>
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAnalysisTab("upload")}
+                  className="rounded-full border-black/10 text-xs font-black uppercase tracking-widest hover:bg-black/5 h-10 px-6"
+                >
+                  <ArrowLeft className="h-3 w-3 mr-2" />
+                  Update Records
+                </Button>
+                <div className="h-10 px-6 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-black/10">
+                  {medicalContext.patient_summary.id}
+                </div>
+              </div>
+            </div>
+
+            <ScrollArea className="h-[calc(100vh-400px)] pr-4">
+              <div className="flex flex-col gap-8 pb-10">
+                {/* Main Stats & Insights Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* AI Clinical Sentiment Card (Markdown Insight) */}
+                  <div className="md:col-span-2 p-8 rounded-[2.5rem] bg-white border border-black/5 shadow-xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity pointer-events-none">
+                      <Search className="h-40 w-40" />
+                    </div>
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                          <Brain className="h-5 w-5 text-blue-500" />
+                        </div>
+                        <h4 className="font-bricolage text-xl font-bold">AI Clinical Analysis</h4>
+                      </div>
+                      <Badge className="bg-blue-50 text-blue-600 border-none font-black text-[9px] uppercase tracking-widest">Gemini 1.5 Pro</Badge>
+                    </div>
+                    
+                    <div className="prose prose-sm max-w-none prose-headings:font-bricolage prose-headings:text-black prose-p:text-black/60 prose-strong:text-black prose-strong:font-bold leading-relaxed">
+                      {analysisResult ? (
+                        <ReactMarkdown>{analysisResult}</ReactMarkdown>
+                      ) : (
+                        <div className="space-y-4 py-4">
+                          <div className="h-4 w-full bg-black/5 rounded-full animate-pulse" />
+                          <div className="h-4 w-3/4 bg-black/5 rounded-full animate-pulse" />
+                          <div className="h-4 w-5/6 bg-black/5 rounded-full animate-pulse" />
+                          <div className="h-20 w-full bg-black/5 rounded-2xl animate-pulse" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* High-Impact Vitals Card */}
+                  <div className="p-8 rounded-[2.5rem] bg-black text-white shadow-2xl flex flex-col justify-between">
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <Activity className="h-8 w-8 text-primary" />
+                        <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Core Status</span>
+                      </div>
+                      
+                      <div className="space-y-8">
+                        <div className="flex items-end justify-between border-b border-white/10 pb-4">
+                          <div>
+                            <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">Blood Pressure</p>
+                            <p className="text-3xl font-bricolage font-black tracking-tighter italic">{medicalContext.patient_summary.latest_vitals.blood_pressure}</p>
+                          </div>
+                          <Badge className="bg-primary/20 text-primary border-none mb-2">Stable</Badge>
+                        </div>
+                        
+                        <div className="flex items-end justify-between border-b border-white/10 pb-4">
+                          <div>
+                            <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">Heart Rate</p>
+                            <p className="text-3xl font-bricolage font-black tracking-tighter italic">{medicalContext.patient_summary.latest_vitals.heart_rate}</p>
+                          </div>
+                          <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center">
+                            <Activity className="h-4 w-4 text-white/20" />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-1">Temp</p>
+                            <p className="text-xl font-bold">{medicalContext.patient_summary.latest_vitals.temperature}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-1">BMI</p>
+                            <p className="text-xl font-bold">{medicalContext.patient_summary.latest_vitals.bmi}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button className="mt-8 w-full h-14 rounded-2xl bg-primary text-white font-black uppercase text-xs tracking-widest shadow-xl shadow-primary/20 border-none group">
+                      Health Report PDF
+                      <FileDown className="ml-2 h-4 w-4 group-hover:translate-y-1 transition-transform" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Secondary Diagnostics & Therapeutics */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Detailed Lab Matrix */}
+                  <div className="p-8 rounded-[3rem] bg-white border border-black/5 shadow-sm space-y-8">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 rounded-2xl bg-vital-orange/10 flex items-center justify-center">
+                          <Zap className="h-6 w-6 text-vital-orange" />
+                        </div>
+                        <div>
+                          <h4 className="font-bricolage text-xl font-bold">Lab Matrix</h4>
+                          <p className="text-xs font-medium text-black/30">Validated Clinical Markers</p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="h-8 rounded-full border-black/5 text-black/40 font-bold px-4">Latest Scan</Badge>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Featured Lab Result */}
+                      <div className="p-6 rounded-[2rem] bg-vital-orange/[0.03] border border-vital-orange/10 flex items-center justify-between">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-black text-vital-orange uppercase tracking-widest">Malaria MP Test</p>
+                          <p className="text-2xl font-bricolage font-black tracking-tight">{medicalContext.patient_summary.lab_results.malaria_test_mp}</p>
+                        </div>
+                        <div className="h-12 w-12 rounded-full border border-vital-orange/20 flex items-center justify-center animate-pulse">
+                          <div className="h-2 w-2 rounded-full bg-vital-orange shadow-[0_0_10px_#f97316]" />
+                        </div>
+                      </div>
+
+                      <div className="p-6 rounded-[2rem] bg-red-50/30 border border-red-100/50 space-y-4">
+                        <div className="flex justify-between items-center">
+                           <span className="text-sm font-black text-black/40 uppercase tracking-widest">Widal Serology</span>
+                           <Badge className="bg-red-100 text-red-600 border-none font-black text-[9px] uppercase tracking-widest">{medicalContext.patient_summary.lab_results.widal_test}</Badge>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.entries(medicalContext.patient_summary.lab_results.titers).map((entry: any) => (
+                            <div key={entry[0]} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-black/5 shadow-sm">
+                              <span className="text-[10px] font-bold text-black/40 tracking-wider">T-{entry[0]}</span>
+                              <div className="h-3 w-px bg-black/10" />
+                              <span className="text-xs font-black text-red-500">{entry[1]}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Therapeutic Regimen */}
+                  <div className="p-8 rounded-[3rem] bg-white border border-black/5 shadow-sm space-y-8">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                          <Pill className="h-6 w-6 text-blue-500" />
+                        </div>
+                        <div>
+                          <h4 className="font-bricolage text-xl font-bold">Therapeutic Regimen</h4>
+                          <p className="text-xs font-medium text-black/30">Active Medications</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      {medicalContext.patient_summary.medications.map((med: any, i: number) => (
+                        <div key={i} className="group flex items-center justify-between p-5 rounded-[2rem] bg-blue-50/20 border border-blue-100/30 hover:bg-blue-50/40 transition-all cursor-pointer">
+                          <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-2xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                              <div className="h-6 w-6 rounded-full border-2 border-blue-500 flex items-center justify-center">
+                                <div className="h-2 w-2 rounded-full bg-blue-500" />
+                              </div>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-base font-black tracking-tight">{med.name}</span>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <Clock className="h-3 w-3 text-black/20" />
+                                <span className="text-[10px] font-bold text-black/30 uppercase tracking-widest">{med.dosage} - {med.frequency}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-black/10 transition-transform group-hover:translate-x-1" />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="p-6 rounded-[2rem] border-2 border-dashed border-black/5 bg-black/[0.01] flex items-center justify-between group cursor-pointer hover:border-black/10 transition-all">
+                      <div className="flex items-center gap-3">
+                        <Plus className="h-5 w-5 text-black/20 group-hover:text-black/40 transition-colors" />
+                        <span className="text-xs font-black text-black/20 group-hover:text-black/40 uppercase tracking-widest">Add OTC Medication</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Patient Summary & Footer Actions */}
+                <div className="p-10 rounded-[4rem] bg-indigo-50/50 border border-indigo-100 flex flex-col md:flex-row items-center gap-10">
+                  <div className="h-20 w-20 rounded-[2rem] bg-indigo-600 flex items-center justify-center shadow-xl shadow-indigo-200 shrink-0">
+                    <User className="h-10 w-10 text-white" />
+                  </div>
+                  <div className="flex-1 space-y-2 text-center md:text-left">
+                    <h3 className="font-bricolage text-3xl font-black text-indigo-950">Patient Overview</h3>
+                    <p className="text-lg font-medium text-indigo-800/60 leading-relaxed">
+                      This analysis suggest a primary diagnosis of <span className="text-indigo-600 font-black">{medicalContext.patient_summary.diagnosis}</span>. 
+                      The clinical data shows <span className="text-indigo-600 font-bold">{medicalContext.patient_summary.symptoms.length} core symptoms</span> that align with your recent hospital record.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </ScrollArea>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
 
       {/* Simulation Overlay */}
       <AnimatePresence>
@@ -807,78 +1153,115 @@ function AnalysisView() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 flex-1 overflow-hidden">
                     {/* Left Side: Upload / File List */}
                     <div className="flex flex-col gap-6 overflow-y-auto pr-2 no-scrollbar">
-                      {/* Action Buttons */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <Button
-                          onClick={() => fileInputRef.current?.click()}
-                          variant="outline"
-                          className="h-28 rounded-3xl border-2 border-dashed border-blue-200 bg-blue-50/30 flex flex-col gap-2 group hover:bg-blue-50 hover:border-blue-400 transition-all font-bold"
-                        >
-                          <FileUp className="h-6 w-6 text-blue-500 group-hover:scale-110 transition-transform" />
-                          <span>Upload Files</span>
-                          <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleFileSelect}
-                            multiple
-                            accept="image/*,application/pdf"
-                            className="hidden"
-                          />
-                        </Button>
-                        <Button
-                          onClick={() => cameraInputRef.current?.click()}
-                          variant="outline"
-                          className="h-28 rounded-3xl border-2 border-dashed border-primary/20 bg-primary/5 flex flex-col gap-2 group hover:bg-primary/10 hover:border-primary transition-all font-bold"
-                        >
-                          <Camera className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
-                          <span>Snap & Ingest</span>
-                          <input
-                            type="file"
-                            ref={cameraInputRef}
-                            onChange={handleFileSelect}
-                            accept="image/*"
-                            capture="environment"
-                            className="hidden"
-                          />
-                        </Button>
+                      {/* Action Buttons */}                      {/* Ingestion Zone */}
+                      <div 
+                        className="relative group cursor-pointer"
+                        onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-primary'); }}
+                        onDragLeave={(e) => { e.preventDefault(); e.currentTarget.classList.remove('border-primary'); }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.classList.remove('border-primary');
+                          const files = Array.from(e.dataTransfer.files);
+                          if (files.length > 0) {
+                            setSelectedFiles(prev => [...prev, ...files]);
+                          }
+                        }}
+                      >
+                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-primary rounded-[2.5rem] blur opacity-10 group-hover:opacity-20 transition duration-1000 group-hover:duration-200" />
+                        <div className="relative grid grid-cols-2 gap-4">
+                          <Button
+                            onClick={() => fileInputRef.current?.click()}
+                            variant="outline"
+                            className="h-36 rounded-[2rem] border-2 border-dashed border-blue-200 bg-white/50 backdrop-blur-sm flex flex-col gap-3 group/btn hover:bg-blue-50/50 hover:border-blue-400 transition-all font-black text-[10px] uppercase tracking-widest"
+                          >
+                            <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center group-hover/btn:scale-110 transition-transform">
+                              <FileUp className="h-6 w-6 text-blue-500" />
+                            </div>
+                            <span>Upload Files</span>
+                            <input
+                              type="file"
+                              ref={fileInputRef}
+                              onChange={handleFileSelect}
+                              multiple
+                              accept="image/*,application/pdf"
+                              className="hidden"
+                            />
+                          </Button>
+                          <Button
+                            onClick={() => cameraInputRef.current?.click()}
+                            variant="outline"
+                            className="h-36 rounded-[2rem] border-2 border-dashed border-primary/20 bg-white/50 backdrop-blur-sm flex flex-col gap-3 group/btn hover:bg-primary/5 hover:border-primary transition-all font-black text-[10px] uppercase tracking-widest"
+                          >
+                            <div className="h-12 w-12 rounded-2xl bg-primary/5 flex items-center justify-center group-hover/btn:scale-110 transition-transform">
+                              <Camera className="h-6 w-6 text-primary" />
+                            </div>
+                            <span>Snap Record</span>
+                            <input
+                              type="file"
+                              ref={cameraInputRef}
+                              onChange={handleFileSelect}
+                              multiple
+                              accept="image/*"
+                              capture="environment"
+                              className="hidden"
+                            />
+                          </Button>
+                        </div>
                       </div>
+
 
                       {/* File Queue */}
                       <div className="space-y-3">
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-black/40">Ready for Analysis</h4>
                         <AnimatePresence>
                           {selectedFiles.length === 0 ? (
-                            <div className="py-10 text-center rounded-3xl border border-black/5 bg-black/[0.02]">
-                              <p className="text-sm font-bold text-black/20 italic">No items in queue</p>
+                            <div className="py-12 text-center rounded-[2.5rem] border border-black/5 bg-black/[0.01] flex flex-col items-center justify-center gap-3">
+                              <div className="h-12 w-12 rounded-full border border-black/5 flex items-center justify-center text-black/10">
+                                <Search className="h-5 w-5" />
+                              </div>
+                              <p className="text-xs font-black text-black/20 uppercase tracking-widest">Awaiting digital artifacts</p>
                             </div>
                           ) : (
-                            selectedFiles.map((file, i) => (
-                              <motion.div
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                                key={i}
-                                className="p-4 rounded-2xl bg-white border border-black/5 flex items-center justify-between group"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                                    <FileText className="h-5 w-5 text-blue-500" />
-                                  </div>
-                                  <div className="max-w-[140px] truncate">
-                                    <p className="text-sm font-bold text-black truncate">{file.name}</p>
-                                    <p className="text-[10px] text-black/40 font-black uppercase tracking-tighter">{(file.size / 1024).toFixed(0)} KB • {file.type.split('/')[1] || 'PDF'}</p>
-                                  </div>
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={(e) => { e.stopPropagation(); removeFile(i); }}
-                                  className="h-10 w-10 rounded-xl text-black/10 hover:text-red-500 hover:bg-red-50/50 transition-colors"
+                            <div className="grid grid-cols-1 gap-3">
+                              {selectedFiles.map((file, i) => (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.95 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  exit={{ opacity: 0, scale: 0.9 }}
+                                  key={i}
+                                  className="p-4 rounded-3xl bg-white border border-black/5 flex items-center justify-between group hover:shadow-lg hover:shadow-black/5 transition-all"
                                 >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </motion.div>
-                            ))
+                                  <div className="flex items-center gap-4">
+                                    <div className="h-14 w-14 rounded-2xl bg-black flex items-center justify-center overflow-hidden border border-black/5 shadow-inner">
+                                       {file.type.startsWith('image/') ? (
+                                         <img 
+                                           src={URL.createObjectURL(file)} 
+                                           alt="preview" 
+                                           className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
+                                         />
+                                       ) : (
+                                         <FileText className="h-6 w-6 text-white/40" />
+                                       )}
+                                    </div>
+                                    <div className="max-w-[140px]">
+                                      <p className="text-sm font-black text-black truncate tracking-tight">{file.name}</p>
+                                      <div className="flex items-center gap-2 mt-0.5">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                                        <p className="text-[10px] text-black/30 font-bold uppercase tracking-widest">{(file.size / 1024).toFixed(0)} KB</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={(e) => { e.stopPropagation(); removeFile(i); }}
+                                    className="h-12 w-12 rounded-2xl text-black/10 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                  >
+                                    <Trash2 className="h-5 w-5" />
+                                  </Button>
+                                </motion.div>
+                              ))}
+                            </div>
                           )}
                         </AnimatePresence>
                       </div>
@@ -917,7 +1300,7 @@ function AnalysisView() {
                           <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
                           <span className="text-[10px] font-black uppercase tracking-widest text-black/60">Live Analysis Output</span>
                         </div>
-                        <Badge variant="secondary" className="bg-blue-50 text-blue-600 border-blue-100 font-bold">Gemini 2.5 Flash</Badge>
+                        <Badge variant="secondary" className="bg-blue-50 text-blue-600 border-blue-100 font-bold">Smart Care</Badge>
                       </div>
 
                       <div className="flex-1 overflow-y-auto p-8 no-scrollbar bg-white/50">
