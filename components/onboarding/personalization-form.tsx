@@ -41,6 +41,8 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { ensureUser, savePersonalization } from "@/app/actions/medical";
+
 
 const STEP_IMAGES = {
   1: "/images/onboarding/step1.png",
@@ -103,17 +105,56 @@ export function PersonalizationForm() {
     }));
   };
 
-  const nextStep = () => {
+  const validateStep = (step: number) => {
+
+    switch (step) {
+      case 1:
+        return formData.name && formData.email && formData.gender && formData.dob;
+      case 2:
+        return formData.height && formData.weight && formData.activity;
+      case 3:
+        return true; // Optional fields
+      case 4:
+        return formData.goal;
+      case 5:
+        return formData.aiTone && formData.emergencyContact;
+      default:
+        return true;
+    }
+  };
+
+  const nextStep = async () => {
+    if (!validateStep(currentStep)) {
+       alert("Please complete all required fields in this step.");
+       return;
+    }
+
     if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     } else {
       setIsCompleted(true);
-      // Simulate submission/analysis
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 3000);
+      try {
+        const clerkId = "demo-user-123"; 
+        await ensureUser(clerkId, formData.email, formData.name);
+        
+        await savePersonalization(clerkId, {
+          healthGoals: [formData.goal],
+          bloodType: "Unknown",
+          allergies: formData.allergies ? [formData.allergies] : [],
+          emergencyPhone: formData.emergencyContact,
+          theme: formData.aiTone
+        });
+
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 3000);
+      } catch (error) {
+        console.error("Error saving personalization:", error);
+      }
     }
   };
+
+
 
   const prevStep = () => {
     if (currentStep > 1) {

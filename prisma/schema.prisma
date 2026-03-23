@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+model User {
+  id               String           @id @default(cuid())
+  clerkId          String           @unique
+  email            String           @unique
+  name             String?
+  avatarUrl        String?
+  coverImageUrl    String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  personalization  Personalization?
+  medicalRecords   MedicalRecord[]
+}
+
+
+model Personalization {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  healthGoals     String[]
+  bloodType       String?
+  allergies       String[]
+  emergencyPhone  String?
+  theme           String?
+  updatedAt       DateTime @updatedAt
+}
+
+
+model MedicalRecord {
+  id           String      @id @default(cuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type         String      // e.g., "IMAGE", "PDF", "REPORT"
+  url          String      // URL to the stored file
+  fileName     String
+  description  String?
+  extractedText String?     @db.Text
+  createdAt    DateTime    @default(now())
+  analysis      Analysis?
+}
+
+model Analysis {
+  id              String        @id @default(cuid())
+  medicalRecordId String        @unique
+  medicalRecord   MedicalRecord @relation(fields: [medicalRecordId], references: [id], onDelete: Cascade)
+  summary         String        @db.Text
+  severity        String?       // "LOW", "MEDIUM", "HIGH"
+  recommendations String[]
+  rawJson         Json?
+  createdAt       DateTime      @default(now())
+}
+

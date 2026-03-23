@@ -4,10 +4,23 @@ import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Bell, Search, Settings } from "lucide-react";
+import { EditProfileModal } from "./edit-profile-modal";
 
-export function DashboardHeader() {
+interface DashboardHeaderProps {
+  user: any;
+}
+
+export function DashboardHeader({ user }: DashboardHeaderProps) {
+  const [currentUser, setCurrentUser] = React.useState(user);
+
+  const handleUpdate = () => {
+    // Ideally we'd re-fetch, but for now we'll just update local state or let parent handle it
+    window.location.reload();
+  };
+
   return (
     <header className="flex items-center justify-between px-6 py-6 lg:px-0 lg:py-10 animate-slide-right w-full">
+
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black shadow-2xl lg:h-12 lg:w-12">
           <span className="font-syne text-xl font-extrabold text-white lg:text-2xl">T</span>
@@ -38,16 +51,21 @@ export function DashboardHeader() {
           
           <div className="h-8 w-px bg-black/5 mx-2" />
           
-          <div className="flex items-center gap-3">
-            <div className="hidden flex-col items-end lg:flex">
-              <span className="text-sm font-bold leading-none">Sarah Jenkins</span>
-              <span className="text-[10px] font-bold text-black/40 uppercase tracking-wider mt-1">Patient ID #8291</span>
+          <div className="flex items-center gap-6">
+            <EditProfileModal user={user || { clerkId: "demo-user-123", name: "Guest", avatarUrl: null, coverImageUrl: null }} onUpdate={handleUpdate} />
+            
+            <div className="flex items-center gap-3">
+              <div className="hidden flex-col items-end lg:flex">
+                <span className="text-sm font-bold leading-none">{user?.name || "Patient"}</span>
+                <span className="text-[10px] font-bold text-black/40 uppercase tracking-wider mt-1">Patient ID #{user?.clerkId.slice(-4) || "8291"}</span>
+              </div>
+              <Avatar className="h-10 w-10 border-2 border-white shadow-lg lg:h-12 lg:w-12">
+                <AvatarImage src={user?.avatarUrl || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&auto=format&fit=crop"} />
+                <AvatarFallback className="bg-primary text-white font-bold">{user?.name?.slice(0, 2).toUpperCase() || "PT"}</AvatarFallback>
+              </Avatar>
             </div>
-            <Avatar className="h-10 w-10 border-2 border-white shadow-lg lg:h-12 lg:w-12">
-              <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&auto=format&fit=crop" />
-              <AvatarFallback className="bg-primary text-white font-bold">SJ</AvatarFallback>
-            </Avatar>
           </div>
+
         </div>
       </div>
     </header>

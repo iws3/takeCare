@@ -718,6 +718,8 @@ function AnalysisView({ medicalContext, onContextUpdate }: { medicalContext: any
 
     const formData = new FormData();
     selectedFiles.forEach(file => formData.append("file", file));
+    formData.append("clerkId", "demo-user-123"); // Mock clerkId for db integration
+
 
     try {
       // For simulation purposes, we'll use the hardcoded context if it matches our demo

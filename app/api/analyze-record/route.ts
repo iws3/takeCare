@@ -52,7 +52,7 @@ Output the result in beautiful, clear Markdown formatting.
 
     // Request analysis using Gemini 1.5 Flash from Google AI SDK
     const result = await generateText({
-      model: google("gemini-2.5-flash"),
+      model: google("gemini-1.5-flash"),
       messages: [
         {
           role: "user",
@@ -61,7 +61,34 @@ Output the result in beautiful, clear Markdown formatting.
       ],
     });
 
+    // Optional: Save to Database if clerkId is provided
+    const clerkId = formData.get("clerkId") as string;
+    if (clerkId) {
+      try {
+        const { createMedicalRecord, addAnalysis } = await import("@/app/actions/medical");
+        
+        // Use the first file as the main record for simplicity, or loop if needed
+        const file = files[0];
+        const record = await createMedicalRecord(clerkId, {
+          type: file.type.startsWith("image") ? "IMAGE" : "PDF",
+          url: "local-blob", // In a real app, this would be a cloud storage URL (S3/Vercel Blob)
+          fileName: file.name,
+          description: "Patient uploaded medical record",
+          extractedText: result.text // For now, storing entire analysis text as extracted
+        });
+
+        await addAnalysis(record.id, {
+          summary: result.text,
+          severity: "MEDIUM", // AI could determine this
+          recommendations: [] // Extract from result.text if possible
+        });
+      } catch (dbError) {
+        console.error("Database saving error:", dbError);
+      }
+    }
+
     return NextResponse.json({ analysis: result.text });
+
   } catch (error) {
     console.error("Error analyzing medical record:", error);
     return NextResponse.json(

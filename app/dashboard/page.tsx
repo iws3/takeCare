@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
 import { StatsCards } from "@/components/dashboard/stats-cards";
@@ -8,11 +6,40 @@ import { ActivityTable } from "@/components/dashboard/activity-table";
 import { MessengerSection } from "@/components/dashboard/messenger-section";
 import { SmartCareSection } from "@/components/dashboard/smart-care-section";
 import { motion, AnimatePresence } from "framer-motion";
+import { hasPersonalized, getMedicalHistory } from "@/app/actions/medical";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [unreadNotifications, setUnreadNotifications] = useState(3);
   const [messengerUnreadCount, setMessengerUnreadCount] = useState(0);
+  const [userData, setUserData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  const clerkId = "demo-user-123"; // Using mock ID
+
+  useEffect(() => {
+    async function initDashboard() {
+      try {
+        const personalized = await hasPersonalized(clerkId);
+        if (!personalized && clerkId !== "demo-user-123") {
+           // router.push("/onboarding/personalize");
+           // For demo, we'll just load the record
+        }
+        
+        const data = await getMedicalHistory(clerkId);
+        setUserData(data);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    initDashboard();
+  }, [router]);
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading Health Hub...</div>;
 
   return (
     <div className="flex flex-1 flex-col pb-12 min-h-screen relative overflow-hidden bg-transparent">
@@ -21,9 +48,10 @@ export default function DashboardPage() {
 
       <div className="relative z-10 w-full border-b border-black/5">
         <div className="responsive-container">
-          <DashboardHeader />
+          <DashboardHeader user={userData} />
         </div>
       </div>
+
 
       <main className="flex flex-1 flex-col responsive-container w-full">
         {/* Welcome Section */}

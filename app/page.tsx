@@ -1,9 +1,27 @@
+"use client";
+
+import React, { useEffect } from "react";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PersonalizationModal } from "@/components/onboarding/personalization-modal";
+import { hasPersonalized } from "@/app/actions/medical";
+import { useRouter } from "next/navigation";
 
 export default function OnboardingPage() {
+  const router = useRouter();
+  const clerkId = "demo-user-123";
+
+  useEffect(() => {
+    async function checkSatus() {
+      const personalized = await hasPersonalized(clerkId);
+      if (personalized) {
+        router.push("/dashboard");
+      }
+    }
+    checkSatus();
+  }, [router]);
+
   return (
     <main className="relative h-screen w-full overflow-hidden bg-white font-sans text-black selection:bg-black selection:text-white">
       {/* Background Decorative Elements - Subtle and Premium */}

@@ -1,11 +1,29 @@
 "use client";
 
+import React, { useEffect } from "react";
+
 import { PersonalizationForm } from "@/components/onboarding/personalization-form";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { hasPersonalized } from "@/app/actions/medical";
+import { useRouter } from "next/navigation";
 
 export default function PersonalizePage() {
+  const router = useRouter();
+  const clerkId = "demo-user-123"; // Using mock ID
+
+  useEffect(() => {
+    async function checkSatus() {
+      const personalized = await hasPersonalized(clerkId);
+      if (personalized) {
+        // router.push("/dashboard");
+      }
+    }
+    checkSatus();
+  }, [router]);
+
   return (
+
     <main className="relative min-h-screen w-full bg-white font-outfit text-black selection:bg-black selection:text-white">
       {/* Background Decorative Gradient */}
       <div className="fixed inset-0 pointer-events-none opacity-40">
