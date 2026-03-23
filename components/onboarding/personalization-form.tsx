@@ -105,33 +105,41 @@ export function PersonalizationForm() {
     }));
   };
 
-  const validateStep = (step: number) => {
+  const [error, setError] = useState<string | null>(null);
 
+  const validateStep = (step: number) => {
+    setError(null);
     switch (step) {
       case 1:
-        return formData.name && formData.email && formData.gender && formData.dob;
+        if (!formData.name || !formData.email || !formData.gender || !formData.dob) return "Please complete all biological identification fields.";
+        if (!formData.email.includes("@")) return "Please provide a valid clinical email address.";
+        return null;
       case 2:
-        return formData.height && formData.weight && formData.activity;
-      case 3:
-        return true; // Optional fields
+        if (!formData.height || !formData.weight || !formData.activity) return "Baseline body metrics are required for AI calibration.";
+        return null;
       case 4:
-        return formData.goal;
+        if (!formData.goal) return "Please select a health goal to focus your AI companion.";
+        return null;
       case 5:
-        return formData.aiTone && formData.emergencyContact;
+        if (!formData.aiTone || !formData.emergencyContact) return "AI interaction style and emergency contacts are vital for safety.";
+        return null;
       default:
-        return true;
+        return null;
     }
   };
 
   const nextStep = async () => {
-    if (!validateStep(currentStep)) {
-       alert("Please complete all required fields in this step.");
+    const errorMsg = validateStep(currentStep);
+    if (errorMsg) {
+       setError(errorMsg);
        return;
     }
 
     if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
+      setError(null);
     } else {
+
       setIsCompleted(true);
       try {
         const clerkId = "demo-user-123"; 
@@ -235,7 +243,19 @@ export function PersonalizationForm() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
+            {error && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-8 p-4 rounded-2xl bg-red-50 border border-red-100 flex items-center gap-3"
+              >
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+                <span className="text-sm font-bold text-red-600">{error}</span>
+              </motion.div>
+            )}
+
             {currentStep === 1 && (
+
               <div className="space-y-8">
                 <header>
                   <h2 className="font-bricolage text-4xl font-extrabold tracking-tighter lg:text-5xl">Tell us who <br />you are.</h2>
