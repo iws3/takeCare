@@ -29,6 +29,10 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
   });
 
   const handleUpdate = async () => {
+    if (!formData.name) {
+       alert("Name is required.");
+       return;
+    }
     setLoading(true);
     try {
       await updateProfile(user.clerkId, formData);
@@ -39,6 +43,7 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
       setLoading(false);
     }
   };
+
 
   return (
     <Dialog>
