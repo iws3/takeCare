@@ -28,16 +28,31 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
     coverImageUrl: user.coverImageUrl || "",
   });
 
+  const avatarInputRef = React.useRef<HTMLInputElement>(null);
+  const coverInputRef = React.useRef<HTMLInputElement>(null);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: "avatarUrl" | "coverImageUrl") => {
     const file = e.target.files?.[0];
     if (file) {
+      // Check file size (limit to 2MB for demo/Base64 efficiency)
+      if (file.size > 2 * 1024 * 1024) {
+         alert("Image is too large. Please select an image under 2MB.");
+         return;
+      }
       const reader = new FileReader();
+      reader.onloadstart = () => setLoading(true);
       reader.onloadend = () => {
         setFormData({ ...formData, [field]: reader.result as string });
+        setLoading(false);
+      };
+      reader.onerror = () => {
+        alert("Failed to read file.");
+        setLoading(false);
       };
       reader.readAsDataURL(file);
     }
   };
+
 
   const handleUpdate = async () => {
 
@@ -89,10 +104,10 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
             <Label className="text-xs font-black uppercase tracking-[0.2em] text-black/30">Cover Image</Label>
             <div 
               className="relative group rounded-3xl overflow-hidden h-32 bg-black/5 border border-black/5 cursor-pointer"
-              onClick={() => document.getElementById("coverUpload")?.click()}
+              onClick={() => coverInputRef.current?.click()}
             >
               <input 
-                id="coverUpload"
+                ref={coverInputRef}
                 type="file"
                 className="hidden"
                 accept="image/*"
@@ -114,10 +129,10 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
                 <Label className="text-xs font-black uppercase tracking-[0.2em] text-black/30">Avatar</Label>
                 <div 
                   className="relative h-24 w-24 rounded-3xl bg-primary/10 border-4 border-white shadow-xl overflow-hidden group cursor-pointer"
-                  onClick={() => document.getElementById("avatarUpload")?.click()}
+                  onClick={() => avatarInputRef.current?.click()}
                 >
                    <input 
-                      id="avatarUpload"
+                      ref={avatarInputRef}
                       type="file"
                       className="hidden"
                       accept="image/*"
@@ -133,6 +148,7 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
                       <span className="text-[8px] text-white font-black uppercase mt-1">Upload</span>
                    </div>
                 </div>
+
 
 
                 <Input

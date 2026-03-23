@@ -79,10 +79,12 @@ export async function updateProfile(clerkId: string, data: {
   avatarUrl?: string;
   coverImageUrl?: string;
 }) {
-  return await prisma.user.update({
+  const res = await prisma.user.update({
     where: { clerkId },
     data: { ...data },
   });
+  revalidatePath("/dashboard");
+  return res;
 }
 
 // Check if user has already personalized
