@@ -28,7 +28,19 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
     coverImageUrl: user.coverImageUrl || "",
   });
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: "avatarUrl" | "coverImageUrl") => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, [field]: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleUpdate = async () => {
+
     if (!formData.name) {
        alert("Name is required.");
        return;
@@ -45,6 +57,16 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
   };
 
 
+  const isValidUrl = (url: string) => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+
   return (
     <Dialog>
       <DialogTrigger
@@ -55,6 +77,7 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
         }
       />
 
+
       <DialogContent className="sm:max-w-xl rounded-[2.5rem] bg-white border-black/5 p-8 overflow-hidden">
         <DialogHeader>
           <DialogTitle className="font-bricolage text-3xl font-extrabold tracking-tighter">Edit Patient Profile</DialogTitle>
@@ -63,20 +86,25 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
         <div className="space-y-6 mt-6">
           {/* Cover Image */}
           <div className="space-y-2">
-            <Label className="text-xs font-black uppercase tracking-[0.2em] text-black/30">Cover Image URL</Label>
-            <div className="relative group rounded-3xl overflow-hidden h-32 bg-black/5 border border-black/5">
-              {formData.coverImageUrl && (
-                <Image src={formData.coverImageUrl} alt="Cover" fill className="object-cover" />
-              )}
-              <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <ImageIcon className="text-white h-8 w-8" />
-              </div>
-              <Input
-                placeholder="https://..."
-                value={formData.coverImageUrl}
-                onChange={(e) => setFormData({ ...formData, coverImageUrl: e.target.value })}
-                className="absolute bottom-2 left-2 right-2 h-10 bg-white/90 border-none rounded-xl text-xs font-bold"
+            <Label className="text-xs font-black uppercase tracking-[0.2em] text-black/30">Cover Image</Label>
+            <div 
+              className="relative group rounded-3xl overflow-hidden h-32 bg-black/5 border border-black/5 cursor-pointer"
+              onClick={() => document.getElementById("coverUpload")?.click()}
+            >
+              <input 
+                id="coverUpload"
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, "coverImageUrl")}
               />
+              {formData.coverImageUrl && (isValidUrl(formData.coverImageUrl) || formData.coverImageUrl.startsWith("data:")) && (
+                <img src={formData.coverImageUrl} alt="Cover" className="h-full w-full object-cover" />
+              )}
+              <div className="absolute inset-0 bg-black/20 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <ImageIcon className="text-white h-8 w-8" />
+                <span className="text-[10px] text-white font-black uppercase mt-2">Click to Upload</span>
+              </div>
             </div>
           </div>
 
@@ -84,16 +112,29 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
           <div className="flex gap-6 items-start">
              <div className="space-y-2">
                 <Label className="text-xs font-black uppercase tracking-[0.2em] text-black/30">Avatar</Label>
-                <div className="relative h-24 w-24 rounded-3xl bg-primary/10 border-4 border-white shadow-xl overflow-hidden group">
-                   {formData.avatarUrl ? (
-                     <Image src={formData.avatarUrl} alt="Avatar" fill className="object-cover" />
+                <div 
+                  className="relative h-24 w-24 rounded-3xl bg-primary/10 border-4 border-white shadow-xl overflow-hidden group cursor-pointer"
+                  onClick={() => document.getElementById("avatarUpload")?.click()}
+                >
+                   <input 
+                      id="avatarUpload"
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={(e) => handleFileChange(e, "avatarUrl")}
+                   />
+                   {formData.avatarUrl && (isValidUrl(formData.avatarUrl) || formData.avatarUrl.startsWith("data:")) ? (
+                     <img src={formData.avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
                    ) : (
                      <User className="h-full w-full p-4 text-primary/40" />
                    )}
-                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                   <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-center">
                       <Camera className="text-white h-5 w-5" />
+                      <span className="text-[8px] text-white font-black uppercase mt-1">Upload</span>
                    </div>
                 </div>
+
+
                 <Input
                   placeholder="URL..."
                   value={formData.avatarUrl}

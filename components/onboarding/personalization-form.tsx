@@ -143,21 +143,28 @@ export function PersonalizationForm() {
       setIsCompleted(true);
       try {
         const clerkId = "demo-user-123"; 
+        
+        // Ensure user exists first
         await ensureUser(clerkId, formData.email, formData.name);
         
+        // Save the personalization data
         await savePersonalization(clerkId, {
-          healthGoals: [formData.goal],
-          bloodType: "Unknown",
-          allergies: formData.allergies ? [formData.allergies] : [],
-          emergencyPhone: formData.emergencyContact,
-          theme: formData.aiTone
+           healthGoals: [formData.goal],
+           bloodType: "Unknown", // Can be set in health profile later
+           allergies: formData.conditions,
+           emergencyPhone: formData.emergencyContact,
+           theme: "default"
         });
 
+        // SUCCESS: Professional Redirection to the Clinical Dashboard with vibrant UX
         setTimeout(() => {
           router.push("/dashboard");
-        }, 3000);
+        }, 3000); // 3 seconds of success animation before redirect
+
       } catch (error) {
-        console.error("Error saving personalization:", error);
+        console.error("Personalization storage failed:", error);
+        setError("Failed to sync clinical profile. Please contact support.");
+        setIsCompleted(false);
       }
     }
   };

@@ -1,5 +1,8 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { ActivityTable } from "@/components/dashboard/activity-table";
@@ -57,13 +60,14 @@ export default function DashboardPage() {
         {/* Welcome Section */}
         <div className="px-6 py-6 lg:px-0 lg:py-14 animate-fade-up">
           <h1 className="font-bricolage text-3xl font-extrabold tracking-tighter lg:text-6xl flex items-center gap-3">
-             <span className="text-black/30">Welcome back,</span> Sarah.
+             <span className="text-black/30">Welcome back,</span> {userData?.name?.split(' ')[0] || "Patient"}.
              <span className="p-2 bg-primary/10 rounded-full animate-bounce h-10 w-10 flex items-center justify-center text-sm leading-none grow-0 shrink-0">👋</span>
           </h1>
           <p className="mt-3 text-sm font-medium text-black/40 lg:text-xl max-w-2xl leading-relaxed">
             Here's what's happening with your <span className="text-black font-bold underline decoration-primary/40 underline-offset-4 cursor-help">health profile</span> today.
           </p>
         </div>
+
 
         {/* Dashboard Navigation */}
         <div className="lg:px-0">
