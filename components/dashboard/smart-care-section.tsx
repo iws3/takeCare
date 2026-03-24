@@ -703,7 +703,6 @@ function AnalysisView({
       return;
     }
 
-    // Auto-reconnect with exponential backoff
     setConnectionError("Connection lost. Trying to reconnect...");
     setIsConnecting(true);
     let attempts = 0;
@@ -718,7 +717,7 @@ function AnalysisView({
         await setupGattServer(device);
         setConnectionError(null);
         setIsConnecting(false);
-        return; // Success
+        return; 
       } catch (error) {
         console.error("Reconnection attempt failed:", error);
       }
@@ -732,7 +731,6 @@ function AnalysisView({
   const setupGattServer = async (device: any) => {
     const server = await device.gatt.connect();
 
-    // Heart Rate
     try {
       const service = await server.getPrimaryService('heart_rate');
       const characteristic = await service.getCharacteristic('heart_rate_measurement');
@@ -745,7 +743,7 @@ function AnalysisView({
           const rate16Bits = flags & 0x1;
           let hr: number;
           if (rate16Bits) {
-            hr = value.getUint16(1, true); // littleEndian
+            hr = value.getUint16(1, true); 
           } else {
             hr = value.getUint8(1);
           }
@@ -758,7 +756,6 @@ function AnalysisView({
       console.warn("Heart Rate service not found or could not be loaded.", serviceErr);
     }
 
-    // Battery Level
     try {
       const batService = await server.getPrimaryService('battery_service');
       const batChar = await batService.getCharacteristic('battery_level');
@@ -795,7 +792,7 @@ function AnalysisView({
       setIsConnecting(true);
       const bluetooth = navigator.bluetooth;
       if (!bluetooth) {
-        throw new Error("Web Bluetooth is not supported in this browser. Please use Chrome or Edge.");
+        throw new Error("Web Bluetooth is not supported in this browser.");
       }
       let device: any = await bluetooth.requestDevice({
         acceptAllDevices: true,
@@ -807,8 +804,8 @@ function AnalysisView({
     } catch (error: any) {
       console.error("BLE Connection failed:", error);
       let msg = "Connection failed.";
-      if (error.name === 'NotAllowedError') msg = "Pairing cancelled or denied.";
-      else if (error.name === 'NotFoundError') msg = "Device not found. Check pairing mode.";
+      if (error.name === 'NotAllowedError') msg = "Pairing cancelled.";
+      else if (error.name === 'NotFoundError') msg = "Device not found.";
       else msg = error.message;
       setConnectionError(msg);
       setBleDevice(null);
@@ -837,12 +834,9 @@ function AnalysisView({
 
     const formData = new FormData();
     selectedFiles.forEach(file => formData.append("file", file));
-    formData.append("clerkId", "demo-user-123"); // Mock clerkId for db integration
-
+    formData.append("clerkId", "demo-user-123"); 
 
     try {
-      // For simulation purposes, we'll use the hardcoded context if it matches our demo
-      // In a real app, this would use the Gemini response
       const response = await fetch("/api/analyze-record", {
         method: "POST",
         body: formData,
@@ -855,12 +849,10 @@ function AnalysisView({
       const data = await response.json();
       setAnalysisResult(data.analysis);
       
-      // If we got structured data, update the global context
       if (data.structuredData) {
         onContextUpdate(data.structuredData);
       }
       
-      // Auto-transition to results tab
       setTimeout(() => {
         setAnalysisTab("results");
       }, 1500);
@@ -869,7 +861,6 @@ function AnalysisView({
     } finally {
       setIsIngesting(false);
     }
-
   };
 
   const cards = [
@@ -901,6 +892,13 @@ function AnalysisView({
       content: bleDevice ? "CONNECTED" : "DISCONNECTED"
     }
   ];
+
+  // Safely extract patient summary data with fallbacks
+  const ps = medicalContext?.patient_summary;
+  const vitals = ps?.latest_vitals;
+  const labs = ps?.lab_results;
+  const meds = ps?.medications || [];
+  const symptoms = ps?.symptoms || [];
 
   return (
     <div className="relative">
@@ -1038,12 +1036,12 @@ function AnalysisView({
                   Update Records
                 </Button>
                 <div className="h-10 px-6 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-black/10">
-                  {medicalContext.patient_summary.id}
+                  {ps?.id || "TC-0000"}
                 </div>
               </div>
             </div>
 
-            <ScrollArea className="h-[calc(100vh-400px)] pr-4">
+            <ScrollArea className="h-[calc(100vh-400px)] pr-4 no-scrollbar">
               <div className="flex flex-col gap-8 pb-10">
                 {/* Main Stats & Insights Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1088,7 +1086,7 @@ function AnalysisView({
                         <div className="flex items-end justify-between border-b border-white/10 pb-4">
                           <div>
                             <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">Blood Pressure</p>
-                            <p className="text-3xl font-bricolage font-black tracking-tighter italic">{medicalContext.patient_summary.latest_vitals.blood_pressure}</p>
+                            <p className="text-3xl font-bricolage font-black tracking-tighter italic">{vitals?.blood_pressure || "--"}</p>
                           </div>
                           <Badge className="bg-primary/20 text-primary border-none mb-2">Stable</Badge>
                         </div>
@@ -1096,7 +1094,7 @@ function AnalysisView({
                         <div className="flex items-end justify-between border-b border-white/10 pb-4">
                           <div>
                             <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">Heart Rate</p>
-                            <p className="text-3xl font-bricolage font-black tracking-tighter italic">{medicalContext.patient_summary.latest_vitals.heart_rate}</p>
+                            <p className="text-3xl font-bricolage font-black tracking-tighter italic">{vitals?.heart_rate || "--"}</p>
                           </div>
                           <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center">
                             <Activity className="h-4 w-4 text-white/20" />
@@ -1106,11 +1104,11 @@ function AnalysisView({
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-1">Temp</p>
-                            <p className="text-xl font-bold">{medicalContext.patient_summary.latest_vitals.temperature}</p>
+                            <p className="text-xl font-bold">{vitals?.temperature || "--"}</p>
                           </div>
                           <div>
                             <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-1">BMI</p>
-                            <p className="text-xl font-bold">{medicalContext.patient_summary.latest_vitals.bmi}</p>
+                            <p className="text-xl font-bold">{vitals?.bmi || "--"}</p>
                           </div>
                         </div>
                       </div>
@@ -1145,7 +1143,7 @@ function AnalysisView({
                       <div className="p-6 rounded-[2rem] bg-vital-orange/[0.03] border border-vital-orange/10 flex items-center justify-between">
                         <div className="space-y-1">
                           <p className="text-[10px] font-black text-vital-orange uppercase tracking-widest">Malaria MP Test</p>
-                          <p className="text-2xl font-bricolage font-black tracking-tight">{medicalContext.patient_summary.lab_results.malaria_test_mp}</p>
+                          <p className="text-2xl font-bricolage font-black tracking-tight">{labs?.malaria_test_mp || "Pending"}</p>
                         </div>
                         <div className="h-12 w-12 rounded-full border border-vital-orange/20 flex items-center justify-center animate-pulse">
                           <div className="h-2 w-2 rounded-full bg-vital-orange shadow-[0_0_10px_#f97316]" />
@@ -1155,16 +1153,18 @@ function AnalysisView({
                       <div className="p-6 rounded-[2rem] bg-red-50/30 border border-red-100/50 space-y-4">
                         <div className="flex justify-between items-center">
                            <span className="text-sm font-black text-black/40 uppercase tracking-widest">Widal Serology</span>
-                           <Badge className="bg-red-100 text-red-600 border-none font-black text-[9px] uppercase tracking-widest">{medicalContext.patient_summary.lab_results.widal_test}</Badge>
+                           <Badge className="bg-red-100 text-red-600 border-none font-black text-[9px] uppercase tracking-widest">{labs?.widal_test || "N/A"}</Badge>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          {Object.entries(medicalContext.patient_summary.lab_results.titers).map((entry: any) => (
+                          {labs?.titers ? Object.entries(labs.titers).map((entry: any) => (
                             <div key={entry[0]} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-black/5 shadow-sm">
                               <span className="text-[10px] font-bold text-black/40 tracking-wider">T-{entry[0]}</span>
                               <div className="h-3 w-px bg-black/10" />
                               <span className="text-xs font-black text-red-500">{entry[1]}</span>
                             </div>
-                          ))}
+                          )) : (
+                            <p className="text-[10px] font-medium text-black/20 italic">No specific titers available</p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1185,7 +1185,7 @@ function AnalysisView({
                     </div>
 
                     <div className="space-y-3">
-                      {medicalContext.patient_summary.medications.map((med: any, i: number) => (
+                      {meds.length > 0 ? meds.map((med: any, i: number) => (
                         <div key={i} className="group flex items-center justify-between p-5 rounded-[2rem] bg-blue-50/20 border border-blue-100/30 hover:bg-blue-50/40 transition-all cursor-pointer">
                           <div className="flex items-center gap-4">
                             <div className="h-12 w-12 rounded-2xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -1203,7 +1203,9 @@ function AnalysisView({
                           </div>
                           <ChevronRight className="h-5 w-5 text-black/10 transition-transform group-hover:translate-x-1" />
                         </div>
-                      ))}
+                      )) : (
+                        <p className="text-sm font-medium text-black/20 p-6 text-center italic">No current medications listed</p>
+                      )}
                     </div>
 
                     <div className="p-6 rounded-[2rem] border-2 border-dashed border-black/5 bg-black/[0.01] flex items-center justify-between group cursor-pointer hover:border-black/10 transition-all">
@@ -1223,8 +1225,8 @@ function AnalysisView({
                   <div className="flex-1 space-y-2 text-center md:text-left">
                     <h3 className="font-bricolage text-3xl font-black text-indigo-950">Patient Overview</h3>
                     <p className="text-lg font-medium text-indigo-800/60 leading-relaxed">
-                      This analysis suggest a primary diagnosis of <span className="text-indigo-600 font-black">{medicalContext.patient_summary.diagnosis}</span>. 
-                      The clinical data shows <span className="text-indigo-600 font-bold">{medicalContext.patient_summary.symptoms.length} core symptoms</span> that align with your recent hospital record.
+                      This analysis suggest a primary diagnosis of <span className="text-indigo-600 font-black">{ps?.diagnosis || "Incomplete data"}</span>. 
+                      The clinical data shows <span className="text-indigo-600 font-bold">{symptoms.length || 0} core symptoms</span> that align with the records.
                     </p>
                   </div>
                 </div>
