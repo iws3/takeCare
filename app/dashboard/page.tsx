@@ -20,7 +20,7 @@ function DashboardLoading() {
       {/* Background Decor */}
       <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] animate-pulse pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-vital-orange/5 rounded-full blur-[100px] animate-pulse delay-700 pointer-events-none" />
-      
+
       <div className="relative z-10 flex flex-col items-center gap-12">
         {/* Animated Icon Cluster */}
         <div className="relative h-40 w-40 flex items-center justify-center">
@@ -30,9 +30,9 @@ function DashboardLoading() {
             transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
             className="absolute inset-0 bg-primary/10 rounded-full blur-2xl"
           />
-          
+
           <motion.div
-            animate={{ 
+            animate={{
               rotate: 360,
               borderRadius: ["40%", "50%", "40%"]
             }}
@@ -43,7 +43,7 @@ function DashboardLoading() {
           <motion.div
             animate={{ scale: [1, 1.1, 1] }}
             transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-            className="relative z-20 h-24 w-24 bg-white rounded-[2rem] shadow-2xl flex items-center justify-center border border-primary/10"
+            className="relative z-20 h-24 w-24 bg-white rounded-4xl shadow-2xl flex items-center justify-center border border-primary/10"
           >
             <Heart className="h-10 w-10 text-primary fill-primary/10" />
           </motion.div>
@@ -68,14 +68,14 @@ function DashboardLoading() {
 
         {/* Text Section */}
         <div className="text-center space-y-4">
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="font-bricolage text-3xl font-black tracking-tight text-black"
           >
-            Synchronizing <span className="text-primary italic">Health Hub</span>
+            Loading <span className="text-primary italic">Health Info..</span>
           </motion.h2>
-          
+
           <div className="flex flex-col items-center gap-2">
             <div className="w-64 h-1.5 bg-black/5 rounded-full overflow-hidden relative">
               <motion.div
@@ -110,12 +110,12 @@ function DashboardLoading() {
 
       {/* Footer Info */}
       <div className="absolute bottom-12 inset-x-0 flex flex-col items-center gap-2 opacity-20">
-         <p className="text-[10px] font-bold tracking-widest uppercase">HIPAA Compliant & End-to-End Encrypted</p>
-         <div className="flex gap-4">
-            <div className="h-1 w-8 bg-black rounded-full" />
-            <div className="h-1 w-8 bg-black rounded-full" />
-            <div className="h-1 w-8 bg-black rounded-full" />
-         </div>
+        <p className="text-[10px] font-bold tracking-widest uppercase">HIPAA Compliant & End-to-End Encrypted</p>
+        <div className="flex gap-4">
+          <div className="h-1 w-8 bg-black rounded-full" />
+          <div className="h-1 w-8 bg-black rounded-full" />
+          <div className="h-1 w-8 bg-black rounded-full" />
+        </div>
       </div>
     </div>
   );
@@ -137,13 +137,13 @@ export default function DashboardPage() {
         // Ensure the demo user exists for medical history fetching
         const { ensureUser } = await import("@/app/actions/medical");
         await ensureUser(clerkId, "demo@takecare.ai", "Sarah Jenkins");
-        
+
         const personalized = await hasPersonalized(clerkId);
         if (!personalized && clerkId !== "demo-user-123") {
-           // router.push("/onboarding/personalize");
-           // For demo, we'll just load the record
+          // router.push("/onboarding/personalize");
+          // For demo, we'll just load the record
         }
-        
+
         const data = await getMedicalHistory(clerkId);
         setUserData(data);
       } catch (e) {
@@ -169,12 +169,12 @@ export default function DashboardPage() {
       </div>
 
 
-      <main className="flex flex-1 flex-col responsive-container w-full">
+      <main className="flex flex-1 flex-col responsive-container w-full overflow-x-hidden">
         {/* Welcome Section */}
         <div className="px-6 py-6 lg:px-0 lg:py-14 animate-fade-up">
           <h1 className="font-bricolage text-3xl font-extrabold tracking-tighter lg:text-6xl flex items-center gap-3">
-             <span className="text-black/30">Welcome back,</span> {userData?.name?.split(' ')[0] || "Patient"}.
-             <span className="p-2 bg-primary/10 rounded-full animate-bounce h-10 w-10 flex items-center justify-center text-sm leading-none grow-0 shrink-0">👋</span>
+            <span className="text-black/30">Welcome back,</span> {userData?.name?.split(' ')[0] || "Patient"}.
+            <span className="p-2 bg-primary/10 rounded-full animate-bounce h-10 w-10 flex items-center justify-center text-sm leading-none grow-0 shrink-0">👋</span>
           </h1>
           <p className="mt-3 text-sm font-medium text-black/40 lg:text-xl max-w-2xl leading-relaxed">
             Here's what's happening with your <span className="text-black font-bold underline decoration-primary/40 underline-offset-4 cursor-help">health profile</span> today.

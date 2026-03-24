@@ -446,7 +446,7 @@ function VoiceAgentView({
                 key={record.id}
                 onClick={() => onSelectionChange(record)}
                 className={cn(
-                  "p-4 rounded-[1.5rem] border transition-all text-left flex flex-col gap-2 group relative overflow-hidden",
+                  "p-4 rounded-3xl border transition-all text-left flex flex-col gap-2 group relative overflow-hidden",
                   selectedRecordId === record.id 
                     ? "bg-black text-white border-black shadow-xl" 
                     : "bg-white text-black border-black/5 hover:border-black/10 shadow-sm hover:scale-[1.02]"
@@ -474,7 +474,7 @@ function VoiceAgentView({
                 </div>
               </button>
             )) : (
-              <div className="col-span-full p-10 rounded-[2rem] border-2 border-dashed border-black/5 bg-black/[0.01] flex flex-col items-center justify-center gap-3">
+              <div className="col-span-full p-10 rounded-4xl border-2 border-dashed border-black/5 bg-black/1 flex flex-col items-center justify-center gap-3">
                  <Bot className="h-8 w-8 text-black/10" />
                  <p className="text-[10px] font-black text-black/20 uppercase tracking-widest text-center leading-relaxed">No past consultations found.<br/>Upload records in the Analyze tab.</p>
               </div>
@@ -567,7 +567,7 @@ function ChatbotView() {
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.98 }}
-      className="flex flex-col h-[650px] rounded-[2.5rem] border border-black/5 bg-white shadow-2xl shadow-black/5 overflow-hidden"
+      className="flex flex-col min-h-[550px] lg:h-[700px] rounded-[2.5rem] border border-black/5 bg-white shadow-2xl shadow-black/5 overflow-hidden"
     >
       {/* Chat Header */}
       <div className="px-8 py-6 border-b border-black/5 flex items-center justify-between">

@@ -264,7 +264,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col h-[750px] w-full bg-white rounded-4xl border border-black/5 shadow-2xl overflow-hidden relative"
+          className="flex flex-col min-h-[600px] lg:h-[750px] w-full bg-white rounded-4xl border border-black/5 shadow-2xl overflow-hidden relative"
         >
           <div className="p-6 bg-white border-b border-black/5 flex justify-between items-center z-10">
             <div className="flex items-center gap-4">
