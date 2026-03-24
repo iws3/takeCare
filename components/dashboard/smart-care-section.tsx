@@ -46,6 +46,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Vapi from "@vapi-ai/web";
 import { getVapiConfiguration } from "@/app/actions/vapi";
+import { getMedicalHistory } from "@/app/actions/medical";
+
 
 const SMART_CARE_TABS = [
   { id: "talk", label: "Talk", icon: Mic, description: "Voice interaction with AI medical agent" },
@@ -56,54 +58,57 @@ const SMART_CARE_TABS = [
 export function SmartCareSection() {
   const [activeTab, setActiveTab] = useState("text");
   const [medicalContext, setMedicalContext] = useState<any>(null);
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
 
-  // Automatically load the extracted context from screenshots for demonstration
+
+  // Automatically load the extracted context from the database
   useEffect(() => {
-    // Extracted from the provided hospital screenshots
-    const extractedData = {
-      patient_summary: {
-        name: "Sarah Jenkins",
-        id: "TC-8291",
-        latest_vitals: {
-          weight: "57kg",
-          height: "1.58m",
-          bmi: "22.83",
-          blood_pressure: "113/63 mmHg",
-          heart_rate: "74 bpm",
-          resp_rate: "15 c/m",
-          temperature: "36.5°C"
-        },
-        lab_results: {
-          malaria_test_mp: "NEGATIVE",
-          widal_test: "Positive",
-          titers: {
-            "TO": "1/320",
-            "BO": "1/320",
-            "AO": "1/160",
-            "CO": "1/160",
-            "TH": "1/160",
-            "CH": "1/160"
+    async function loadHistory() {
+      try {
+        const clerkId = "demo-user-123"; // Using mock ID as in dashboard
+        const data = await getMedicalHistory(clerkId);
+        
+        if (data && data.medicalRecords && data.medicalRecords.length > 0) {
+          // Find the most recent record with an analysis
+          const recentRecord = data.medicalRecords.find(r => r.analysis);
+          if (recentRecord && recentRecord.analysis) {
+             setMedicalContext(recentRecord.analysis.rawJson);
+             setAnalysisResult(recentRecord.analysis.summary);
           }
-        },
-        diagnosis: "Severe Salmonellosis (Typhoid Fever)",
-        symptoms: [
-          "Headache (H/A)",
-          "Bitter mouth",
-          "Fever (+)",
-          "Insomnia (+)",
-          "Stomach grumbling (3 weeks duration)",
-          "Nausea (+)"
-        ],
-        medications: [
-          { name: "Cipro", dosage: "750mg", frequency: "Twice daily" },
-          { name: "Metro", dosage: "500mg", frequency: "Twice daily" },
-          { name: "Dexa", dosage: "0.5mg", frequency: "Twice daily" },
-          { name: "Quick Reliever", frequency: "As needed" }
-        ],
-        clinical_history: "Patient previously had poorly treated malaria symptoms. Latest MP test is negative, but Widal is strongly positive for Salmonellosis."
+        } else {
+
+          // Fallback to demo data if no records found
+          const extractedData = {
+            patient_summary: {
+              name: "Sarah Jenkins",
+              id: "TC-8291",
+              latest_vitals: {
+                weight: "57kg", height: "1.58m", bmi: "22.83",
+                blood_pressure: "113/63 mmHg", heart_rate: "74 bpm",
+                resp_rate: "15 c/m", temperature: "36.5°C"
+              },
+              lab_results: {
+                malaria_test_mp: "NEGATIVE",
+                widal_test: "Positive",
+                titers: { "TO": "1/320", "BO": "1/320", "AO": "1/160", "CO": "1/160", "TH": "1/160", "CH": "1/160" }
+              },
+              diagnosis: "Severe Salmonellosis (Typhoid Fever)",
+              symptoms: ["Headache", "Bitter mouth", "Fever", "Insomnia", "Stomach grumbling", "Nausea"],
+              medications: [
+                { name: "Cipro", dosage: "750mg", frequency: "Twice daily" },
+                { name: "Metro", dosage: "500mg", frequency: "Twice daily" },
+                { name: "Dexa", dosage: "0.5mg", frequency: "Twice daily" },
+                { name: "Quick Reliever", frequency: "As needed" }
+              ]
+            }
+          };
+          setMedicalContext(extractedData);
+        }
+      } catch (error) {
+        console.error("Failed to load medical history:", error);
       }
-    };
-    setMedicalContext(extractedData);
+    }
+    loadHistory();
   }, []);
 
 
@@ -135,8 +140,14 @@ export function SmartCareSection() {
             <ChatbotView />
           </TabsContent>
           <TabsContent value="analyze" key="analyze">
-            <AnalysisView medicalContext={medicalContext} onContextUpdate={setMedicalContext} />
+            <AnalysisView 
+              medicalContext={medicalContext} 
+              onContextUpdate={setMedicalContext} 
+              analysisResult={analysisResult}
+              setAnalysisResult={setAnalysisResult}
+            />
           </TabsContent>
+
 
         </AnimatePresence>
       </Tabs>
@@ -179,6 +190,21 @@ function VoiceAgentView({ medicalContext }: { medicalContext: any }) {
     };
   }, []);
 
+  const [selectedMeds, setSelectedMeds] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Pre-select most recent/active medications if available
+    if (medicalContext?.patient_summary?.medications) {
+      setSelectedMeds(medicalContext.patient_summary.medications.map((m: any) => m.name));
+    }
+  }, [medicalContext]);
+
+  const toggleMedication = (name: string) => {
+    setSelectedMeds(prev => 
+      prev.includes(name) ? prev.filter(m => m !== name) : [...prev, name]
+    );
+  };
+
   const toggleVoiceConsultation = async () => {
     if (callStatus === "active") {
       vapiInstance?.stop();
@@ -198,35 +224,34 @@ function VoiceAgentView({ medicalContext }: { medicalContext: any }) {
         return;
       }
 
-      // STARTING THE CALL USING THE PERSISTED ASSISTANT ID WITH DYNAMIC OVERRIDES
-      // This allows Vapi to use the base configuration from the dashboard but injects
-      // our dynamic context seamlessly as an override at runtime.
-      if (!assistantId) {
-        console.warn("Missing NEXT_PUBLIC_VAPI_ASSISTANT_ID in .env!");
-        setCallStatus("inactive");
-        return;
-      }
+      const selectedMedDetails = medicalContext?.patient_summary?.medications?.filter((m: any) => selectedMeds.includes(m.name)) || [];
 
       // Create dynamic context-aware prompt
       const contextPrompt = medicalContext ? `
         PATIENT MEDICAL CONTEXT (JSON):
         ${JSON.stringify(medicalContext, null, 2)}
         
+        SELECTED MEDICATIONS TO DISCUSS:
+        ${JSON.stringify(selectedMedDetails, null, 2)}
+
         INSTRUCTIONS:
-        You are Sarah's AI Medical Assistant. You have her latest hospital records from July and August 2022.
+        You are Sarah's AI Medical Assistant. Use her latest records to provide advice.
         - She has been diagnosed with Salmonellosis (Typhoid).
-        - Her recent vitals: BP ${medicalContext.patient_summary.latest_vitals.blood_pressure}, Temp ${medicalContext.patient_summary.latest_vitals.temperature}.
-        - Her Widal test was Positive (TO 1/320).
-        - She is on Cipro, Metro, and Dexa.
-        - Talk to her about her symptoms (stomach grumbling, nausea) and ensure she is taking her medicine correctly.
+        - IMPORTANT: She specifically wants to talk about these medications: ${selectedMeds.join(", ")}.
+        - Ensure she is taking them correctly according to the prescribed frequency.
+        - Talk to her about her symptoms (stomach grumbling, nausea).
         - Be professional, empathetic, and clear.
       ` : result.config.systemPrompt;
 
+      const firstMessage = selectedMeds.length > 0 
+        ? `Hello Sarah, I've reviewed your results. I see you want to discuss your treatment using ${selectedMeds.join(" and ")}. How have you been feeling since you started them?`
+        : medicalContext 
+          ? `Hello Sarah, I've reviewed your latest results. How are you feeling today?`
+          : `Hello, this is your TakeCare AI Assistant. How are you feeling today?`;
+
       await vapiInstance?.start(assistantId, {
         name: "TakeCare AI Doctor",
-        firstMessage: medicalContext 
-          ? `Hello Sarah, I've reviewed your latest results from the hospital. It looks like we're dealing with Salmonellosis. How are you feeling after starting the Cipro and Metro? Is the stomach discomfort still there?`
-          : `Hello ${SYNTHETIC_DOCTOR_DATA.patientName}, this is your TakeCare AI Assistant. How are you feeling today?`,
+        firstMessage,
         model: {
           provider: "openai",
           model: "gpt-4o",
@@ -398,25 +423,47 @@ function VoiceAgentView({ medicalContext }: { medicalContext: any }) {
 
         </div>
 
-        {/* Insight Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-          <div className="p-5 lg:p-6 rounded-3xl bg-black/[0.02] border border-black/5 text-left flex flex-col gap-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
-            <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
-              <Activity className="h-5 w-5 lg:h-6 lg:w-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1.5">Medication Target</p>
-              <p className="text-sm lg:text-base font-bold text-black leading-snug">Propranolol: 10mg Twice Daily</p>
-            </div>
-          </div>
+        {/* Insight Cards Grid with Medication Selection */}
+        <div className="flex flex-col gap-4 mt-2">
+           <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em] px-2">Select Medications to discuss:</p>
+           <div className="flex flex-wrap gap-2">
+             {medicalContext?.patient_summary?.medications?.map((med: any) => (
+                <button
+                  key={med.name}
+                  onClick={() => toggleMedication(med.name)}
+                  className={cn(
+                    "px-4 py-2.5 rounded-2xl border transition-all flex items-center gap-2",
+                    selectedMeds.includes(med.name) 
+                      ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.05]" 
+                      : "bg-white text-black/60 border-black/5 hover:border-black/10 shadow-sm"
+                  )}
+                >
+                  <Pill className={cn("h-3.5 w-3.5", selectedMeds.includes(med.name) ? "text-white" : "text-primary")} />
+                  <span className="text-xs font-bold leading-none">{med.name}</span>
+                  {selectedMeds.includes(med.name) && <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />}
+                </button>
+             ))}
+           </div>
 
-          <div className="p-5 lg:p-6 rounded-3xl bg-black/[0.02] border border-black/5 text-left flex flex-col gap-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
-            <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
-              <Zap className="h-5 w-5 lg:h-6 lg:w-6 text-vital-orange" />
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+            <div className="p-5 lg:p-6 rounded-3xl bg-black/[0.02] border border-black/5 text-left flex flex-col gap-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
+              <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+                <Activity className="h-5 w-5 lg:h-6 lg:w-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1.5">Selected Count</p>
+                <p className="text-sm lg:text-base font-bold text-black leading-snug">{selectedMeds.length} Items ready for discussion</p>
+              </div>
             </div>
-            <div>
-              <p className="text-[10px] font-black text-vital-orange uppercase tracking-[0.2em] mb-1.5">Doctor's Observation</p>
-              <p className="text-sm lg:text-base font-bold text-black leading-snug">Variability remains slightly low.</p>
+
+            <div className="p-5 lg:p-6 rounded-3xl bg-black/[0.02] border border-black/5 text-left flex flex-col gap-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
+              <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+                <Zap className="h-5 w-5 lg:h-6 lg:w-6 text-vital-orange" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-vital-orange uppercase tracking-[0.2em] mb-1.5">Doctor's Focus</p>
+                <p className="text-sm lg:text-base font-bold text-black leading-snug">Strict adherence monitoring</p>
+              </div>
             </div>
           </div>
         </div>
@@ -537,7 +584,17 @@ function ChatbotView() {
   );
 }
 
-function AnalysisView({ medicalContext, onContextUpdate }: { medicalContext: any, onContextUpdate: (ctx: any) => void }) {
+function AnalysisView({ 
+  medicalContext, 
+  onContextUpdate,
+  analysisResult,
+  setAnalysisResult
+}: { 
+  medicalContext: any, 
+  onContextUpdate: (ctx: any) => void,
+  analysisResult: string | null,
+  setAnalysisResult: (res: string | null) => void
+}) {
   const [analysisTab, setAnalysisTab] = useState<"upload" | "results">("upload");
 
   const [analyzing, setAnalyzing] = useState(false);
@@ -547,8 +604,8 @@ function AnalysisView({ medicalContext, onContextUpdate }: { medicalContext: any
   // AI Analysis State
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isIngesting, setIsIngesting] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 

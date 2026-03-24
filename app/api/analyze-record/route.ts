@@ -39,12 +39,41 @@ You are a highly capable AI medical data extraction and analysis specialist acti
 
 Please carefully review the attached medical records (images, scans, or PDFs). Execute the following tasks:
 
-1. **Extract All Raw Text:** Transcribe the medical data verbatim for RAG indexing. Do not omit numerical values, dates, or clinical jargon.
-2. **Clinical Summary:** Provide a structured, concise breakdown of the patient's condition, chief complaints, and past medical history.
-3. **Key Diagnoses & Lab Results:** Highlight out-of-range lab values, specific diagnoses, and test impressions in a clear list.
-4. **Actionable Recommendations:** Summarize the provider's plan, prescribed medications, follow-up instructions, or red flags that require immediate attention.
+1. **Extract All Raw Text:** Transcribe the medical data verbatim for RAG indexing.
+2. **Clinical Summary:** Provide a structured, concise breakdown of the patient's condition.
+3. **Structured Data Extraction:** Extract patient details, vitals, lab results, diagnoses, and medications into a specific JSON format.
 
-Output the result in beautiful, clear Markdown formatting. 
+IMPORTANT: Your response MUST be a valid JSON object with the following structure:
+{
+  "analysis": "A markdown formatted clinical summary and analysis",
+  "structuredData": {
+    "patient_summary": {
+      "name": "string",
+      "id": "string",
+      "latest_vitals": {
+        "weight": "string",
+        "height": "string",
+        "bmi": "string",
+        "blood_pressure": "string",
+        "heart_rate": "string",
+        "resp_rate": "string",
+        "temperature": "string"
+      },
+      "lab_results": {
+        "summary": "string",
+        "details": {}
+      },
+      "diagnosis": "string",
+      "symptoms": ["string"],
+      "medications": [
+        { "name": "string", "dosage": "string", "frequency": "string" }
+      ],
+      "clinical_history": "string"
+    }
+  }
+}
+
+Do not include any text outside of the JSON object.
 `;
 
     // Initialize content array with the prompt
@@ -52,7 +81,7 @@ Output the result in beautiful, clear Markdown formatting.
 
     // Request analysis using Gemini 1.5 Flash from Google AI SDK
     const result = await generateText({
-      model: google("gemini-1.5-flash"),
+      model: google("gemini-2.5-flash"),
       messages: [
         {
           role: "user",
@@ -61,33 +90,44 @@ Output the result in beautiful, clear Markdown formatting.
       ],
     });
 
+    // Parse the JSON result
+    let parsedResult;
+    try {
+      const text = result.text.replace(/```json\n?/, "").replace(/\n?```/, "").trim();
+      parsedResult = JSON.parse(text);
+    } catch (parseError) {
+      console.error("Failed to parse AI response as JSON:", result.text);
+      parsedResult = { analysis: result.text, structuredData: null };
+    }
+
     // Optional: Save to Database if clerkId is provided
     const clerkId = formData.get("clerkId") as string;
     if (clerkId) {
       try {
         const { createMedicalRecord, addAnalysis } = await import("@/app/actions/medical");
-        
-        // Use the first file as the main record for simplicity, or loop if needed
+
+        // Use the first file as the main record for simplicity
         const file = files[0];
         const record = await createMedicalRecord(clerkId, {
           type: file.type.startsWith("image") ? "IMAGE" : "PDF",
-          url: "local-blob", // In a real app, this would be a cloud storage URL (S3/Vercel Blob)
+          url: "local-blob",
           fileName: file.name,
-          description: "Patient uploaded medical record",
-          extractedText: result.text // For now, storing entire analysis text as extracted
+          description: parsedResult.structuredData?.diagnosis || "Patient uploaded medical record",
+          extractedText: result.text
         });
 
         await addAnalysis(record.id, {
-          summary: result.text,
-          severity: "MEDIUM", // AI could determine this
-          recommendations: [] // Extract from result.text if possible
+          summary: parsedResult.analysis,
+          severity: "MEDIUM",
+          recommendations: [],
+          rawJson: parsedResult.structuredData
         });
       } catch (dbError) {
         console.error("Database saving error:", dbError);
       }
     }
 
-    return NextResponse.json({ analysis: result.text });
+    return NextResponse.json(parsedResult);
 
   } catch (error) {
     console.error("Error analyzing medical record:", error);
