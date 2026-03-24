@@ -134,6 +134,10 @@ export default function DashboardPage() {
   useEffect(() => {
     async function initDashboard() {
       try {
+        // Ensure the demo user exists for medical history fetching
+        const { ensureUser } = await import("@/app/actions/medical");
+        await ensureUser(clerkId, "demo@takecare.ai", "Sarah Jenkins");
+        
         const personalized = await hasPersonalized(clerkId);
         if (!personalized && clerkId !== "demo-user-123") {
            // router.push("/onboarding/personalize");

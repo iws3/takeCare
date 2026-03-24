@@ -36,7 +36,8 @@ import {
   Clock,
   ChevronRight,
   FileDown,
-  ArrowLeft
+  ArrowLeft,
+  ShieldCheck
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Badge } from "@/components/ui/badge";
@@ -59,6 +60,9 @@ export function SmartCareSection() {
   const [activeTab, setActiveTab] = useState("text");
   const [medicalContext, setMedicalContext] = useState<any>(null);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  const [allRecords, setAllRecords] = useState<any[]>([]);
+  const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
+
 
 
   // Automatically load the extracted context from the database
@@ -69,13 +73,17 @@ export function SmartCareSection() {
         const data = await getMedicalHistory(clerkId);
         
         if (data && data.medicalRecords && data.medicalRecords.length > 0) {
-          // Find the most recent record with an analysis
+          setAllRecords(data.medicalRecords);
+          // Find the most recent record with a valid analysis
           const recentRecord = data.medicalRecords.find(r => r.analysis);
           if (recentRecord && recentRecord.analysis) {
-             setMedicalContext(recentRecord.analysis.rawJson);
+             setMedicalContext(recentRecord.analysis.rawJson || null);
              setAnalysisResult(recentRecord.analysis.summary);
+             setSelectedRecordId(recentRecord.id);
           }
+
         } else {
+
 
           // Fallback to demo data if no records found
           const extractedData = {
@@ -134,8 +142,18 @@ export function SmartCareSection() {
 
         <AnimatePresence mode="wait">
           <TabsContent value="talk" key="talk">
-            <VoiceAgentView medicalContext={medicalContext} />
+            <VoiceAgentView 
+              medicalContext={medicalContext} 
+              allConsultations={allRecords.filter(r => r.analysis)}
+              onSelectionChange={(record: any) => {
+                setSelectedRecordId(record.id);
+                setMedicalContext(record.analysis.rawJson);
+                setAnalysisResult(record.analysis.summary);
+              }}
+              selectedRecordId={selectedRecordId}
+            />
           </TabsContent>
+
           <TabsContent value="text" key="text">
             <ChatbotView />
           </TabsContent>
@@ -154,8 +172,17 @@ export function SmartCareSection() {
     </div>
   );
 }
-
-function VoiceAgentView({ medicalContext }: { medicalContext: any }) {
+function VoiceAgentView({ 
+  medicalContext, 
+  allConsultations,
+  onSelectionChange,
+  selectedRecordId
+}: { 
+  medicalContext: any,
+  allConsultations: any[],
+  onSelectionChange: (record: any) => void,
+  selectedRecordId: string | null
+}) {
 
   const [callStatus, setCallStatus] = useState<"inactive" | "connecting" | "active">("inactive");
   const [isDoctorSpeaking, setIsDoctorSpeaking] = useState(false);
@@ -265,7 +292,6 @@ function VoiceAgentView({ medicalContext }: { medicalContext: any }) {
         backgroundDenoisingEnabled: true,
       });
 
-
     } catch (error) {
       console.error("Failed to start voice:", error);
       setCallStatus("inactive");
@@ -296,7 +322,6 @@ function VoiceAgentView({ medicalContext }: { medicalContext: any }) {
 
       {/* LEFT SIDE: Doctor Image & Call Controls */}
       <div className="w-full lg:w-5/12 flex flex-col items-center justify-center gap-6 relative z-10">
-        {/* Dynamic Doctor Avatar Container */}
         <div className="relative h-72 w-72 lg:h-96 lg:w-full lg:max-w-sm rounded-[3rem] overflow-hidden shadow-2xl border-[6px] border-white group">
           <AnimatePresence>
             {isDoctorSpeaking && (
@@ -336,7 +361,6 @@ function VoiceAgentView({ medicalContext }: { medicalContext: any }) {
           </div>
         </div>
 
-        {/* Floating Call Controls Dashboard */}
         <div className="flex flex-wrap items-center justify-center gap-2 lg:gap-3 bg-white/80 backdrop-blur-2xl p-3 lg:p-4 rounded-[2rem] border border-black/5 shadow-xl w-fit relative z-20">
           <button
             onClick={toggleMute}
@@ -350,26 +374,13 @@ function VoiceAgentView({ medicalContext }: { medicalContext: any }) {
           >
             {isMuted ? <MicOff className="h-5 w-5 lg:h-6 lg:w-6" /> : <Mic className="h-5 w-5 lg:h-6 lg:w-6" />}
           </button>
+          
           <button
             disabled={callStatus !== "active"}
             className="h-12 w-12 lg:h-14 lg:w-14 rounded-2xl flex items-center justify-center transition-all bg-black/5 text-black hover:bg-black/10 disabled:opacity-40 disabled:cursor-not-allowed"
             title="Share Camera"
           >
             <Video className="h-5 w-5 lg:h-6 lg:w-6" />
-          </button>
-          <button
-            disabled={callStatus !== "active"}
-            className="h-12 w-12 lg:h-14 lg:w-14 rounded-2xl flex items-center justify-center transition-all bg-black/5 text-black hover:bg-black/10 disabled:opacity-40 disabled:cursor-not-allowed hidden sm:flex"
-            title="Record Call"
-          >
-            <Circle className="h-5 w-5 lg:h-6 lg:w-6 text-red-500 fill-red-500/20" />
-          </button>
-          <button
-            disabled={callStatus !== "active"}
-            className="h-12 w-12 lg:h-14 lg:w-14 rounded-2xl flex items-center justify-center transition-all bg-black/5 text-black hover:bg-black/10 disabled:opacity-40 disabled:cursor-not-allowed hidden sm:flex"
-            title="View Transcript"
-          >
-            <FileText className="h-5 w-5 lg:h-6 lg:w-6" />
           </button>
 
           <div className="w-[1px] h-8 bg-black/10 mx-1 hidden sm:block" />
@@ -400,8 +411,8 @@ function VoiceAgentView({ medicalContext }: { medicalContext: any }) {
       </div>
 
       {/* RIGHT SIDE: Interactive Clinical Context */}
-      <div className="w-full lg:w-7/12 flex flex-col justify-center gap-8 relative z-10 px-0 lg:px-4 text-center lg:text-left mt-4 lg:mt-0">
-        <div className="space-y-4 flex flex-col items-center lg:items-start">
+      <div className="w-full lg:w-7/12 flex flex-col justify-center gap-8 relative z-10 px-0 lg:px-4 text-center lg:text-left mt-4 lg:mt-0 overflow-y-auto no-scrollbar">
+        <div className="space-y-4 flex flex-col items-center lg:items-start pt-4 lg:pt-0">
           <Badge
             className={cn(
               "px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] w-fit",
@@ -417,60 +428,111 @@ function VoiceAgentView({ medicalContext }: { medicalContext: any }) {
           </h2>
           <p className="text-black/40 font-bold text-base sm:text-xl max-w-md leading-relaxed">
             {medicalContext 
-              ? `Ready to discuss your Salmonellosis treatment and latest vitals.`
-              : `Securely discuss your latest medical results in real-time.`}
+              ? `Ready to discuss your ${medicalContext?.patient_summary?.diagnosis || "latest treatment"} and vitals.`
+              : `Select a consultation to securely discuss results in real-time.`}
           </p>
-
         </div>
 
-        {/* Insight Cards Grid with Medication Selection */}
-        <div className="flex flex-col gap-4 mt-2">
-           <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em] px-2">Select Medications to discuss:</p>
-           <div className="flex flex-wrap gap-2">
-             {medicalContext?.patient_summary?.medications?.map((med: any) => (
-                <button
-                  key={med.name}
-                  onClick={() => toggleMedication(med.name)}
-                  className={cn(
-                    "px-4 py-2.5 rounded-2xl border transition-all flex items-center gap-2",
-                    selectedMeds.includes(med.name) 
-                      ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.05]" 
-                      : "bg-white text-black/60 border-black/5 hover:border-black/10 shadow-sm"
-                  )}
-                >
-                  <Pill className={cn("h-3.5 w-3.5", selectedMeds.includes(med.name) ? "text-white" : "text-primary")} />
-                  <span className="text-xs font-bold leading-none">{med.name}</span>
-                  {selectedMeds.includes(med.name) && <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />}
-                </button>
-             ))}
-           </div>
+        {/* CONSULTATION SELECTION UI */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between px-2">
+             <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em]">Select Consultation Context:</p>
+             <Badge variant="outline" className="text-[9px] font-black border-black/5 opacity-40">{allConsultations.length} RECORDS</Badge>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[220px] overflow-y-auto pr-2 no-scrollbar px-1">
+            {allConsultations.length > 0 ? allConsultations.map((record) => (
+              <button
+                key={record.id}
+                onClick={() => onSelectionChange(record)}
+                className={cn(
+                  "p-4 rounded-[1.5rem] border transition-all text-left flex flex-col gap-2 group relative overflow-hidden",
+                  selectedRecordId === record.id 
+                    ? "bg-black text-white border-black shadow-xl" 
+                    : "bg-white text-black border-black/5 hover:border-black/10 shadow-sm hover:scale-[1.02]"
+                )}
+              >
+                {selectedRecordId === record.id && (
+                  <motion.div layoutId="active-consult" className="absolute top-0 right-0 p-3">
+                    <ShieldCheck className="h-4 w-4 text-primary" />
+                  </motion.div>
+                )}
+                <div className="flex items-center gap-2">
+                  <div className={cn(
+                    "h-8 w-8 rounded-xl flex items-center justify-center shrink-0",
+                    selectedRecordId === record.id ? "bg-white/10" : "bg-black/5"
+                  )}>
+                    <FileText className={cn("h-4 w-4", selectedRecordId === record.id ? "text-white" : "text-black/40")} />
+                  </div>
+                  <p className="text-[10px] font-black uppercase tracking-widest truncate max-w-[120px]">
+                    {record.fileName}
+                  </p>
+                </div>
+                <div>
+                   <p className="text-xs font-bold line-clamp-1 opacity-80">{record.description || "Medical Record Analysis"}</p>
+                   <p className="text-[9px] font-medium opacity-40 mt-1">{new Date(record.createdAt).toLocaleDateString()} • {record.type}</p>
+                </div>
+              </button>
+            )) : (
+              <div className="col-span-full p-10 rounded-[2rem] border-2 border-dashed border-black/5 bg-black/[0.01] flex flex-col items-center justify-center gap-3">
+                 <Bot className="h-8 w-8 text-black/10" />
+                 <p className="text-[10px] font-black text-black/20 uppercase tracking-widest text-center leading-relaxed">No past consultations found.<br/>Upload records in the Analyze tab.</p>
+              </div>
+            )}
+          </div>
+        </div>
 
-           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+        {/* Medication Selection UI */}
+        {medicalContext && (
+          <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+             <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em] px-2">Focus on Medications:</p>
+             <div className="flex flex-wrap gap-2 px-1">
+               {medicalContext?.patient_summary?.medications?.map((med: any) => (
+                  <button
+                    key={med.name}
+                    onClick={() => toggleMedication(med.name)}
+                    className={cn(
+                      "px-4 py-2.5 rounded-2xl border transition-all flex items-center gap-2",
+                      selectedMeds.includes(med.name) 
+                        ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.05]" 
+                        : "bg-white text-black/60 border-black/5 hover:border-black/10 shadow-sm hover:scale-105"
+                    )}
+                  >
+                    <Pill className={cn("h-3.5 w-3.5", selectedMeds.includes(med.name) ? "text-white" : "text-primary")} />
+                    <span className="text-xs font-bold leading-none">{med.name}</span>
+                  </button>
+               ))}
+             </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
             <div className="p-5 lg:p-6 rounded-3xl bg-black/[0.02] border border-black/5 text-left flex flex-col gap-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
-              <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
-                <Activity className="h-5 w-5 lg:h-6 lg:w-6 text-primary" />
+              <div className="h-10 w-10 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm">
+                <Activity className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1.5">Selected Count</p>
-                <p className="text-sm lg:text-base font-bold text-black leading-snug">{selectedMeds.length} Items ready for discussion</p>
+                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1.5">Selected Items</p>
+                <p className="text-sm font-bold text-black leading-snug">{selectedMeds.length} ready for discussion</p>
               </div>
             </div>
 
             <div className="p-5 lg:p-6 rounded-3xl bg-black/[0.02] border border-black/5 text-left flex flex-col gap-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
-              <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
-                <Zap className="h-5 w-5 lg:h-6 lg:w-6 text-vital-orange" />
+              <div className="h-10 w-10 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm">
+                <Zap className="h-5 w-5 text-vital-orange" />
               </div>
               <div>
                 <p className="text-[10px] font-black text-vital-orange uppercase tracking-[0.2em] mb-1.5">Doctor's Focus</p>
-                <p className="text-sm lg:text-base font-bold text-black leading-snug">Strict adherence monitoring</p>
+                <p className="text-sm font-bold text-black leading-snug">Strict adherence monitoring</p>
               </div>
             </div>
-          </div>
         </div>
       </div>
     </motion.div>
   );
 }
+
+
 
 function ChatbotView() {
   const [messages, setMessages] = useState([
