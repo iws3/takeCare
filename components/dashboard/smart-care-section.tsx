@@ -308,7 +308,7 @@ function VoiceAgentView({
         },
         voice: {
           provider: "vapi",
-          voiceId: "Mia",
+          voiceId: "Leo",
         },
         backgroundDenoisingEnabled: true,
       });
@@ -376,7 +376,7 @@ function VoiceAgentView({
                   <div className="h-3 w-3 bg-white/40 rounded-full" />
                 )}
               </div>
-              <h3 className="font-bricolage text-2xl font-bold text-white tracking-tight">Dr. Gita</h3>
+              <h3 className="font-bricolage text-2xl font-bold text-white tracking-tight">Dr. Leo</h3>
             </div>
             <p className="text-white/60 text-sm font-medium mt-1">TakeCare Clinical AI</p>
           </div>
@@ -689,28 +689,28 @@ function AnalysisView({
   const [fullAnalysisResult, setFullAnalysisResult] = useState<string | null>(null);
 
   const reportRef = useRef<HTMLElement>(null);
- 
+
   const handleDownloadReport = async () => {
     if (!reportRef.current) return;
-    
+
     const canvas = await html2canvas(reportRef.current, {
       scale: 2,
       useCORS: true,
       logging: false,
       backgroundColor: "#ffffff"
     });
-    
+
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "mm",
       format: "a4"
     });
-    
+
     const imgProps = pdf.getImageProperties(imgData);
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-    
+
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
     pdf.save(`takecare-health-report-${new Date().toISOString().split('T')[0]}.pdf`);
   };
@@ -1756,7 +1756,7 @@ Based on the synthesized data from your medical records and wearable sensors, yo
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto p-4 lg:p-12 bg-black/[0.02]">
-            <article 
+            <article
               ref={reportRef}
               className="prose prose-sm md:prose-base lg:prose-xl max-w-none prose-headings:font-bricolage prose-headings:text-black prose-p:text-black/70 prose-strong:text-black prose-strong:font-black leading-relaxed bg-white p-6 lg:p-16 rounded-[2rem] lg:rounded-[3.5rem] border border-black/5 shadow-2xl shadow-black/[0.02]"
             >
