@@ -48,6 +48,8 @@ import {
   ShieldCheck
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SYNTHETIC_DOCTOR_DATA } from "@/lib/doctor-data";
@@ -686,17 +688,31 @@ function AnalysisView({
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [fullAnalysisResult, setFullAnalysisResult] = useState<string | null>(null);
 
-  const handleDownloadReport = () => {
-    if (!fullAnalysisResult) return;
-    const blob = new Blob([fullAnalysisResult], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `takecare-health-report-${new Date().toISOString().split('T')[0]}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const reportRef = useRef<HTMLElement>(null);
+ 
+  const handleDownloadReport = async () => {
+    if (!reportRef.current) return;
+    
+    const canvas = await html2canvas(reportRef.current, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: "#ffffff"
+    });
+    
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4"
+    });
+    
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`takecare-health-report-${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
   // AI Analysis State
@@ -1740,7 +1756,10 @@ Based on the synthesized data from your medical records and wearable sensors, yo
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto p-4 lg:p-12 bg-black/[0.02]">
-            <article className="prose prose-sm md:prose-base lg:prose-xl max-w-none prose-headings:font-bricolage prose-headings:text-black prose-p:text-black/70 prose-strong:text-black prose-strong:font-black leading-relaxed bg-white p-6 lg:p-16 rounded-[2rem] lg:rounded-[3.5rem] border border-black/5 shadow-2xl shadow-black/[0.02]">
+            <article 
+              ref={reportRef}
+              className="prose prose-sm md:prose-base lg:prose-xl max-w-none prose-headings:font-bricolage prose-headings:text-black prose-p:text-black/70 prose-strong:text-black prose-strong:font-black leading-relaxed bg-white p-6 lg:p-16 rounded-[2rem] lg:rounded-[3.5rem] border border-black/5 shadow-2xl shadow-black/[0.02]"
+            >
               {fullAnalysisResult && <ReactMarkdown>{fullAnalysisResult}</ReactMarkdown>}
             </article>
           </div>
