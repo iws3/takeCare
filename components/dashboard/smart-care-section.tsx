@@ -687,32 +687,46 @@ function AnalysisView({
   const [progress, setProgress] = useState(0);
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [fullAnalysisResult, setFullAnalysisResult] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const reportRef = useRef<HTMLElement>(null);
 
   const handleDownloadReport = async () => {
-    if (!reportRef.current) return;
-
-    const canvas = await html2canvas(reportRef.current, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: "#ffffff"
-    });
-
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: "a4"
-    });
-
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save(`takecare-health-report-${new Date().toISOString().split('T')[0]}.pdf`);
+    if (!reportRef.current || isDownloading) return;
+    
+    try {
+      setIsDownloading(true);
+      console.log("Starting PDF generation...");
+      
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: true,
+        backgroundColor: "#ffffff",
+        windowWidth: reportRef.current.scrollWidth,
+        windowHeight: reportRef.current.scrollHeight
+      });
+      
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4"
+      });
+      
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`takecare-health-report-${new Date().toISOString().split('T')[0]}.pdf`);
+      console.log("PDF download triggered successfully.");
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+      alert("Failed to generate PDF. Please try again.");
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   // AI Analysis State
@@ -1775,10 +1789,20 @@ Based on the synthesized data from your medical records and wearable sensors, yo
             <div className="w-full sm:w-auto flex items-center gap-3">
               <Button
                 onClick={handleDownloadReport}
+                disabled={isDownloading}
                 className="w-full sm:w-auto rounded-2xl bg-black hover:bg-primary text-white font-black text-[10px] lg:text-xs uppercase tracking-[0.2em] px-12 h-14 group transition-all shadow-xl shadow-black/20 font-outfit"
               >
-                <FileDown className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
-                Download Report
+                {isDownloading ? (
+                  <>
+                    <Loader2 className="h-5 w-5 mr-3 animate-spin" />
+                    Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <FileDown className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
+                    Download Report
+                  </>
+                )}
               </Button>
             </div>
           </DialogFooter>
