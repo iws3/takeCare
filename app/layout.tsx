@@ -42,6 +42,7 @@ export const metadata: Metadata = {
 };
 
 import { BackgroundGrid } from "@/components/ui/background-grid";
+import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -53,6 +54,7 @@ export default function RootLayout({
       >
         <BackgroundGrid />
         {children}
+        <Toaster closeButton position="top-center" expand visibleToasts={1} />
       </body>
     </html>
   );

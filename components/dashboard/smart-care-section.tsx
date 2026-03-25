@@ -50,6 +50,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SYNTHETIC_DOCTOR_DATA } from "@/lib/doctor-data";
@@ -694,20 +695,30 @@ function AnalysisView({
   const handleDownloadReport = async () => {
     if (!reportRef.current || isDownloading) return;
     
+    const toastId = toast.loading("Preparing your professional health report...");
+    
     try {
       setIsDownloading(true);
-      console.log("Starting PDF generation...");
+      console.log("Starting high-fidelity PDF generation...");
       
       const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
+        scale: 1.5,
         useCORS: true,
-        logging: true,
+        logging: false,
         backgroundColor: "#ffffff",
-        windowWidth: reportRef.current.scrollWidth,
-        windowHeight: reportRef.current.scrollHeight
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        onclone: (clonedDocument) => {
+          const el = clonedDocument.querySelector('article');
+          if (el) {
+            el.style.boxShadow = 'none';
+            el.style.border = 'none';
+            el.style.borderRadius = '0';
+          }
+        }
       });
       
-      const imgData = canvas.toDataURL("image/png");
+      const imgData = canvas.toDataURL("image/png", 0.95);
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -718,12 +729,17 @@ function AnalysisView({
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       
+      // If height is too large, split or scale down
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
       pdf.save(`takecare-health-report-${new Date().toISOString().split('T')[0]}.pdf`);
-      console.log("PDF download triggered successfully.");
+      
+      toast.success("Health report downloaded successfully!", { id: toastId });
     } catch (error) {
       console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please try again.");
+      toast.error("We couldn't generate the PDF, but you can always view it on the dashboard.", { 
+        id: toastId,
+        description: "Tip: Try closing and reopening the modal."
+      });
     } finally {
       setIsDownloading(false);
     }
