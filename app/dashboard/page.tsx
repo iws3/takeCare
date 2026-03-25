@@ -134,28 +134,39 @@ export default function DashboardPage() {
   useEffect(() => {
     async function initDashboard() {
       try {
-        // Ensure the demo user exists for medical history fetching
-        const { ensureUser } = await import("@/app/actions/medical");
-        await ensureUser(clerkId, "demo@takecare.ai", "Sarah Jenkins");
+        // 1. Fetch user from DB
+        let data = await getMedicalHistory(clerkId);
+
+        // 2. If not found, ensure it exists with default data (first time only)
+        if (!data) {
+          const { ensureUser } = await import("@/app/actions/medical");
+          await ensureUser(clerkId, "demo@takecare.ai", "Sarah Jenkins");
+          data = await getMedicalHistory(clerkId);
+        }
 
         const personalized = await hasPersonalized(clerkId);
         if (!personalized && clerkId !== "demo-user-123") {
           // router.push("/onboarding/personalize");
-          // For demo, we'll just load the record
         }
 
-        const data = await getMedicalHistory(clerkId);
         setUserData(data);
       } catch (e) {
         console.error(e);
       } finally {
-        setTimeout(() => setLoading(false), 2000); // Artificial delay to enjoy the animation
+        setTimeout(() => setLoading(false), 2000); 
       }
     }
     initDashboard();
   }, [router]);
 
   if (loading) return <DashboardLoading />;
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  };
 
   return (
     <div className="flex flex-1 flex-col pb-12 min-h-screen relative overflow-hidden bg-transparent">
@@ -171,13 +182,15 @@ export default function DashboardPage() {
 
       <main className="flex flex-1 flex-col responsive-container w-full overflow-x-hidden">
         {/* Welcome Section */}
-        <div className="px-6 py-6 lg:px-0 lg:py-14 animate-fade-up">
-          <h1 className="font-bricolage text-3xl font-extrabold tracking-tighter lg:text-6xl flex items-center gap-3">
-            <span className="text-black/30">Welcome back,</span> {userData?.name?.split(' ')[0] || "Patient"}.
-            <span className="p-2 bg-primary/10 rounded-full animate-bounce h-10 w-10 flex items-center justify-center text-sm leading-none grow-0 shrink-0">👋</span>
+        <div className="px-6 py-10 lg:px-0 lg:py-20 animate-fade-up">
+          <h1 className="font-bricolage text-3xl font-extrabold tracking-tighter lg:text-7xl flex flex-wrap items-center gap-x-4">
+            <span className="text-black/30">{getGreeting()},</span> 
+            {userData?.name?.split(' ')[0] || "Patient"}.
+            <span className="p-3 bg-primary/10 rounded-full animate-bounce h-12 w-12 flex items-center justify-center text-xl grow-0 shrink-0">👋</span>
           </h1>
-          <p className="mt-3 text-sm font-medium text-black/40 lg:text-xl max-w-2xl leading-relaxed">
-            Here's what's happening with your <span className="text-black font-bold underline decoration-primary/40 underline-offset-4 cursor-help">health profile</span> today.
+          <p className="mt-6 text-base font-semibold text-black/40 lg:text-2xl max-w-3xl leading-relaxed">
+            I hope you are <span className="text-primary font-black uppercase tracking-widest text-sm lg:text-lg">feeling better now</span>. 
+            Here&apos;s a look at your <span className="text-black font-bold italic underline decoration-primary/40 underline-offset-8 cursor-help">comprehensive health profile</span> today.
           </p>
         </div>
 

@@ -74,12 +74,12 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #050811;
+  background: transparent;
 }
-
+ 
 ::-webkit-scrollbar-thumb {
-  background: var(--teal-600);
-  border-radius: 3px;
+  background: var(--primary);
+  border-radius: 10px;
 }
 
 /* ─── Animations ────────────────────────────────────────────────────────────── */

@@ -5,6 +5,14 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
   Mic,
   MessageSquareText,
   BarChart3,
@@ -71,15 +79,15 @@ export function SmartCareSection() {
       try {
         const clerkId = "demo-user-123"; // Using mock ID as in dashboard
         const data = await getMedicalHistory(clerkId);
-        
+
         if (data && data.medicalRecords && data.medicalRecords.length > 0) {
           setAllRecords(data.medicalRecords);
           // Find the most recent record with a valid analysis
           const recentRecord = data.medicalRecords.find(r => r.analysis);
           if (recentRecord && recentRecord.analysis) {
-             setMedicalContext(recentRecord.analysis.rawJson || null);
-             setAnalysisResult(recentRecord.analysis.summary);
-             setSelectedRecordId(recentRecord.id);
+            setMedicalContext(recentRecord.analysis.rawJson || null);
+            setAnalysisResult(recentRecord.analysis.summary);
+            setSelectedRecordId(recentRecord.id);
           }
 
         } else {
@@ -123,27 +131,35 @@ export function SmartCareSection() {
   return (
     <div className="px-6 lg:px-12 mt-4 flex flex-col gap-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-black/5 p-1 rounded-2xl w-full lg:w-fit h-auto flex gap-1 mb-6">
+        <TabsList className="bg-white/60 backdrop-blur-3xl p-1.5 rounded-4xl w-full lg:w-fit h-auto flex gap-1.5 mb-10 border border-black/[0.03] shadow-sm">
           {SMART_CARE_TABS.map((tab) => (
             <TabsTrigger
               key={tab.id}
               value={tab.id}
               className={cn(
-                "rounded-xl px-6 py-2.5 transition-all duration-300 cursor-pointer flex-1 lg:flex-none",
-                "data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 data-[state=active]:scale-[1.05]",
-                "flex items-center justify-center gap-2 font-outfit font-bold text-sm"
+                "rounded-3xl px-8 py-3 transition-all duration-500 cursor-pointer flex-1 lg:flex-none relative group",
+                "data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-2xl data-[state=active]:shadow-black/20",
+                "data-[state=inactive]:text-black/40 data-[state=inactive]:hover:bg-black/5 data-[state=inactive]:hover:text-black/60",
+                "flex items-center justify-center gap-3 font-outfit font-black text-xs uppercase tracking-widest"
               )}
             >
-              <tab.icon className="h-4 w-4" />
+              <tab.icon className="h-4 w-4 transition-transform duration-500 group-hover:scale-110 group-data-[state=active]:scale-110" />
               {tab.label}
+              {activeTab === tab.id && (
+                <motion.div
+                  layoutId="smart-active-pill"
+                  className="absolute inset-0 bg-black rounded-xl -z-10"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
             </TabsTrigger>
           ))}
         </TabsList>
 
         <AnimatePresence mode="wait">
           <TabsContent value="talk" key="talk">
-            <VoiceAgentView 
-              medicalContext={medicalContext} 
+            <VoiceAgentView
+              medicalContext={medicalContext}
               allConsultations={allRecords.filter(r => r.analysis)}
               onSelectionChange={(record: any) => {
                 setSelectedRecordId(record.id);
@@ -158,9 +174,9 @@ export function SmartCareSection() {
             <ChatbotView />
           </TabsContent>
           <TabsContent value="analyze" key="analyze">
-            <AnalysisView 
-              medicalContext={medicalContext} 
-              onContextUpdate={setMedicalContext} 
+            <AnalysisView
+              medicalContext={medicalContext}
+              onContextUpdate={setMedicalContext}
               analysisResult={analysisResult}
               setAnalysisResult={setAnalysisResult}
             />
@@ -172,12 +188,12 @@ export function SmartCareSection() {
     </div>
   );
 }
-function VoiceAgentView({ 
-  medicalContext, 
+function VoiceAgentView({
+  medicalContext,
   allConsultations,
   onSelectionChange,
   selectedRecordId
-}: { 
+}: {
   medicalContext: any,
   allConsultations: any[],
   onSelectionChange: (record: any) => void,
@@ -227,7 +243,7 @@ function VoiceAgentView({
   }, [medicalContext]);
 
   const toggleMedication = (name: string) => {
-    setSelectedMeds(prev => 
+    setSelectedMeds(prev =>
       prev.includes(name) ? prev.filter(m => m !== name) : [...prev, name]
     );
   };
@@ -270,9 +286,9 @@ function VoiceAgentView({
         - Be professional, empathetic, and clear.
       ` : result.config.systemPrompt;
 
-      const firstMessage = selectedMeds.length > 0 
+      const firstMessage = selectedMeds.length > 0
         ? `Hello Sarah, I've reviewed your results. I see you want to discuss your treatment using ${selectedMeds.join(" and ")}. How have you been feeling since you started them?`
-        : medicalContext 
+        : medicalContext
           ? `Hello Sarah, I've reviewed your latest results. How are you feeling today?`
           : `Hello, this is your TakeCare AI Assistant. How are you feeling today?`;
 
@@ -287,7 +303,7 @@ function VoiceAgentView({
         },
         voice: {
           provider: "vapi",
-          voiceId: "Leah",
+          voiceId: "Mia",
         },
         backgroundDenoisingEnabled: true,
       });
@@ -374,7 +390,7 @@ function VoiceAgentView({
           >
             {isMuted ? <MicOff className="h-5 w-5 lg:h-6 lg:w-6" /> : <Mic className="h-5 w-5 lg:h-6 lg:w-6" />}
           </button>
-          
+
           <button
             disabled={callStatus !== "active"}
             className="h-12 w-12 lg:h-14 lg:w-14 rounded-2xl flex items-center justify-center transition-all bg-black/5 text-black hover:bg-black/10 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -427,7 +443,7 @@ function VoiceAgentView({
             {callStatus === "active" ? "How can I help you, Sarah?" : "Start your session."}
           </h2>
           <p className="text-black/40 font-bold text-base sm:text-xl max-w-md leading-relaxed">
-            {medicalContext 
+            {medicalContext
               ? `Ready to discuss your ${medicalContext?.patient_summary?.diagnosis || "latest treatment"} and vitals.`
               : `Select a consultation to securely discuss results in real-time.`}
           </p>
@@ -436,10 +452,10 @@ function VoiceAgentView({
         {/* CONSULTATION SELECTION UI */}
         <div className="space-y-6">
           <div className="flex items-center justify-between px-2">
-             <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em]">Select Consultation Context:</p>
-             <Badge variant="outline" className="text-[9px] font-black border-black/5 opacity-40">{allConsultations.length} RECORDS</Badge>
+            <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em]">Select Consultation Context:</p>
+            <Badge variant="outline" className="text-[9px] font-black border-black/5 opacity-40">{allConsultations.length} RECORDS</Badge>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[220px] overflow-y-auto pr-2 no-scrollbar px-1">
             {allConsultations.length > 0 ? allConsultations.map((record) => (
               <button
@@ -447,8 +463,8 @@ function VoiceAgentView({
                 onClick={() => onSelectionChange(record)}
                 className={cn(
                   "p-4 rounded-3xl border transition-all text-left flex flex-col gap-2 group relative overflow-hidden",
-                  selectedRecordId === record.id 
-                    ? "bg-black text-white border-black shadow-xl" 
+                  selectedRecordId === record.id
+                    ? "bg-black text-white border-black shadow-xl"
                     : "bg-white text-black border-black/5 hover:border-black/10 shadow-sm hover:scale-[1.02]"
                 )}
               >
@@ -469,14 +485,14 @@ function VoiceAgentView({
                   </p>
                 </div>
                 <div>
-                   <p className="text-xs font-bold line-clamp-1 opacity-80">{record.description || "Medical Record Analysis"}</p>
-                   <p className="text-[9px] font-medium opacity-40 mt-1">{new Date(record.createdAt).toLocaleDateString()} • {record.type}</p>
+                  <p className="text-xs font-bold line-clamp-1 opacity-80">{record.description || "Medical Record Analysis"}</p>
+                  <p className="text-[9px] font-medium opacity-40 mt-1">{new Date(record.createdAt).toLocaleDateString()} • {record.type}</p>
                 </div>
               </button>
             )) : (
               <div className="col-span-full p-10 rounded-4xl border-2 border-dashed border-black/5 bg-black/1 flex flex-col items-center justify-center gap-3">
-                 <Bot className="h-8 w-8 text-black/10" />
-                 <p className="text-[10px] font-black text-black/20 uppercase tracking-widest text-center leading-relaxed">No past consultations found.<br/>Upload records in the Analyze tab.</p>
+                <Bot className="h-8 w-8 text-black/10" />
+                <p className="text-[10px] font-black text-black/20 uppercase tracking-widest text-center leading-relaxed">No past consultations found.<br />Upload records in the Analyze tab.</p>
               </div>
             )}
           </div>
@@ -485,47 +501,47 @@ function VoiceAgentView({
         {/* Medication Selection UI */}
         {medicalContext && (
           <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-             <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em] px-2">Focus on Medications:</p>
-             <div className="flex flex-wrap gap-2 px-1">
-               {medicalContext?.patient_summary?.medications?.map((med: any) => (
-                  <button
-                    key={med.name}
-                    onClick={() => toggleMedication(med.name)}
-                    className={cn(
-                      "px-4 py-2.5 rounded-2xl border transition-all flex items-center gap-2",
-                      selectedMeds.includes(med.name) 
-                        ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.05]" 
-                        : "bg-white text-black/60 border-black/5 hover:border-black/10 shadow-sm hover:scale-105"
-                    )}
-                  >
-                    <Pill className={cn("h-3.5 w-3.5", selectedMeds.includes(med.name) ? "text-white" : "text-primary")} />
-                    <span className="text-xs font-bold leading-none">{med.name}</span>
-                  </button>
-               ))}
-             </div>
+            <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em] px-2">Focus on Medications:</p>
+            <div className="flex flex-wrap gap-2 px-1">
+              {medicalContext?.patient_summary?.medications?.map((med: any) => (
+                <button
+                  key={med.name}
+                  onClick={() => toggleMedication(med.name)}
+                  className={cn(
+                    "px-4 py-2.5 rounded-2xl border transition-all flex items-center gap-2",
+                    selectedMeds.includes(med.name)
+                      ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.05]"
+                      : "bg-white text-black/60 border-black/5 hover:border-black/10 shadow-sm hover:scale-105"
+                  )}
+                >
+                  <Pill className={cn("h-3.5 w-3.5", selectedMeds.includes(med.name) ? "text-white" : "text-primary")} />
+                  <span className="text-xs font-bold leading-none">{med.name}</span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-            <div className="p-5 lg:p-6 rounded-3xl bg-black/[0.02] border border-black/5 text-left flex flex-col gap-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
-              <div className="h-10 w-10 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm">
-                <Activity className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1.5">Selected Items</p>
-                <p className="text-sm font-bold text-black leading-snug">{selectedMeds.length} ready for discussion</p>
-              </div>
+          <div className="p-5 lg:p-6 rounded-3xl bg-black/[0.02] border border-black/5 text-left flex flex-col gap-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
+            <div className="h-10 w-10 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm">
+              <Activity className="h-5 w-5 text-primary" />
             </div>
+            <div>
+              <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1.5">Selected Items</p>
+              <p className="text-sm font-bold text-black leading-snug">{selectedMeds.length} ready for discussion</p>
+            </div>
+          </div>
 
-            <div className="p-5 lg:p-6 rounded-3xl bg-black/[0.02] border border-black/5 text-left flex flex-col gap-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
-              <div className="h-10 w-10 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm">
-                <Zap className="h-5 w-5 text-vital-orange" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black text-vital-orange uppercase tracking-[0.2em] mb-1.5">Doctor's Focus</p>
-                <p className="text-sm font-bold text-black leading-snug">Strict adherence monitoring</p>
-              </div>
+          <div className="p-5 lg:p-6 rounded-3xl bg-black/[0.02] border border-black/5 text-left flex flex-col gap-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
+            <div className="h-10 w-10 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm">
+              <Zap className="h-5 w-5 text-vital-orange" />
             </div>
+            <div>
+              <p className="text-[10px] font-black text-vital-orange uppercase tracking-[0.2em] mb-1.5">Doctor's Focus</p>
+              <p className="text-sm font-bold text-black leading-snug">Strict adherence monitoring</p>
+            </div>
+          </div>
         </div>
       </div>
     </motion.div>
@@ -646,13 +662,13 @@ function ChatbotView() {
   );
 }
 
-function AnalysisView({ 
-  medicalContext, 
+function AnalysisView({
+  medicalContext,
   onContextUpdate,
   analysisResult,
   setAnalysisResult
-}: { 
-  medicalContext: any, 
+}: {
+  medicalContext: any,
   onContextUpdate: (ctx: any) => void,
   analysisResult: string | null,
   setAnalysisResult: (res: string | null) => void
@@ -662,6 +678,21 @@ function AnalysisView({
   const [analyzing, setAnalyzing] = useState(false);
   const [showSim, setShowSim] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [fullAnalysisResult, setFullAnalysisResult] = useState<string | null>(null);
+
+  const handleDownloadReport = () => {
+    if (!fullAnalysisResult) return;
+    const blob = new Blob([fullAnalysisResult], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `takecare-health-report-${new Date().toISOString().split('T')[0]}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   // AI Analysis State
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -683,12 +714,36 @@ function AnalysisView({
     if (analyzing) {
       const interval = setInterval(() => {
         setProgress(prev => (prev < 100 ? prev + 1 : 100));
-      }, 50);
+      }, 30); // Faster simulation
       if (progress === 100) {
         setTimeout(() => {
           setAnalyzing(false);
           setProgress(0);
-        }, 1000);
+          
+          // Generate a comprehensive mock report
+          const mockReport = `
+# Comprehensive Health Analysis Report
+**Patient ID:** ${ps?.id || "TC-0000"}  
+**Date:** ${new Date().toLocaleDateString()}
+
+## Executive Summary
+Based on the synthesized data from your medical records and wearable sensors, your overall health trajectory is **positive**. 
+
+## Key Findings
+- **Cardiovascular Health:** Heart rate variability (HRV) shows a 12% improvement over the last 30 days.
+- **Inflammatory Markers:** Recent blood work indicates stabilizing levels of C-reactive protein.
+- **Sleep Quality:** Deep sleep cycles have increased, correlating with the medication adjustment.
+
+## Recommended Actions
+1. **Hydration:** Increase daily water intake by 500ml to support kidney function.
+2. **Activity:** Maintain 30 min of moderate walking 4x/week.
+3. **Follow-up:** Schedule a standard consultation in 3 weeks to review medication efficacy.
+
+*This report was generated by TakeCare Digital Clinical Intelligence.*
+          `;
+          setFullAnalysisResult(mockReport.trim());
+          setShowAnalysisModal(true);
+        }, 800);
       }
       return () => clearInterval(interval);
     }
@@ -717,7 +772,7 @@ function AnalysisView({
         await setupGattServer(device);
         setConnectionError(null);
         setIsConnecting(false);
-        return; 
+        return;
       } catch (error) {
         console.error("Reconnection attempt failed:", error);
       }
@@ -743,7 +798,7 @@ function AnalysisView({
           const rate16Bits = flags & 0x1;
           let hr: number;
           if (rate16Bits) {
-            hr = value.getUint16(1, true); 
+            hr = value.getUint16(1, true);
           } else {
             hr = value.getUint8(1);
           }
@@ -834,7 +889,7 @@ function AnalysisView({
 
     const formData = new FormData();
     selectedFiles.forEach(file => formData.append("file", file));
-    formData.append("clerkId", "demo-user-123"); 
+    formData.append("clerkId", "demo-user-123");
 
     try {
       const response = await fetch("/api/analyze-record", {
@@ -848,11 +903,11 @@ function AnalysisView({
 
       const data = await response.json();
       setAnalysisResult(data.analysis);
-      
+
       if (data.structuredData) {
         onContextUpdate(data.structuredData);
       }
-      
+
       setTimeout(() => {
         setAnalysisTab("results");
       }, 1500);
@@ -902,26 +957,36 @@ function AnalysisView({
 
   return (
     <div className="relative">
-      <div className="flex gap-2 mb-8 bg-black/5 p-1 rounded-2xl w-fit">
+      <div className="flex gap-2 mb-10 bg-white/40 backdrop-blur-xl p-1.5 rounded-2xl w-fit border border-black/5 shadow-lg shadow-black/[0.01]">
         <button
           onClick={() => setAnalysisTab("upload")}
           className={cn(
-            "px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
-            analysisTab === "upload" ? "bg-white text-black shadow-sm" : "text-black/40 hover:text-black/60"
+            "px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 relative overflow-hidden group",
+            analysisTab === "upload" 
+              ? "bg-black text-white shadow-2xl shadow-black/20" 
+              : "text-black/40 hover:text-black/60 hover:bg-black/5"
           )}
         >
-          Source Records
+          <span className="relative z-10 flex items-center gap-2">
+            <div className={cn("h-1.5 w-1.5 rounded-full", analysisTab === "upload" ? "bg-primary animate-pulse" : "bg-black/20")} />
+            Source Records
+          </span>
         </button>
         <button
           onClick={() => setAnalysisTab("results")}
           disabled={!medicalContext}
           className={cn(
-            "px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
-            analysisTab === "results" ? "bg-white text-black shadow-sm" : "text-black/40 hover:text-black/60",
+            "px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 relative overflow-hidden group",
+            analysisTab === "results" 
+              ? "bg-black text-white shadow-2xl shadow-black/20" 
+              : "text-black/40 hover:text-black/60 hover:bg-black/5",
             !medicalContext && "opacity-30 cursor-not-allowed"
           )}
         >
-          Clinical Results
+          <span className="relative z-10 flex items-center gap-2">
+            <div className={cn("h-1.5 w-1.5 rounded-full", analysisTab === "results" ? "bg-green-500 animate-pulse" : "bg-black/20")} />
+            Clinical Results
+          </span>
         </button>
       </div>
 
@@ -971,17 +1036,17 @@ function AnalysisView({
               </motion.div>
             ))}
 
-            <div className="lg:col-span-3 p-10 rounded-[2.5rem] border border-primary/10 bg-black text-white flex flex-col lg:flex-row items-center justify-between gap-8 mt-4 overflow-hidden relative">
-              <div className="absolute top-0 right-0 h-full w-1/2 bg-linear-to-l from-primary/20 to-transparent pointer-events-none" />
+            <div className="lg:col-span-3 p-10 rounded-[2.5rem] border border-primary/10 bg-white flex flex-col lg:flex-row items-center justify-between gap-8 mt-4 overflow-hidden relative shadow-2xl shadow-primary/5">
+              <div className="absolute top-0 right-0 h-full w-1/2 bg-linear-to-l from-primary/5 to-transparent pointer-events-none" />
               <div className="flex items-center gap-6">
-                <div className="h-16 w-16 rounded-3xl bg-primary/20 flex items-center justify-center">
+                <div className="h-16 w-16 rounded-3xl bg-primary/10 flex items-center justify-center">
                   <Activity className={cn("h-8 w-8 text-primary", analyzing && "animate-bounce")} />
                 </div>
                 <div className="space-y-1" >
-                  <h4 className="font-bricolage text-2xl font-bold">
+                  <h4 className="font-bricolage text-2xl font-bold text-black">
                     {analyzing ? `Analyzing Data... ${progress}%` : "Deep Health Context"}
                   </h4>
-                  <p className="text-white/50 text-sm font-medium">
+                  <p className="text-black/40 text-sm font-medium">
                     {analyzing ? "Synthesizing medical history and wearable metrics." : "Your AI context is 85% complete based on merged data."}
                   </p>
                 </div>
@@ -989,7 +1054,7 @@ function AnalysisView({
               <Button
                 disabled={analyzing}
                 onClick={() => setAnalyzing(true)}
-                className="h-14 px-10 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-lg shadow-xl shadow-primary/25 disabled:opacity-50"
+                className="h-14 px-10 rounded-2xl bg-black hover:bg-primary text-white font-bold text-lg shadow-xl shadow-black/25 disabled:opacity-50 transition-all duration-300"
               >
                 {analyzing ? "Scanning..." : "Run Full Analysis"}
               </Button>
@@ -1026,7 +1091,7 @@ function AnalysisView({
               </div>
 
               <div className="flex items-center gap-3">
-                <Button 
+                <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setAnalysisTab("upload")}
@@ -1059,7 +1124,7 @@ function AnalysisView({
                       </div>
                       <Badge className="bg-blue-50 text-blue-600 border-none font-black text-[9px] uppercase tracking-widest">Gemini 1.5 Pro</Badge>
                     </div>
-                    
+
                     <div className="prose prose-sm max-w-none prose-headings:font-bricolage prose-headings:text-black prose-p:text-black/60 prose-strong:text-black prose-strong:font-bold leading-relaxed">
                       {analysisResult ? (
                         <ReactMarkdown>{analysisResult}</ReactMarkdown>
@@ -1074,49 +1139,53 @@ function AnalysisView({
                     </div>
                   </div>
 
-                  {/* High-Impact Vitals Card */}
-                  <div className="p-8 rounded-[2.5rem] bg-black text-white shadow-2xl flex flex-col justify-between">
-                    <div className="space-y-6">
+                  {/* High-Impact Vitals Card - NEW LIGHT THEME */}
+                  <div className="p-8 rounded-[2.5rem] bg-white border border-black/5 shadow-2xl shadow-black/[0.03] flex flex-col justify-between relative group overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors duration-700" />
+                    
+                    <div className="space-y-6 relative z-10">
                       <div className="flex items-center justify-between">
-                        <Activity className="h-8 w-8 text-primary" />
-                        <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Core Status</span>
+                        <div className="h-12 w-12 rounded-2xl bg-black flex items-center justify-center shadow-lg shadow-black/10">
+                          <Activity className="h-6 w-6 text-white" />
+                        </div>
+                        <span className="text-[10px] font-black text-black/30 uppercase tracking-[0.2em]">Core Status</span>
                       </div>
-                      
+ 
                       <div className="space-y-8">
-                        <div className="flex items-end justify-between border-b border-white/10 pb-4">
+                        <div className="flex items-end justify-between border-b border-black/5 pb-4">
                           <div>
-                            <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">Blood Pressure</p>
-                            <p className="text-3xl font-bricolage font-black tracking-tighter italic">{vitals?.blood_pressure || "--"}</p>
+                            <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em] mb-1">Blood Pressure</p>
+                            <p className="text-3xl font-bricolage font-black tracking-tighter text-black">{vitals?.blood_pressure || "--"}</p>
                           </div>
-                          <Badge className="bg-primary/20 text-primary border-none mb-2">Stable</Badge>
+                          <Badge className="bg-primary/10 text-primary border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">Stable</Badge>
                         </div>
-                        
-                        <div className="flex items-end justify-between border-b border-white/10 pb-4">
+ 
+                        <div className="flex items-end justify-between border-b border-black/5 pb-4">
                           <div>
-                            <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">Heart Rate</p>
-                            <p className="text-3xl font-bricolage font-black tracking-tighter italic">{vitals?.heart_rate || "--"}</p>
+                            <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em] mb-1">Heart Rate</p>
+                            <p className="text-3xl font-bricolage font-black tracking-tighter text-black">{vitals?.heart_rate || "--"}</p>
                           </div>
-                          <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center">
-                            <Activity className="h-4 w-4 text-white/20" />
+                          <div className="h-10 w-10 rounded-xl bg-primary/5 flex items-center justify-center">
+                            <Activity className="h-4 w-4 text-primary animate-pulse" />
                           </div>
                         </div>
-
+ 
                         <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-1">Temp</p>
-                            <p className="text-xl font-bold">{vitals?.temperature || "--"}</p>
+                          <div className="p-4 rounded-2xl bg-black/[0.02] border border-black/5">
+                            <p className="text-[9px] font-black text-black/30 uppercase tracking-[0.2em] mb-1">Temperature</p>
+                            <p className="text-xl font-black text-black">{vitals?.temperature || "--"}</p>
                           </div>
-                          <div>
-                            <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-1">BMI</p>
-                            <p className="text-xl font-bold">{vitals?.bmi || "--"}</p>
+                          <div className="p-4 rounded-2xl bg-black/[0.02] border border-black/5">
+                            <p className="text-[9px] font-black text-black/30 uppercase tracking-[0.2em] mb-1">Body Mass Index</p>
+                            <p className="text-xl font-black text-black">{vitals?.bmi || "--"}</p>
                           </div>
                         </div>
                       </div>
                     </div>
-
-                    <Button className="mt-8 w-full h-14 rounded-2xl bg-primary text-white font-black uppercase text-xs tracking-widest shadow-xl shadow-primary/20 border-none group">
+ 
+                    <Button className="mt-8 w-full h-15 rounded-2xl bg-black text-white font-black uppercase text-xs tracking-[0.2em] shadow-2xl shadow-black/20 border-none group hover:scale-[1.02] transition-all">
                       Health Report PDF
-                      <FileDown className="ml-2 h-4 w-4 group-hover:translate-y-1 transition-transform" />
+                      <FileDown className="ml-2 h-4 w-4 transition-transform group-hover:translate-y-0.5" />
                     </Button>
                   </div>
                 </div>
@@ -1152,8 +1221,8 @@ function AnalysisView({
 
                       <div className="p-6 rounded-[2rem] bg-red-50/30 border border-red-100/50 space-y-4">
                         <div className="flex justify-between items-center">
-                           <span className="text-sm font-black text-black/40 uppercase tracking-widest">Widal Serology</span>
-                           <Badge className="bg-red-100 text-red-600 border-none font-black text-[9px] uppercase tracking-widest">{labs?.widal_test || "N/A"}</Badge>
+                          <span className="text-sm font-black text-black/40 uppercase tracking-widest">Widal Serology</span>
+                          <Badge className="bg-red-100 text-red-600 border-none font-black text-[9px] uppercase tracking-widest">{labs?.widal_test || "N/A"}</Badge>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {labs?.titers ? Object.entries(labs.titers).map((entry: any) => (
@@ -1225,7 +1294,7 @@ function AnalysisView({
                   <div className="flex-1 space-y-2 text-center md:text-left">
                     <h3 className="font-bricolage text-3xl font-black text-indigo-950">Patient Overview</h3>
                     <p className="text-lg font-medium text-indigo-800/60 leading-relaxed">
-                      This analysis suggest a primary diagnosis of <span className="text-indigo-600 font-black">{ps?.diagnosis || "Incomplete data"}</span>. 
+                      This analysis suggest a primary diagnosis of <span className="text-indigo-600 font-black">{ps?.diagnosis || "Incomplete data"}</span>.
                       The clinical data shows <span className="text-indigo-600 font-bold">{symptoms.length || 0} core symptoms</span> that align with the records.
                     </p>
                   </div>
@@ -1277,7 +1346,7 @@ function AnalysisView({
                     {/* Left Side: Upload / File List */}
                     <div className="flex flex-col gap-6 overflow-y-auto pr-2 no-scrollbar">
                       {/* Action Buttons */}                      {/* Ingestion Zone */}
-                      <div 
+                      <div
                         className="relative group cursor-pointer"
                         onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-primary'); }}
                         onDragLeave={(e) => { e.preventDefault(); e.currentTarget.classList.remove('border-primary'); }}
@@ -1356,15 +1425,15 @@ function AnalysisView({
                                 >
                                   <div className="flex items-center gap-4">
                                     <div className="h-14 w-14 rounded-2xl bg-black flex items-center justify-center overflow-hidden border border-black/5 shadow-inner">
-                                       {file.type.startsWith('image/') ? (
-                                         <img 
-                                           src={URL.createObjectURL(file)} 
-                                           alt="preview" 
-                                           className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
-                                         />
-                                       ) : (
-                                         <FileText className="h-6 w-6 text-white/40" />
-                                       )}
+                                      {file.type.startsWith('image/') ? (
+                                        <img
+                                          src={URL.createObjectURL(file)}
+                                          alt="preview"
+                                          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                        />
+                                      ) : (
+                                        <FileText className="h-6 w-6 text-white/40" />
+                                      )}
                                     </div>
                                     <div className="max-w-[140px]">
                                       <p className="text-sm font-black text-black truncate tracking-tight">{file.name}</p>
@@ -1644,6 +1713,50 @@ function AnalysisView({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Full Analysis Results Preview Modal */}
+      <Dialog open={showAnalysisModal} onOpenChange={setShowAnalysisModal}>
+        <DialogContent className="max-w-3xl h-[80vh] flex flex-col p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl">
+          <div className="absolute top-0 left-0 w-full h-2 bg-primary" />
+          
+          <DialogHeader className="px-10 py-10 bg-white border-b border-black/5 shrink-0">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <ShieldCheck className="h-7 w-7 text-primary" />
+              </div>
+              <div>
+                <DialogTitle className="font-bricolage text-3xl font-black">Health Synthesis Report</DialogTitle>
+                <DialogDescription className="text-black/40 font-medium">Verified by TakeCare Clinical Intelligence</DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-10 bg-black/[0.01]">
+            <div className="prose prose-sm max-w-none prose-headings:font-bricolage prose-headings:text-black prose-p:text-black/70 prose-strong:text-black prose-strong:font-bold leading-relaxed bg-white p-10 rounded-[2rem] border border-black/5 shadow-sm">
+              {fullAnalysisResult && <ReactMarkdown>{fullAnalysisResult}</ReactMarkdown>}
+            </div>
+          </div>
+
+          <DialogFooter className="px-10 py-8 bg-white border-t border-black/5 flex items-center justify-between gap-4 shrink-0">
+            <Button
+              variant="outline"
+              onClick={() => setShowAnalysisModal(false)}
+              className="rounded-xl border-black/10 font-bold text-xs uppercase tracking-widest px-8 h-12"
+            >
+              Close Preview
+            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={handleDownloadReport}
+                className="rounded-xl bg-black hover:bg-primary text-white font-bold text-xs uppercase tracking-widest px-8 h-12 group transition-all"
+              >
+                <FileDown className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+                Download PDF/MD
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
