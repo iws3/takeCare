@@ -80,7 +80,8 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
   useEffect(() => {
     async function loadHistory() {
       try {
-        const clerkId = "demo-user-123"; // Using mock ID as in dashboard
+        const clerkId = localStorage.getItem("takecare-clerk-id");
+        if (!clerkId) return;
         const data = await getMedicalHistory(clerkId);
 
         if (data && data.medicalRecords && data.medicalRecords.length > 0) {
@@ -94,34 +95,10 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
           }
 
         } else {
-
-
-          // Fallback to demo data if no records found
-          const extractedData = {
-            patient_summary: {
-              name: "Sarah Jenkins",
-              id: "TC-8291",
-              latest_vitals: {
-                weight: "57kg", height: "1.58m", bmi: "22.83",
-                blood_pressure: "113/63 mmHg", heart_rate: "74 bpm",
-                resp_rate: "15 c/m", temperature: "36.5°C"
-              },
-              lab_results: {
-                malaria_test_mp: "NEGATIVE",
-                widal_test: "Positive",
-                titers: { "TO": "1/320", "BO": "1/320", "AO": "1/160", "CO": "1/160", "TH": "1/160", "CH": "1/160" }
-              },
-              diagnosis: "Severe Salmonellosis (Typhoid Fever)",
-              symptoms: ["Headache", "Bitter mouth", "Fever", "Insomnia", "Stomach grumbling", "Nausea"],
-              medications: [
-                { name: "Cipro", dosage: "750mg", frequency: "Twice daily" },
-                { name: "Metro", dosage: "500mg", frequency: "Twice daily" },
-                { name: "Dexa", dosage: "0.5mg", frequency: "Twice daily" },
-                { name: "Quick Reliever", frequency: "As needed" }
-              ]
-            }
-          };
-          setMedicalContext(extractedData);
+          // No records found for this user, leave context null
+          setMedicalContext(null);
+          setAllRecords([]);
+          setAnalysisResult(null);
         }
       } catch (error) {
         console.error("Failed to load medical history:", error);
@@ -941,9 +918,15 @@ Based on the synthesized data from your medical records and wearable sensors, yo
     setAnalysisError(null);
     setAnalysisResult(null);
 
+    const clerkId = localStorage.getItem("takecare-clerk-id");
+    if (!clerkId) {
+      toast.error("Session expired. Please log in again.");
+      setIsIngesting(false);
+      return;
+    }
     const formData = new FormData();
     selectedFiles.forEach(file => formData.append("file", file));
-    formData.append("clerkId", "demo-user-123");
+    formData.append("clerkId", clerkId);
 
     try {
       const response = await fetch("/api/analyze-record", {
@@ -1101,7 +1084,7 @@ Based on the synthesized data from your medical records and wearable sensors, yo
                     {analyzing ? `Analyzing Data... ${progress}%` : "Deep Health Context"}
                   </h4>
                   <p className="text-black/40 text-sm font-medium">
-                    {analyzing ? "Synthesizing medical history and wearable metrics." : "Your AI context is 85% complete based on merged data."}
+                    {analyzing ? "Synthesizing medical history and wearable metrics." : `Your AI context is ${medicalContext ? "85%" : "0%"} complete based on available data.`}
                   </p>
                 </div>
               </div>
@@ -1587,7 +1570,7 @@ Based on the synthesized data from your medical records and wearable sensors, yo
                               <Bot className="h-8 w-8 text-black/10" />
                             </div>
                             <h4 className="font-bricolage text-xl font-bold text-black/40">Waiting for Data Ingestion</h4>
-                            <p className="text-sm text-black/20 font-medium max-w-[240px] mx-auto mt-2">Upload medical records to populate the RAG system context for Sarah.</p>
+                            <p className="text-sm text-black/20 font-medium max-w-[240px] mx-auto mt-2">Upload medical records to populate the intelligence engine for {userName}.</p>
                           </div>
                         )}
                       </div>

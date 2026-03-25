@@ -5,10 +5,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Camera, User, Image as ImageIcon, Loader2 } from "lucide-react";
-import { updateProfile } from "@/app/actions/medical";
-import Image from "next/image";
-
+import { Camera, User, Image as ImageIcon, Loader2, Trash2 } from "lucide-react";
+import { updateProfile, deleteUser } from "@/app/actions/medical";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface EditProfileModalProps {
   user: {
@@ -34,9 +34,8 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: "avatarUrl" | "coverImageUrl") => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check file size (limit to 2MB for demo/Base64 efficiency)
       if (file.size > 2 * 1024 * 1024) {
-         alert("Image is too large. Please select an image under 2MB.");
+         toast.error("Image is too large. Please select an image under 2MB.");
          return;
       }
       const reader = new FileReader();
@@ -46,34 +45,34 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
         setLoading(false);
       };
       reader.onerror = () => {
-        alert("Failed to read file.");
+        toast.error("Failed to read file.");
         setLoading(false);
       };
       reader.readAsDataURL(file);
     }
   };
 
-
   const handleUpdate = async () => {
-
     if (!formData.name) {
-       alert("Name is required.");
+       toast.error("Name is required.");
        return;
     }
     setLoading(true);
     try {
       await updateProfile(user.clerkId, formData);
+      toast.success("Profile updated successfully!");
       onUpdate();
     } catch (error) {
        console.error("Update failed", error);
+       toast.error("Failed to update profile.");
     } finally {
       setLoading(false);
     }
   };
 
-
   const isValidUrl = (url: string) => {
     try {
+      if (url.startsWith("data:")) return true;
       new URL(url);
       return true;
     } catch {
@@ -81,17 +80,13 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
     }
   };
 
-
   return (
     <Dialog>
-      <DialogTrigger
-        render={
+      <DialogTrigger asChild>
           <Button variant="outline" className="rounded-2xl border-black/5 bg-black/5 font-black text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-all px-8 h-12 shadow-sm">
             Edit Profile
           </Button>
-        }
-      />
-
+      </DialogTrigger>
 
       <DialogContent className="sm:max-w-xl rounded-[2.5rem] bg-white border-black/5 p-8 overflow-hidden">
         <DialogHeader>
@@ -113,7 +108,7 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
                 accept="image/*"
                 onChange={(e) => handleFileChange(e, "coverImageUrl")}
               />
-              {formData.coverImageUrl && (isValidUrl(formData.coverImageUrl) || formData.coverImageUrl.startsWith("data:")) && (
+              {formData.coverImageUrl && isValidUrl(formData.coverImageUrl) && (
                 <img src={formData.coverImageUrl} alt="Cover" className="h-full w-full object-cover" />
               )}
               <div className="absolute inset-0 bg-black/20 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -138,7 +133,7 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
                       accept="image/*"
                       onChange={(e) => handleFileChange(e, "avatarUrl")}
                    />
-                   {formData.avatarUrl && (isValidUrl(formData.avatarUrl) || formData.avatarUrl.startsWith("data:")) ? (
+                   {formData.avatarUrl && isValidUrl(formData.avatarUrl) ? (
                      <img src={formData.avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
                    ) : (
                      <User className="h-full w-full p-4 text-primary/40" />
@@ -148,15 +143,6 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
                       <span className="text-[8px] text-white font-black uppercase mt-1">Upload</span>
                    </div>
                 </div>
-
-
-
-                <Input
-                  placeholder="URL..."
-                  value={formData.avatarUrl}
-                  onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
-                  className="mt-2 h-10 bg-black/5 border-none rounded-xl text-[10px] font-bold"
-                />
              </div>
 
              <div className="flex-1 space-y-4">
@@ -178,8 +164,86 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
           >
             {loading ? <Loader2 className="animate-spin mr-2" /> : "Save Profile Changes"}
           </Button>
+
+          {/* Danger Zone */}
+          <div className="pt-4 mt-4 border-t border-black/5">
+             <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500/50 mb-4 block">Clinical Danger Zone</Label>
+             <div className="p-5 rounded-2xl bg-red-50/50 border border-red-100 flex items-center justify-between gap-4">
+                <div className="flex flex-col gap-0.5">
+                   <span className="text-sm font-bold text-red-600">Delete medical records</span>
+                   <span className="text-[10px] font-medium text-red-900/40">This will permanently wipe all your clinical data.</span>
+                </div>
+                <DeleteConfirm clerkId={user.clerkId} />
+             </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function DeleteConfirm({ clerkId }: { clerkId: string }) {
+  const [open, setOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const router = useRouter();
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    const toastId = toast.loading("Securely wiping your clinical data...");
+    
+    try {
+      await deleteUser(clerkId);
+      localStorage.removeItem("takecare-clerk-id");
+      toast.success("Account and data successfully deleted.", { id: toastId });
+      setTimeout(() => {
+        router.push("/");
+        window.location.reload();
+      }, 1500);
+    } catch (e) {
+      toast.error("Failed to delete account. Please try again.", { id: toastId });
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <>
+      <Button 
+        variant="ghost" 
+        onClick={() => setOpen(true)}
+        className="h-10 rounded-xl bg-red-100 text-red-600 font-bold text-[10px] uppercase tracking-wider hover:bg-red-600 hover:text-white transition-all px-4"
+      >
+        Delete Data
+      </Button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-md rounded-4xl bg-white p-8 border-none shadow-2xl">
+          <DialogHeader className="items-center text-center">
+             <div className="h-16 w-16 rounded-3xl bg-red-100 flex items-center justify-center mb-4">
+                <Trash2 className="h-8 w-8 text-red-600" />
+             </div>
+             <DialogTitle className="font-bricolage text-2xl font-extrabold tracking-tight">Are you absolutely sure?</DialogTitle>
+             <p className="text-sm text-black/50 font-medium mt-2">
+                This action is IRREVERSIBLE. It will permanently delete your medical history, health goals, and AI analysis reports.
+             </p>
+          </DialogHeader>
+          <div className="flex gap-3 mt-8">
+             <Button 
+               variant="outline" 
+               className="flex-1 h-12 rounded-xl font-bold border-black/5 hover:bg-black/5" 
+               onClick={() => setOpen(false)}
+             >
+               Cancel
+             </Button>
+             <Button 
+               className="flex-1 h-12 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 shadow-lg shadow-red-200" 
+               onClick={handleDelete}
+               disabled={deleting}
+             >
+               {deleting ? "Deleting..." : "Yes, Delete Everything"}
+             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

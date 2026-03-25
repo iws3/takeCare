@@ -3,19 +3,25 @@
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Bell, Search, Settings } from "lucide-react";
+import { Bell, Search, Settings, LogOut } from "lucide-react";
 import { EditProfileModal } from "./edit-profile-modal";
+import { useRouter } from "next/navigation";
 
 interface DashboardHeaderProps {
   user: any;
 }
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
+  const router = useRouter();
   const [currentUser, setCurrentUser] = React.useState(user);
 
   const handleUpdate = () => {
-    // Ideally we'd re-fetch, but for now we'll just update local state or let parent handle it
     window.location.reload();
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("takecare-clerk-id");
+    router.push("/");
   };
 
   return (
@@ -52,12 +58,14 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           <div className="h-8 w-px bg-black/5 mx-2" />
           
           <div className="flex items-center gap-6">
-            <EditProfileModal user={user || { clerkId: "demo-user-123", name: "Guest", avatarUrl: null, coverImageUrl: null }} onUpdate={handleUpdate} />
+            <EditProfileModal user={user || { clerkId: "guest", name: "Guest", avatarUrl: null, coverImageUrl: null }} onUpdate={handleUpdate} />
             
             <div className="flex items-center gap-3">
               <div className="hidden flex-col items-end lg:flex">
                 <span className="text-sm font-bold leading-none">{user?.name || "Patient"}</span>
-                <span className="text-[10px] font-bold text-black/40 uppercase tracking-wider mt-1">Patient ID #{user?.clerkId.slice(-4) || "8291"}</span>
+                <span className="text-[10px] font-bold text-black/40 uppercase tracking-wider mt-1 cursor-pointer hover:text-red-500 transition-colors flex items-center gap-2" onClick={handleLogout}>
+                   Log out
+                </span>
               </div>
               <Avatar className="h-10 w-10 border-2 border-white shadow-lg lg:h-12 lg:w-12">
                 <AvatarImage src={user?.avatarUrl || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&auto=format&fit=crop"} />

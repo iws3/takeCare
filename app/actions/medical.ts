@@ -111,3 +111,14 @@ export async function addAnalysis(recordId: string, analysisData: {
     }
   });
 }
+export async function deleteUser(clerkId: string) {
+  const user = await prisma.user.findUnique({ where: { clerkId } });
+  if (!user) throw new Error("User not found");
+
+  await prisma.user.delete({
+    where: { id: user.id }
+  });
+
+  revalidatePath("/");
+  return { success: true };
+}

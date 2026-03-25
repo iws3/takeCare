@@ -10,13 +10,14 @@ import { useRouter } from "next/navigation";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const clerkId = "demo-user-123";
-
   useEffect(() => {
     async function checkSatus() {
-      const personalized = await hasPersonalized(clerkId);
-      if (personalized) {
-        router.push("/dashboard");
+      const storedId = localStorage.getItem("takecare-clerk-id");
+      if (storedId) {
+        const personalized = await hasPersonalized(storedId);
+        if (personalized) {
+          router.push("/dashboard");
+        }
       }
     }
     checkSatus();

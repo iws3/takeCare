@@ -142,7 +142,8 @@ export function PersonalizationForm() {
 
       setIsCompleted(true);
       try {
-        const clerkId = "demo-user-123"; 
+        const clerkId = `user-${formData.email.replace(/[^a-zA-Z0-9]/g, '-')}`; 
+        localStorage.setItem("takecare-clerk-id", clerkId);
         
         // Ensure user exists first
         await ensureUser(clerkId, formData.email, formData.name);

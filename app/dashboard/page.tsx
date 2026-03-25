@@ -129,24 +129,29 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const clerkId = "demo-user-123"; // Using mock ID
-
   useEffect(() => {
     async function initDashboard() {
       try {
-        // 1. Fetch user from DB
-        let data = await getMedicalHistory(clerkId);
-
-        // 2. If not found, ensure it exists with default data (first time only)
-        if (!data) {
-          const { ensureUser } = await import("@/app/actions/medical");
-          await ensureUser(clerkId, "demo@takecare.ai", "Sarah Jenkins");
-          data = await getMedicalHistory(clerkId);
+        const storedId = localStorage.getItem("takecare-clerk-id");
+        
+        if (!storedId) {
+           router.push("/");
+           return;
         }
 
-        const personalized = await hasPersonalized(clerkId);
-        if (!personalized && clerkId !== "demo-user-123") {
-          // router.push("/onboarding/personalize");
+        // 1. Fetch user from DB
+        let data = await getMedicalHistory(storedId);
+        
+        // 2. If not found, something is wrong or they were cleared
+        if (!data) {
+           localStorage.removeItem("takecare-clerk-id");
+           router.push("/");
+           return;
+        }
+
+        const personalized = await hasPersonalized(storedId);
+        if (!personalized) {
+          router.push("/");
         }
 
         setUserData(data);
@@ -216,7 +221,7 @@ export default function DashboardPage() {
             >
               <div className="mt-6 flex flex-col gap-10">
                 <StatsCards />
-                <ActivityTable />
+                <ActivityTable records={userData?.medicalRecords || []} />
               </div>
             </motion.div>
           ) : activeTab === "messenger" ? (
