@@ -186,7 +186,7 @@ export default function DashboardPage() {
           <h1 className="font-bricolage text-3xl font-extrabold tracking-tighter lg:text-7xl flex flex-wrap items-center gap-x-4">
             <span className="text-black/30">{getGreeting()},</span> 
             {userData?.name?.split(' ')[0] || "Patient"}.
-            <span className="p-3 bg-primary/10 rounded-full animate-bounce h-12 w-12 flex items-center justify-center text-xl grow-0 shrink-0">👋</span>
+            
           </h1>
           <p className="mt-6 text-base font-semibold text-black/40 lg:text-2xl max-w-3xl leading-relaxed">
             I hope you are <span className="text-primary font-black uppercase tracking-widest text-sm lg:text-lg">feeling better now</span>. 
