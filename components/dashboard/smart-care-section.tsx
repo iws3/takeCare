@@ -64,7 +64,7 @@ const SMART_CARE_TABS = [
   { id: "analyze", label: "Analyze", icon: BarChart3, description: "Deep analysis of health records" },
 ];
 
-export function SmartCareSection() {
+export function SmartCareSection({ userName = "Patient" }: { userName?: string }) {
   const [activeTab, setActiveTab] = useState("text");
   const [medicalContext, setMedicalContext] = useState<any>(null);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
@@ -160,6 +160,7 @@ export function SmartCareSection() {
           <TabsContent value="talk" key="talk">
             <VoiceAgentView
               medicalContext={medicalContext}
+              userName={userName}
               allConsultations={allRecords.filter(r => r.analysis)}
               onSelectionChange={(record: any) => {
                 setSelectedRecordId(record.id);
@@ -171,11 +172,12 @@ export function SmartCareSection() {
           </TabsContent>
 
           <TabsContent value="text" key="text">
-            <ChatbotView />
+            <ChatbotView userName={userName} />
           </TabsContent>
           <TabsContent value="analyze" key="analyze">
             <AnalysisView
               medicalContext={medicalContext}
+              userName={userName}
               onContextUpdate={setMedicalContext}
               analysisResult={analysisResult}
               setAnalysisResult={setAnalysisResult}
@@ -190,11 +192,13 @@ export function SmartCareSection() {
 }
 function VoiceAgentView({
   medicalContext,
+  userName,
   allConsultations,
   onSelectionChange,
   selectedRecordId
 }: {
   medicalContext: any,
+  userName: string,
   allConsultations: any[],
   onSelectionChange: (record: any) => void,
   selectedRecordId: string | null
@@ -278,19 +282,18 @@ function VoiceAgentView({
         ${JSON.stringify(selectedMedDetails, null, 2)}
 
         INSTRUCTIONS:
-        You are Sarah's AI Medical Assistant. Use her latest records to provide advice.
-        - She has been diagnosed with Salmonellosis (Typhoid).
-        - IMPORTANT: She specifically wants to talk about these medications: ${selectedMeds.join(", ")}.
-        - Ensure she is taking them correctly according to the prescribed frequency.
-        - Talk to her about her symptoms (stomach grumbling, nausea).
+        You are ${userName}'s AI Medical Assistant. Use the latest records to provide advice.
+        - Discuss specific medications: ${selectedMeds.join(", ")}.
+        - Address symptoms and provide empathetic, clear guidance.
+        - Address the user by their first name: ${userName.split(' ')[0]}.
         - Be professional, empathetic, and clear.
       ` : result.config.systemPrompt;
 
       const firstMessage = selectedMeds.length > 0
-        ? `Hello Sarah, I've reviewed your results. I see you want to discuss your treatment using ${selectedMeds.join(" and ")}. How have you been feeling since you started them?`
+        ? `Hello ${userName.split(' ')[0]}, I've reviewed your results. I see you want to discuss your treatment using ${selectedMeds.join(" and ")}. How have you been feeling since you started them?`
         : medicalContext
-          ? `Hello Sarah, I've reviewed your latest results. How are you feeling today?`
-          : `Hello, this is your TakeCare AI Assistant. How are you feeling today?`;
+          ? `Hello ${userName.split(' ')[0]}, I've reviewed your latest results. How are you feeling today?`
+          : `Hello ${userName.split(' ')[0]}, this is your TakeCare AI Assistant. How can I help you today?`;
 
       await vapiInstance?.start(assistantId, {
         name: "TakeCare AI Doctor",
@@ -371,7 +374,7 @@ function VoiceAgentView({
                   <div className="h-3 w-3 bg-white/40 rounded-full" />
                 )}
               </div>
-              <h3 className="font-bricolage text-2xl font-bold text-white tracking-tight">Dr. Leah</h3>
+              <h3 className="font-bricolage text-2xl font-bold text-white tracking-tight">Dr. Gita/h3>
             </div>
             <p className="text-white/60 text-sm font-medium mt-1">TakeCare Clinical AI</p>
           </div>
@@ -550,9 +553,9 @@ function VoiceAgentView({
 
 
 
-function ChatbotView() {
+function ChatbotView({ userName }: { userName: string }) {
   const [messages, setMessages] = useState([
-    { role: "assistant", content: "Hello Sarah! I'm your Smart Care assistant. How are you feeling today?" }
+    { role: "assistant", content: `Hello ${userName.split(' ')[0]}! I'm your Smart Care assistant. How are you feeling today?` }
   ]);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -664,11 +667,13 @@ function ChatbotView() {
 
 function AnalysisView({
   medicalContext,
+  userName,
   onContextUpdate,
   analysisResult,
   setAnalysisResult
 }: {
   medicalContext: any,
+  userName: string,
   onContextUpdate: (ctx: any) => void,
   analysisResult: string | null,
   setAnalysisResult: (res: string | null) => void
@@ -722,7 +727,9 @@ function AnalysisView({
 
           // Generate a comprehensive mock report
           const mockReport = `
-# Comprehensive Health Analysis Report
+# 🩺 TakeCare Clinical Intelligence Report
+---
+**Patient Name:** ${userName}
 **Patient ID:** ${ps?.id || "TC-0000"}  
 **Date:** ${new Date().toLocaleDateString()}
 
@@ -739,6 +746,7 @@ Based on the synthesized data from your medical records and wearable sensors, yo
 2. **Activity:** Maintain 30 min of moderate walking 4x/week.
 3. **Follow-up:** Schedule a standard consultation in 3 weeks to review medication efficacy.
 
+---
 *This report was generated by TakeCare Digital Clinical Intelligence.*
           `;
           setFullAnalysisResult(mockReport.trim());
