@@ -131,7 +131,7 @@ export function SmartCareSection() {
   return (
     <div className="px-6 lg:px-12 mt-4 flex flex-col gap-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-white/60 backdrop-blur-3xl p-1.5 rounded-4xl w-full lg:w-fit h-auto flex gap-1.5 mb-10 border border-black/[0.03] shadow-sm">
+        <TabsList className="bg-white/60 backdrop-blur-3xl p-1.5 rounded-4xl w-full lg:w-fit h-auto flex gap-1.5 mb-10 border border-black/3 shadow-sm">
           {SMART_CARE_TABS.map((tab) => (
             <TabsTrigger
               key={tab.id}
@@ -351,8 +351,8 @@ function VoiceAgentView({
           </AnimatePresence>
 
           <img
-            src="https://i.ibb.co/N2C49pPK/Chat-GPT-Image-Mar-21-2026-10-06-09-PM.png"
-            alt="Dr. Leah"
+            src="https://i.ibb.co/C3w7WQnk/doc.jpg"
+            alt="TakeCare Doc"
             className={cn(
               "absolute inset-0 h-full w-full object-cover transition-all duration-700 z-10",
               callStatus === "active" ? "scale-105" : "scale-100 grayscale-[20%]"
@@ -719,7 +719,7 @@ function AnalysisView({
         setTimeout(() => {
           setAnalyzing(false);
           setProgress(0);
-          
+
           // Generate a comprehensive mock report
           const mockReport = `
 # Comprehensive Health Analysis Report
@@ -962,8 +962,8 @@ Based on the synthesized data from your medical records and wearable sensors, yo
           onClick={() => setAnalysisTab("upload")}
           className={cn(
             "px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 relative overflow-hidden group",
-            analysisTab === "upload" 
-              ? "bg-black text-white shadow-2xl shadow-black/20" 
+            analysisTab === "upload"
+              ? "bg-black text-white shadow-2xl shadow-black/20"
               : "text-black/40 hover:text-black/60 hover:bg-black/5"
           )}
         >
@@ -977,8 +977,8 @@ Based on the synthesized data from your medical records and wearable sensors, yo
           disabled={!medicalContext}
           className={cn(
             "px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 relative overflow-hidden group",
-            analysisTab === "results" 
-              ? "bg-black text-white shadow-2xl shadow-black/20" 
+            analysisTab === "results"
+              ? "bg-black text-white shadow-2xl shadow-black/20"
               : "text-black/40 hover:text-black/60 hover:bg-black/5",
             !medicalContext && "opacity-30 cursor-not-allowed"
           )}
@@ -1142,7 +1142,7 @@ Based on the synthesized data from your medical records and wearable sensors, yo
                   {/* High-Impact Vitals Card - NEW LIGHT THEME */}
                   <div className="p-8 rounded-[2.5rem] bg-white border border-black/5 shadow-2xl shadow-black/[0.03] flex flex-col justify-between relative group overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors duration-700" />
-                    
+
                     <div className="space-y-6 relative z-10">
                       <div className="flex items-center justify-between">
                         <div className="h-12 w-12 rounded-2xl bg-black flex items-center justify-center shadow-lg shadow-black/10">
@@ -1150,7 +1150,7 @@ Based on the synthesized data from your medical records and wearable sensors, yo
                         </div>
                         <span className="text-[10px] font-black text-black/30 uppercase tracking-[0.2em]">Core Status</span>
                       </div>
- 
+
                       <div className="space-y-8">
                         <div className="flex items-end justify-between border-b border-black/5 pb-4">
                           <div>
@@ -1159,7 +1159,7 @@ Based on the synthesized data from your medical records and wearable sensors, yo
                           </div>
                           <Badge className="bg-primary/10 text-primary border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">Stable</Badge>
                         </div>
- 
+
                         <div className="flex items-end justify-between border-b border-black/5 pb-4">
                           <div>
                             <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em] mb-1">Heart Rate</p>
@@ -1169,7 +1169,7 @@ Based on the synthesized data from your medical records and wearable sensors, yo
                             <Activity className="h-4 w-4 text-primary animate-pulse" />
                           </div>
                         </div>
- 
+
                         <div className="grid grid-cols-2 gap-4">
                           <div className="p-4 rounded-2xl bg-black/[0.02] border border-black/5">
                             <p className="text-[9px] font-black text-black/30 uppercase tracking-[0.2em] mb-1">Temperature</p>
@@ -1182,7 +1182,7 @@ Based on the synthesized data from your medical records and wearable sensors, yo
                         </div>
                       </div>
                     </div>
- 
+
                     <Button className="mt-8 w-full h-15 rounded-2xl bg-black text-white font-black uppercase text-xs tracking-[0.2em] shadow-2xl shadow-black/20 border-none group hover:scale-[1.02] transition-all">
                       Health Report PDF
                       <FileDown className="ml-2 h-4 w-4 transition-transform group-hover:translate-y-0.5" />
@@ -1716,42 +1716,42 @@ Based on the synthesized data from your medical records and wearable sensors, yo
 
       {/* Full Analysis Results Preview Modal */}
       <Dialog open={showAnalysisModal} onOpenChange={setShowAnalysisModal}>
-        <DialogContent className="max-w-3xl h-[80vh] flex flex-col p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl">
+        <DialogContent className="max-w-[95vw] lg:max-w-5xl xl:max-w-6xl h-[92vh] lg:h-[85vh] flex flex-col p-0 overflow-hidden rounded-[2rem] lg:rounded-[3rem] border-none shadow-2xl backdrop-blur-3xl bg-white/95">
           <div className="absolute top-0 left-0 w-full h-2 bg-primary" />
-          
-          <DialogHeader className="px-10 py-10 bg-white border-b border-black/5 shrink-0">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-                <ShieldCheck className="h-7 w-7 text-primary" />
+
+          <DialogHeader className="px-6 py-6 lg:px-12 lg:py-10 bg-white border-b border-black/5 shrink-0">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 lg:gap-6">
+              <div className="h-14 w-14 lg:h-20 lg:w-20 rounded-2xl lg:rounded-[2rem] bg-primary/10 flex items-center justify-center shadow-inner shrink-0">
+                <ShieldCheck className="h-7 w-7 lg:h-10 lg:w-10 text-primary" />
               </div>
-              <div>
-                <DialogTitle className="font-bricolage text-3xl font-black">Health Synthesis Report</DialogTitle>
-                <DialogDescription className="text-black/40 font-medium">Verified by TakeCare Clinical Intelligence</DialogDescription>
+              <div className="space-y-1">
+                <DialogTitle className="font-bricolage text-2xl lg:text-5xl font-black tracking-tighter text-black leading-tight">Health Synthesis Report</DialogTitle>
+                <DialogDescription className="text-black/40 font-bold text-[10px] lg:text-base uppercase tracking-widest">Verified by TakeCare Clinical Intelligence</DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-10 bg-black/[0.01]">
-            <div className="prose prose-sm max-w-none prose-headings:font-bricolage prose-headings:text-black prose-p:text-black/70 prose-strong:text-black prose-strong:font-bold leading-relaxed bg-white p-10 rounded-[2rem] border border-black/5 shadow-sm">
+          <div className="flex-1 overflow-y-auto p-4 lg:p-12 bg-black/[0.02]">
+            <article className="prose prose-sm md:prose-base lg:prose-xl max-w-none prose-headings:font-bricolage prose-headings:text-black prose-p:text-black/70 prose-strong:text-black prose-strong:font-black leading-relaxed bg-white p-6 lg:p-16 rounded-[2rem] lg:rounded-[3.5rem] border border-black/5 shadow-2xl shadow-black/[0.02]">
               {fullAnalysisResult && <ReactMarkdown>{fullAnalysisResult}</ReactMarkdown>}
-            </div>
+            </article>
           </div>
 
-          <DialogFooter className="px-10 py-8 bg-white border-t border-black/5 flex items-center justify-between gap-4 shrink-0">
+          <DialogFooter className="px-6 py-6 lg:px-12 lg:py-8 bg-white border-t border-black/5 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0">
             <Button
               variant="outline"
               onClick={() => setShowAnalysisModal(false)}
-              className="rounded-xl border-black/10 font-bold text-xs uppercase tracking-widest px-8 h-12"
+              className="w-full sm:w-auto rounded-2xl border-black/10 font-black text-[10px] lg:text-xs uppercase tracking-[0.2em] px-10 h-14 hover:bg-black/10 transition-all font-outfit"
             >
               Close Preview
             </Button>
-            <div className="flex items-center gap-3">
+            <div className="w-full sm:w-auto flex items-center gap-3">
               <Button
                 onClick={handleDownloadReport}
-                className="rounded-xl bg-black hover:bg-primary text-white font-bold text-xs uppercase tracking-widest px-8 h-12 group transition-all"
+                className="w-full sm:w-auto rounded-2xl bg-black hover:bg-primary text-white font-black text-[10px] lg:text-xs uppercase tracking-[0.2em] px-12 h-14 group transition-all shadow-xl shadow-black/20 font-outfit"
               >
-                <FileDown className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
-                Download PDF/MD
+                <FileDown className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
+                Download Report
               </Button>
             </div>
           </DialogFooter>
