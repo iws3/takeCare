@@ -374,7 +374,7 @@ function VoiceAgentView({
                   <div className="h-3 w-3 bg-white/40 rounded-full" />
                 )}
               </div>
-              <h3 className="font-bricolage text-2xl font-bold text-white tracking-tight">Dr. Gita/h3>
+              <h3 className="font-bricolage text-2xl font-bold text-white tracking-tight">Dr. Gita</h3>
             </div>
             <p className="text-white/60 text-sm font-medium mt-1">TakeCare Clinical AI</p>
           </div>
