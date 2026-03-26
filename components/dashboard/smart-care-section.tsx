@@ -685,19 +685,25 @@ function AnalysisView({
     
     try {
       setIsDownloading(true);
-      console.log("Generating high-stability medical report...");
+      console.log("Initializing stable PDF capture sequence...");
       
       const element = reportRef.current;
-      if (!element) throw new Error("Report element not found");
+      if (!element) {
+        throw new Error("Target report element not found in DOM");
+      }
 
-      // Use a fixed width for the capture to ensure consistency across devices
-      // 800px is a good balance for A4 content
-      const captureWidth = 800;
+      // Ensure the element is visible for capture
+      element.scrollIntoView({ behavior: 'auto', block: 'center' });
+      
+      // Small timeout to ensure DOM paints are set
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      const captureWidth = 820; // Slightly wider for safer A4 wrapping
       
       const canvas = await html2canvas(element, {
-        scale: 1.25, // Sufficient for professional prints, safe for memory
+        scale: 1, // Ultra-stable for all devices
         useCORS: true,
-        logging: false,
+        logging: true, // Internal logs to help browser console debugging
         backgroundColor: "#ffffff",
         width: captureWidth,
         windowWidth: captureWidth,
@@ -705,14 +711,23 @@ function AnalysisView({
           const report = clonedDoc.getElementById('takecare-pdf-report');
           if (report) {
             report.style.width = `${captureWidth}px`;
-            report.style.padding = '60px';
-            report.style.boxShadow = 'none';
-            report.style.borderRadius = '0';
+            report.style.padding = '40px 60px';
+            report.style.margin = '0 auto';
+            report.style.display = 'block';
+            report.style.visibility = 'visible';
+            report.style.opacity = '1';
+            report.style.position = 'relative';
+            report.style.left = '0';
+            report.style.top = '0';
           }
         }
       });
       
-      const imgData = canvas.toDataURL("image/jpeg", 0.85);
+      if (!canvas || canvas.width === 0 || canvas.height === 0) {
+        throw new Error("Canvas generation returned an empty result");
+      }
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.8);
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -721,13 +736,12 @@ function AnalysisView({
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      
       const imgHeightInPdf = (canvas.height * pdfWidth) / canvas.width;
       
       let heightLeft = imgHeightInPdf;
       let position = 0;
 
-      // Add pages while content remains
+      // Robust pagination loop
       while (heightLeft > 0) {
         pdf.addImage(imgData, "JPEG", 0, position, pdfWidth, imgHeightInPdf, undefined, 'FAST');
         heightLeft -= pdfHeight;
@@ -738,15 +752,15 @@ function AnalysisView({
         }
       }
 
-      const fileName = `TakeCare_Medical_Synthesis_${new Date().toISOString().split('T')[0]}.pdf`;
-      pdf.save(fileName);
+      const dateStr = new Date().toISOString().split('T')[0];
+      pdf.save(`TakeCare_Health_Synthesis_${dateStr}.pdf`);
       
-      toast.success("Professional health report generated!", { id: toastId });
-    } catch (error) {
-      console.error("PDF generation critical failure:", error);
-      toast.error("Technical error while generating PDF.", { 
+      toast.success("Health report generated successfully!", { id: toastId });
+    } catch (error: any) {
+      console.error("PDF engine crash detail:", error);
+      toast.error("Process interrupted by browser limits.", { 
         id: toastId,
-        description: "Please close this preview, wait 2 seconds, and try again. Modern browsers sometimes block large canvas tasks on first try."
+        description: `Error: ${error.message || 'Capture failed'}. Try refreshing the page if the issue persists.`
       });
     } finally {
       setIsDownloading(false);
