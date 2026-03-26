@@ -73,8 +73,7 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const [allRecords, setAllRecords] = useState<any[]>([]);
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
-
-
+  const [patientId, setPatientId] = useState<string | null>(null);
 
   // Automatically load the extracted context from the database
   useEffect(() => {
@@ -82,6 +81,7 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
       try {
         const clerkId = localStorage.getItem("takecare-clerk-id");
         if (!clerkId) return;
+        setPatientId(clerkId);
         const data = await getMedicalHistory(clerkId);
 
         if (data && data.medicalRecords && data.medicalRecords.length > 0) {
@@ -1840,9 +1840,72 @@ Based on the synthesized data from your medical records and wearable sensors, yo
             <article
               id="takecare-pdf-report"
               ref={reportRef}
-              className="prose prose-sm md:prose-base lg:prose-xl max-w-none prose-headings:font-bricolage prose-headings:text-black prose-p:text-black/70 prose-strong:text-black prose-strong:font-black leading-relaxed bg-white p-6 lg:p-16 rounded-[2rem] lg:rounded-[3.5rem] border border-black/5 shadow-2xl shadow-black/[0.02]"
+              className="bg-white p-6 lg:p-20 rounded-[2rem] lg:rounded-[4rem] border border-black/5 shadow-2xl shadow-black/[0.02] max-w-none min-h-full flex flex-col"
             >
-              {fullAnalysisResult && <ReactMarkdown>{fullAnalysisResult}</ReactMarkdown>}
+              {/* Report Header Logo & Title */}
+              <div className="flex justify-between items-start border-b-[3px] border-black pb-10 mb-12">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-black flex items-center justify-center text-white">
+                      <ShieldCheck className="h-6 w-6" />
+                    </div>
+                    <span className="text-xl font-black uppercase tracking-tighter">TakeCare</span>
+                  </div>
+                  <h1 className="text-4xl lg:text-5xl font-bricolage font-black tracking-tighter text-black uppercase mt-4">Clinical Synthesis</h1>
+                  <p className="text-[11px] font-black text-black/30 uppercase tracking-[0.3em]">Precision Intelligence Record</p>
+                </div>
+                <div className="text-right space-y-2">
+                  <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-black text-white text-[10px] font-black uppercase tracking-widest mb-4">
+                    Verified Analysis
+                  </div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-black/20">Generated On</p>
+                  <p className="text-lg font-bold text-black">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                </div>
+              </div>
+
+              {/* Patient Identity Section */}
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 p-10 rounded-[2.5rem] bg-black/[0.02] border border-black/5 mb-16">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-black/30 mb-2">Subject Name</p>
+                  <p className="text-2xl font-black text-black font-bricolage">{userName}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-black/30 mb-2">Clinical Reference</p>
+                  <p className="text-2xl font-bold text-black font-mono">#{patientId?.slice(-6).toUpperCase() || "PAT-00X"}</p>
+                </div>
+                <div className="col-span-2 lg:col-span-1 border-t lg:border-t-0 lg:border-l border-black/5 pt-6 lg:pt-0 lg:pl-8">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-black/30 mb-2">Report Status</p>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse" />
+                    <p className="text-base font-black text-blue-600 uppercase">Live Context Sync</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Clinical Analysis Content */}
+              <div className="flex-1 prose prose-sm md:prose-base lg:prose-xl max-w-none prose-headings:font-bricolage prose-headings:text-black prose-headings:font-black prose-headings:tracking-tighter prose-headings:uppercase prose-p:text-black/80 prose-p:leading-relaxed prose-strong:text-black prose-strong:font-black prose-ul:list-disc prose-li:text-black/70">
+                {fullAnalysisResult && (
+                  <ReactMarkdown
+                    components={{
+                      h1: ({node, ...props}) => <h1 className="text-3xl border-l-4 border-black pl-5 my-10" {...props} />,
+                      h2: ({node, ...props}) => <h2 className="text-xl bg-black/5 p-4 rounded-xl mt-12 mb-6" {...props} />,
+                      ul: ({node, ...props}) => <ul className="space-y-2 mt-4" {...props} />,
+                      li: ({node, ...props}) => <li className="bg-white border border-black/5 p-3 rounded-2xl list-none flex items-start gap-4 before:content-['•'] before:text-black before:font-bold before:text-xl" {...props} />,
+                    }}
+                  >
+                    {fullAnalysisResult}
+                  </ReactMarkdown>
+                )}
+              </div>
+
+              {/* Professional Footer */}
+              <div className="mt-24 pt-10 border-t border-black/10 flex flex-col md:flex-row justify-between items-center gap-6 opacity-30">
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-black" />
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em]">TakeCare V2.4 Clinical Intelligence Engine</p>
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em]">Confidential Medical Asset &copy; 2026</p>
+              </div>
             </article>
           </div>
 
