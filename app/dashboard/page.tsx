@@ -187,15 +187,14 @@ export default function DashboardPage() {
 
       <main className="flex flex-1 flex-col responsive-container w-full overflow-x-hidden">
         {/* Welcome Section */}
-        <div className="px-6 py-10 lg:px-0 lg:py-20 animate-fade-up">
-          <h1 className="font-bricolage text-3xl font-extrabold tracking-tighter lg:text-7xl flex flex-wrap items-center gap-x-4">
-            <span className="text-black/30">{getGreeting()},</span> 
-            {userData?.name?.split(' ')[0] || "Patient"}.
-            
+        <div className="px-6 py-8 md:py-12 lg:px-0 lg:py-20 animate-fade-up">
+          <h1 className="font-bricolage text-3xl md:text-5xl lg:text-7xl font-extrabold tracking-tighter flex flex-wrap items-center gap-x-3 md:gap-x-4">
+            <span className="text-black/30 whitespace-nowrap">{getGreeting()},</span> 
+            <span className="text-black inline-block">{userData?.name?.split(' ')[0] || "Patient"}.</span>
           </h1>
-          <p className="mt-6 text-base font-semibold text-black/40 lg:text-2xl max-w-3xl leading-relaxed">
-            I hope you are <span className="text-primary font-black uppercase tracking-widest text-sm lg:text-lg">feeling better now</span>. 
-            Here&apos;s a look at your <span className="text-black font-bold italic underline decoration-primary/40 underline-offset-8 cursor-help">comprehensive health profile</span> today.
+          <p className="mt-4 md:mt-6 text-sm md:text-lg lg:text-2xl font-semibold text-black/40 max-w-3xl leading-snug md:leading-relaxed">
+            I hope you are <span className="text-primary font-black uppercase tracking-widest text-[10px] md:text-xs lg:text-lg">feeling better now</span>. 
+            Here&apos;s a look at your <span className="text-black font-bold italic underline decoration-primary/40 underline-offset-4 md:underline-offset-8 cursor-help">comprehensive health profile</span> today.
           </p>
         </div>
 

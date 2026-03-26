@@ -195,7 +195,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.4 }}
-                  className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center rounded-[3rem] border border-black/5 bg-white p-8 lg:p-12 shadow-2xl relative overflow-hidden"
+                  className="mt-4 md:mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center rounded-3xl md:rounded-5xl border border-black/5 bg-white p-5 md:p-8 lg:p-12 shadow-2xl relative overflow-hidden"
                 >
                   <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32" />
                   <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -ml-32 -mb-32" />
@@ -250,7 +250,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
                         />
                       </div>
 
-                      <Button type="submit" className="h-20 rounded-4xl bg-black text-white font-black text-xl hover:scale-[1.02] shadow-2xl mt-4">
+                      <Button type="submit" className="h-16 md:h-20 rounded-3xl md:rounded-4xl bg-black text-white font-black text-lg md:text-xl hover:scale-[1.02] active:scale-95 shadow-2xl mt-4">
                         Send WhatsApp Invitation
                       </Button>
                     </form>

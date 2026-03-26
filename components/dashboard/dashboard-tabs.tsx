@@ -25,23 +25,23 @@ export function DashboardTabs({
   messengerCount?: number;
 }) {
   return (
-    <div className="px-6 lg:px-0 my-12">
+    <div className="px-6 lg:px-0 my-8 lg:my-12">
       <Tabs value={value} onValueChange={onValueChange} className="w-full">
-        <TabsList className="bg-white/60 backdrop-blur-3xl p-1.5 rounded-4xl w-full lg:w-fit h-auto flex gap-1.5 overflow-x-auto no-scrollbar border border-black/[0.03] shadow-sm relative">
+        <TabsList className="bg-white/60 backdrop-blur-3xl p-1 md:p-1.5 rounded-3xl md:rounded-4xl w-full lg:w-fit h-auto flex gap-1 md:gap-1.5 overflow-x-auto no-scrollbar border border-black/[0.03] shadow-sm relative">
           {TABS.map((tab) => (
             <TabsTrigger
               key={tab.id}
               value={tab.id}
               className={cn(
-                "rounded-3xl px-8 py-3.5 lg:px-10 lg:py-4 transition-all duration-500 cursor-pointer whitespace-nowrap relative group shrink-0",
+                "rounded-2xl md:rounded-3xl px-5 py-3 md:px-10 md:py-4 transition-all duration-500 cursor-pointer whitespace-nowrap relative group shrink-0",
                 "data-[state=active]:text-white",
                 "data-[state=inactive]:text-black/40 data-[state=inactive]:hover:text-black/60 data-[state=inactive]:hover:bg-black/5",
-                "flex items-center justify-center gap-4 font-outfit font-black text-sm lg:text-base border border-transparent"
+                "flex items-center justify-center gap-2 md:gap-4 font-outfit font-black text-xs md:text-base border border-transparent"
               )}
             >
               <div className="relative">
                 <tab.icon className={cn(
-                  "h-5 w-5 lg:h-6 lg:w-6 transition-transform duration-500 group-hover:scale-110 group-data-[state=active]:scale-110",
+                  "h-4 w-4 md:h-6 md:w-6 transition-transform duration-500 group-hover:scale-110 group-data-[state=active]:scale-110",
                   tab.id === "smart-care" && value !== "smart-care" && "text-vital-orange animate-pulse"
                 )} />
                 
@@ -50,7 +50,7 @@ export function DashboardTabs({
                   <motion.span
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-linear-to-tr from-[#25D366] to-[#128C7E] text-[10px] font-black text-white shadow-lg shadow-[#25D366]/40 border-2 border-white"
+                    className="absolute -top-1.5 -right-1.5 flex h-4 w-4 md:h-5 md:w-5 items-center justify-center rounded-full bg-linear-to-tr from-[#25D366] to-[#128C7E] text-[8px] md:text-[10px] font-black text-white shadow-lg shadow-[#25D366]/40 border-2 border-white"
                   >
                     {messengerCount}
                   </motion.span>
@@ -61,19 +61,19 @@ export function DashboardTabs({
                   <motion.span
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-linear-to-tr from-[#FF3B30] to-[#D70015] text-[10px] font-black text-white shadow-lg shadow-[#FF3B30]/40 border-2 border-white"
+                    className="absolute -top-1.5 -right-1.5 flex h-4 w-4 md:h-5 md:w-5 items-center justify-center rounded-full bg-linear-to-tr from-[#FF3B30] to-[#D70015] text-[8px] md:text-[10px] font-black text-white shadow-lg shadow-[#FF3B30]/40 border-2 border-white"
                   >
                     {notificationCount > 9 ? "9+" : notificationCount}
                   </motion.span>
                 )}
               </div>
               
-              <span className="uppercase text-[10px] lg:text-xs tracking-widest">{tab.label}</span>
+              <span className="uppercase text-[9px] md:text-xs tracking-[0.15em] md:tracking-widest">{tab.label}</span>
               
               {value === tab.id && (
                 <motion.div
                   layoutId="active-pill"
-                  className="absolute inset-0 bg-black rounded-3xl -z-10 shadow-2xl shadow-black/20"
+                  className="absolute inset-0 bg-black rounded-2xl md:rounded-3xl -z-10 shadow-xl shadow-black/20"
                   transition={{ type: "spring", bounce: 0.15, duration: 0.6 }}
                 />
               )}

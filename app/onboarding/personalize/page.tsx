@@ -20,7 +20,7 @@ export default function PersonalizePage() {
       }
       const personalized = await hasPersonalized(storedId);
       if (personalized) {
-        // router.push("/dashboard");
+        // We let them stay if they want to re-personalize or just see the form
       }
     }
     checkStatus();

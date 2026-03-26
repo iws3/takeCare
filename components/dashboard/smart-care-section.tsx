@@ -109,26 +109,26 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
 
 
   return (
-    <div className="px-6 lg:px-12 mt-4 flex flex-col gap-6">
+    <div className="px-4 md:px-6 lg:px-12 mt-2 md:mt-4 flex flex-col gap-4 md:gap-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-white/60 backdrop-blur-3xl p-1.5 rounded-4xl w-full lg:w-fit h-auto flex gap-1.5 mb-10 border border-black/3 shadow-sm">
+        <TabsList className="bg-white/60 backdrop-blur-3xl p-1 md:p-1.5 rounded-3xl md:rounded-4xl w-full lg:w-fit h-auto flex gap-1 md:gap-1.5 mb-6 md:mb-10 border border-black/3 shadow-sm">
           {SMART_CARE_TABS.map((tab) => (
             <TabsTrigger
               key={tab.id}
               value={tab.id}
               className={cn(
-                "rounded-3xl px-8 py-3 transition-all duration-500 cursor-pointer flex-1 lg:flex-none relative group",
+                "rounded-2xl md:rounded-3xl px-4 py-2.5 md:px-8 md:py-3 transition-all duration-500 cursor-pointer flex-1 lg:flex-none relative group",
                 "data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-2xl data-[state=active]:shadow-black/20",
                 "data-[state=inactive]:text-black/40 data-[state=inactive]:hover:bg-black/5 data-[state=inactive]:hover:text-black/60",
-                "flex items-center justify-center gap-3 font-outfit font-black text-xs uppercase tracking-widest"
+                "flex items-center justify-center gap-2 md:gap-3 font-outfit font-black text-[10px] md:text-xs uppercase tracking-widest"
               )}
             >
-              <tab.icon className="h-4 w-4 transition-transform duration-500 group-hover:scale-110 group-data-[state=active]:scale-110" />
+              <tab.icon className="h-3.5 w-3.5 md:h-4 md:w-4 transition-transform duration-500 group-hover:scale-110 group-data-[state=active]:scale-110" />
               {tab.label}
               {activeTab === tab.id && (
                 <motion.div
                   layoutId="smart-active-pill"
-                  className="absolute inset-0 bg-black rounded-xl -z-10"
+                  className="absolute inset-0 bg-black rounded-2xl md:rounded-3xl -z-10"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                 />
               )}
@@ -310,18 +310,19 @@ function VoiceAgentView({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="relative flex flex-col lg:flex-row p-6 lg:p-12 rounded-[3.5rem] border border-black/5 bg-white shadow-2xl overflow-hidden min-h-[600px] gap-8 lg:gap-12"
+      exit={{ opacity: 0, y: -30 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="relative flex flex-col lg:flex-row p-4 md:p-8 lg:p-12 rounded-3xl md:rounded-[3.5rem] border border-black/5 bg-white shadow-2xl overflow-hidden min-h-[500px] lg:min-h-[600px] gap-6 md:gap-8 lg:gap-12"
     >
       {/* Background Decor */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl -mr-64 -mt-64 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-vital-orange/5 rounded-full blur-3xl -ml-40 -mb-40 pointer-events-none" />
 
       {/* LEFT SIDE: Doctor Image & Call Controls */}
-      <div className="w-full lg:w-5/12 flex flex-col items-center justify-center gap-6 relative z-10">
-        <div className="relative h-72 w-72 lg:h-96 lg:w-full lg:max-w-sm rounded-[3rem] overflow-hidden shadow-2xl border-[6px] border-white group">
+      <div className="w-full lg:w-5/12 flex flex-col items-center justify-center gap-4 md:gap-6 relative z-10 shrink-0">
+        <div className="relative h-48 w-48 sm:h-64 sm:w-64 md:h-80 md:w-80 lg:h-96 lg:w-full lg:max-w-sm rounded-4xl md:rounded-[3rem] overflow-hidden shadow-2xl border-4 md:border-[6px] border-white group shrink-0">
           <AnimatePresence>
             {isDoctorSpeaking && (
               <motion.div
@@ -342,110 +343,108 @@ function VoiceAgentView({
             )}
           />
 
-          <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/90 via-black/40 to-transparent p-6 z-20 flex flex-col justify-end h-1/2">
-            <div className="flex items-center gap-3">
+          <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/90 via-black/40 to-transparent p-4 md:p-6 z-20 flex flex-col justify-end h-3/4">
+            <div className="flex items-center gap-2 md:gap-3">
               <div className="relative flex items-center justify-center">
                 {callStatus === "active" ? (
                   <>
-                    <div className="h-3 w-3 bg-green-500 rounded-full" />
-                    <div className="absolute h-3 w-3 bg-green-500 rounded-full animate-ping" />
+                    <div className="h-2 w-2 md:h-3 md:w-3 bg-green-500 rounded-full" />
+                    <div className="absolute h-2 w-2 md:h-3 md:w-3 bg-green-500 rounded-full animate-ping" />
                   </>
                 ) : (
-                  <div className="h-3 w-3 bg-white/40 rounded-full" />
+                  <div className="h-2 w-2 md:h-3 md:w-3 bg-white/40 rounded-full" />
                 )}
               </div>
-              <h3 className="font-bricolage text-2xl font-bold text-white tracking-tight">Dr. Leo</h3>
+              <h3 className="font-bricolage text-xl md:text-2xl font-bold text-white tracking-tight">Dr. Leo</h3>
             </div>
-            <p className="text-white/60 text-sm font-medium mt-1">TakeCare Clinical AI</p>
+            <p className="text-white/60 text-[10px] md:text-sm font-medium mt-0.5 md:mt-1">TakeCare Clinical AI Assistant</p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-2 lg:gap-3 bg-white/80 backdrop-blur-2xl p-3 lg:p-4 rounded-[2rem] border border-black/5 shadow-xl w-fit relative z-20">
+        <div className="flex items-center justify-center gap-2 md:gap-3 bg-white/80 backdrop-blur-2xl p-2.5 md:p-4 rounded-3xl md:rounded-4xl border border-black/5 shadow-xl w-fit relative z-20">
           <button
             onClick={toggleMute}
             disabled={callStatus !== "active"}
             className={cn(
-              "h-12 w-12 lg:h-14 lg:w-14 rounded-2xl flex items-center justify-center transition-all",
+              "h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl flex items-center justify-center transition-all",
               isMuted ? "bg-red-50 text-red-500" : "bg-black/5 text-black hover:bg-black/10",
               callStatus !== "active" && "opacity-40 cursor-not-allowed"
             )}
-            title="Mute Microphone"
           >
-            {isMuted ? <MicOff className="h-5 w-5 lg:h-6 lg:w-6" /> : <Mic className="h-5 w-5 lg:h-6 lg:w-6" />}
+            {isMuted ? <MicOff className="h-4 w-4 md:h-6 md:w-6" /> : <Mic className="h-4 w-4 md:h-6 md:w-6" />}
           </button>
 
           <button
             disabled={callStatus !== "active"}
-            className="h-12 w-12 lg:h-14 lg:w-14 rounded-2xl flex items-center justify-center transition-all bg-black/5 text-black hover:bg-black/10 disabled:opacity-40 disabled:cursor-not-allowed"
-            title="Share Camera"
+            className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl flex items-center justify-center transition-all bg-black/5 text-black hover:bg-black/10 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <Video className="h-5 w-5 lg:h-6 lg:w-6" />
+            <Video className="h-4 w-4 md:h-6 md:w-6" />
           </button>
 
-          <div className="w-[1px] h-8 bg-black/10 mx-1 hidden sm:block" />
+          <div className="w-[1px] h-6 md:h-8 bg-black/10 mx-0.5 md:mx-1" />
 
           {callStatus === "active" ? (
             <button
               onClick={endCall}
-              className="h-12 px-4 lg:h-14 lg:px-6 rounded-2xl flex items-center gap-2 transition-all bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20 font-bold tracking-wide"
+              className="h-10 px-4 md:h-14 md:px-6 rounded-xl md:rounded-2xl flex items-center gap-2 transition-all bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20 font-black text-[10px] md:text-xs uppercase tracking-widest"
             >
-              <PhoneOff className="h-5 w-5" />
-              <span className="hidden sm:inline">End</span>
+              <PhoneOff className="h-4 w-4" />
+              <span>End Call</span>
             </button>
           ) : (
             <button
               disabled={callStatus === "connecting"}
               onClick={toggleVoiceConsultation}
-              className="h-12 px-6 lg:h-14 lg:px-8 rounded-2xl flex items-center gap-2 transition-all bg-black hover:scale-105 text-white shadow-xl shadow-black/20 font-bold tracking-wide"
+              className="h-10 px-5 md:h-14 md:px-8 rounded-xl md:rounded-2xl flex items-center gap-2 transition-all bg-black hover:scale-105 text-white shadow-xl shadow-black/20 font-black text-[10px] md:text-xs uppercase tracking-widest"
             >
               {callStatus === "connecting" ? (
-                <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                <Mic className="h-5 w-5" />
+                <Mic className="h-4 w-4" />
               )}
-              {callStatus === "connecting" ? "Connecting..." : "Connect"}
+              {callStatus === "connecting" ? "Connecting" : "Consult Now"}
             </button>
           )}
         </div>
       </div>
 
       {/* RIGHT SIDE: Interactive Clinical Context */}
-      <div className="w-full lg:w-7/12 flex flex-col justify-center gap-8 relative z-10 px-0 lg:px-4 text-center lg:text-left mt-4 lg:mt-0 overflow-y-auto no-scrollbar">
-        <div className="space-y-4 flex flex-col items-center lg:items-start pt-4 lg:pt-0">
+      <div className="w-full lg:w-7/12 flex flex-col gap-6 md:gap-8 relative z-10 text-center lg:text-left">
+        <div className="space-y-3 md:space-y-4 flex flex-col items-center lg:items-start pt-2 md:pt-4 lg:pt-0">
           <Badge
             className={cn(
-              "px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] w-fit",
+              "px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[9px] md:text-xs font-black uppercase tracking-[0.2em] w-fit",
               callStatus === "active" ? "bg-green-500/10 text-green-600 border border-green-500/20" : "bg-black/5 text-black/40 shadow-inner",
               callStatus !== "inactive" && "animate-pulse"
             )}
           >
-            {callStatus === "active" ? (isDoctorSpeaking ? "Doctor is Speaking..." : "Listening...") : callStatus === "connecting" ? "Secure Connection..." : "AI Voice Consultation"}
+            {callStatus === "active" ? (isDoctorSpeaking ? "Doctor Speaking..." : "Listening...") : callStatus === "connecting" ? "Secure Handshake..." : "AI Health Orchestration"}
           </Badge>
 
-          <h2 className="font-bricolage text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-black max-w-xl">
-            {callStatus === "active" ? "How can I help you, Sarah?" : "Start your session."}
+          <h2 className="font-bricolage text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tighter leading-tight text-black max-w-xl">
+            {callStatus === "active" ? `Ready to assist, ${userName.split(' ')[0]}?` : "Digital Voice Consultation."}
           </h2>
-          <p className="text-black/40 font-bold text-base sm:text-xl max-w-md leading-relaxed">
+          <p className="text-black/40 font-bold text-sm md:text-xl max-w-md leading-relaxed">
             {medicalContext
-              ? `Ready to discuss your ${medicalContext?.patient_summary?.diagnosis || "latest treatment"} and vitals.`
-              : `Select a consultation to securely discuss results in real-time.`}
+              ? `Reviewing your ${medicalContext?.patient_summary?.diagnosis || "health trends"} in real-time.`
+              : `Select a patient record below to initiate a context-aware consultation.`}
           </p>
         </div>
 
         {/* CONSULTATION SELECTION UI */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between px-2">
-            <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em]">Select Consultation Context:</p>
-            <Badge variant="outline" className="text-[9px] font-black border-black/5 opacity-40">{allConsultations.length} RECORDS</Badge>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <p className="text-[9px] md:text-[10px] font-black text-black/40 uppercase tracking-[0.2em]">Patient Records Library:</p>
+            <Badge variant="outline" className="text-[8px] md:text-[9px] font-black border-black/5 opacity-40">{allConsultations.length} RECORDS</Badge>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[220px] overflow-y-auto pr-2 no-scrollbar px-1">
+          <div className="flex flex-row overflow-x-auto gap-3 pb-4 no-scrollbar -mx-4 px-4 lg:grid lg:grid-cols-2 lg:max-h-[220px] lg:overflow-y-auto lg:pr-2 lg:mx-0 lg:px-1">
             {allConsultations.length > 0 ? allConsultations.map((record) => (
               <button
                 key={record.id}
                 onClick={() => onSelectionChange(record)}
                 className={cn(
-                  "p-4 rounded-3xl border transition-all text-left flex flex-col gap-2 group relative overflow-hidden",
+                  "p-4 rounded-2xl md:rounded-3xl border transition-all text-left flex flex-col gap-3 group relative overflow-hidden min-w-[240px] md:min-w-[280px] lg:min-w-0 md:bg-white",
                   selectedRecordId === record.id
                     ? "bg-black text-white border-black shadow-xl"
                     : "bg-white text-black border-black/5 hover:border-black/10 shadow-sm hover:scale-[1.02]"
@@ -463,19 +462,19 @@ function VoiceAgentView({
                   )}>
                     <FileText className={cn("h-4 w-4", selectedRecordId === record.id ? "text-white" : "text-black/40")} />
                   </div>
-                  <p className="text-[10px] font-black uppercase tracking-widest truncate max-w-[120px]">
+                  <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest truncate max-w-[140px]">
                     {record.fileName}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-bold line-clamp-1 opacity-80">{record.description || "Medical Record Analysis"}</p>
+                  <p className="text-[11px] md:text-xs font-bold line-clamp-1 opacity-80">{record.description || "Medical Record Analysis"}</p>
                   <p className="text-[9px] font-medium opacity-40 mt-1">{new Date(record.createdAt).toLocaleDateString()} • {record.type}</p>
                 </div>
               </button>
             )) : (
-              <div className="col-span-full p-10 rounded-4xl border-2 border-dashed border-black/5 bg-black/1 flex flex-col items-center justify-center gap-3">
+              <div className="col-span-full p-8 md:p-10 rounded-3xl md:rounded-4xl border-2 border-dashed border-black/5 bg-black/1 flex flex-col items-center justify-center gap-3 w-full">
                 <Bot className="h-8 w-8 text-black/10" />
-                <p className="text-[10px] font-black text-black/20 uppercase tracking-widest text-center leading-relaxed">No past consultations found.<br />Upload records in the Analyze tab.</p>
+                <p className="text-[9px] md:text-[10px] font-black text-black/20 uppercase tracking-widest text-center leading-relaxed">No medical records found.<br />Upload in the Analyze section.</p>
               </div>
             )}
           </div>
@@ -483,46 +482,46 @@ function VoiceAgentView({
 
         {/* Medication Selection UI */}
         {medicalContext && (
-          <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em] px-2">Focus on Medications:</p>
-            <div className="flex flex-wrap gap-2 px-1">
+          <div className="flex flex-col gap-3 md:gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <p className="text-[9px] md:text-[10px] font-black text-black/40 uppercase tracking-[0.2em] px-1">Consultation Topics:</p>
+            <div className="flex flex-nowrap overflow-x-auto gap-2 pb-2 no-scrollbar px-1">
               {medicalContext?.patient_summary?.medications?.map((med: any) => (
                 <button
                   key={med.name}
                   onClick={() => toggleMedication(med.name)}
                   className={cn(
-                    "px-4 py-2.5 rounded-2xl border transition-all flex items-center gap-2",
+                    "px-4 py-2 rounded-xl md:rounded-2xl border transition-all flex items-center gap-2 shrink-0",
                     selectedMeds.includes(med.name)
                       ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.05]"
                       : "bg-white text-black/60 border-black/5 hover:border-black/10 shadow-sm hover:scale-105"
                   )}
                 >
-                  <Pill className={cn("h-3.5 w-3.5", selectedMeds.includes(med.name) ? "text-white" : "text-primary")} />
-                  <span className="text-xs font-bold leading-none">{med.name}</span>
+                  <Pill className={cn("h-3 w-3 md:h-3.5 md:w-3.5", selectedMeds.includes(med.name) ? "text-white" : "text-primary")} />
+                  <span className="text-[10px] md:text-xs font-bold whitespace-nowrap">{med.name}</span>
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-          <div className="p-5 lg:p-6 rounded-3xl bg-black/[0.02] border border-black/5 text-left flex flex-col gap-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
-            <div className="h-10 w-10 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm">
-              <Activity className="h-5 w-5 text-primary" />
+        <div className="grid grid-cols-2 gap-3 md:gap-4 lg:mt-2">
+          <div className="p-4 md:p-6 rounded-2xl md:rounded-3xl bg-black/2 border border-black/5 text-left flex flex-col gap-3 md:gap-4 shadow-sm group">
+            <div className="h-8 w-8 md:h-10 md:w-10 rounded-xl md:rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm">
+              <Activity className="h-4 w-4 md:h-5 md:w-5 text-primary" />
             </div>
             <div>
-              <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1.5">Selected Items</p>
-              <p className="text-sm font-bold text-black leading-snug">{selectedMeds.length} ready for discussion</p>
+              <p className="text-[8px] md:text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1">Queue</p>
+              <p className="text-[11px] md:text-sm font-bold text-black leading-tight">{selectedMeds.length} Contexts Active</p>
             </div>
           </div>
 
-          <div className="p-5 lg:p-6 rounded-3xl bg-black/[0.02] border border-black/5 text-left flex flex-col gap-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
-            <div className="h-10 w-10 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm">
-              <Zap className="h-5 w-5 text-vital-orange" />
+          <div className="p-4 md:p-6 rounded-2xl md:rounded-3xl bg-black/2 border border-black/5 text-left flex flex-col gap-3 md:gap-4 shadow-sm group">
+            <div className="h-8 w-8 md:h-10 md:w-10 rounded-xl md:rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm">
+              <Zap className="h-4 w-4 md:h-5 md:w-5 text-vital-orange" />
             </div>
             <div>
-              <p className="text-[10px] font-black text-vital-orange uppercase tracking-[0.2em] mb-1.5">Doctor's Focus</p>
-              <p className="text-sm font-bold text-black leading-snug">Strict adherence monitoring</p>
+              <p className="text-[8px] md:text-[10px] font-black text-vital-orange uppercase tracking-[0.2em] mb-1">AI Focus</p>
+              <p className="text-[11px] md:text-sm font-bold text-black leading-tight">Proactive Monitoring</p>
             </div>
           </div>
         </div>
@@ -561,85 +560,90 @@ function ChatbotView({ userName }: { userName: string }) {
     }, 1000);
   };
 
-  return (
-    <motion.div
+  return (    <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      className="flex flex-col min-h-[550px] lg:h-[700px] rounded-[2.5rem] border border-black/5 bg-white shadow-2xl shadow-black/5 overflow-hidden"
+      className="flex flex-col h-[500px] md:h-[650px] bg-white rounded-3xl md:rounded-[3rem] border border-black/5 shadow-2xl overflow-hidden"
     >
-      {/* Chat Header */}
-      <div className="px-8 py-6 border-b border-black/5 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-            <Bot className="h-6 w-6 text-primary" />
+      <div className="p-4 md:p-6 border-b border-black/5 bg-black/[0.02] flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2 md:gap-4">
+          <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-black flex items-center justify-center shadow-lg shadow-black/20">
+            <Bot className="h-5 w-5 md:h-6 md:w-6 text-white" />
           </div>
           <div>
-            <h3 className="font-bricolage text-xl font-bold">Smart Care AI</h3>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[10px] uppercase font-black tracking-widest text-black/40">Always active</span>
+            <h3 className="font-bricolage text-base md:text-xl font-bold text-black tracking-tight">Clinical Assistant</h3>
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <span className="h-1.5 w-1.5 md:h-2 md:w-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-[10px] md:text-xs font-black text-black/30 uppercase tracking-widest">Always Online</span>
             </div>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="rounded-full h-10 w-10">
-          <Zap className="h-5 w-5 text-primary" />
-        </Button>
       </div>
 
-      {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-8 flex flex-col gap-6 no-scrollbar">
-        {messages.map((msg, i) => (
-          <motion.div
-            initial={{ opacity: 0, y: 10, x: msg.role === "user" ? 20 : -20 }}
-            animate={{ opacity: 1, y: 0, x: 0 }}
-            key={i}
-            className={cn(
-              "flex gap-4 max-w-[85%]",
-              msg.role === "user" ? "ml-auto flex-row-reverse" : ""
-            )}
-          >
-            <div className={cn(
-              "h-10 w-10 shrink-0 rounded-xl flex items-center justify-center",
-              msg.role === "user" ? "bg-black" : "bg-primary/10"
-            )}>
-              {msg.role === "user" ? <User className="h-5 w-5 text-white" /> : <Bot className="h-5 w-5 text-primary" />}
-            </div>
-            <div className={cn(
-              "px-6 py-4 rounded-4xl",
-              msg.role === "user"
-                ? "bg-black text-white rounded-tr-none"
-                : "bg-black/5 text-black rounded-tl-none"
-            )}>
-              <p className="text-sm font-medium leading-relaxed">{msg.content}</p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Input */}
-      <div className="p-6 border-t border-black/5 bg-black/2">
-        <div className="max-w-4xl mx-auto flex gap-3 items-center">
-          <Button variant="ghost" size="icon" className="rounded-full shrink-0">
-            <Paperclip className="h-5 w-5 text-black/40" />
-          </Button>
-          <div className="relative flex-1">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Ask anything about your health..."
-              className="h-14 rounded-2xl border-black/5 bg-white shadow-sm pl-6 pr-14 text-sm font-bold focus-visible:ring-primary/20"
-            />
-            <Button
-              onClick={handleSend}
-              size="icon"
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl bg-black hover:bg-primary transition-all group"
+      <ScrollArea className="flex-1 p-4 md:p-8">
+        <div className="flex flex-col gap-4 md:gap-6">
+          {messages.map((msg, idx) => (
+            <motion.div
+              initial={{ opacity: 0, x: msg.role === "user" ? 20 : -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              key={idx}
+              className={cn(
+                "flex flex-col max-w-[85%] md:max-w-[70%]",
+                msg.role === "user" ? "ml-auto items-end" : "items-start"
+              )}
             >
-              <Send className="h-4 w-4 text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </Button>
-          </div>
+              <div
+                className={cn(
+                  "p-3.5 md:p-5 rounded-2xl md:rounded-3xl text-xs md:text-sm font-medium leading-relaxed shadow-sm",
+                  msg.role === "user"
+                    ? "bg-black text-white rounded-tr-none"
+                    : "bg-black/[0.03] text-black rounded-tl-none border border-black/5"
+                )}
+              >
+                <ReactMarkdown className="prose prose-sm md:prose-base !max-w-none text-inherit font-inherit">
+                  {msg.content}
+                </ReactMarkdown>
+              </div>
+              <span className="text-[9px] md:text-[10px] font-black text-black/20 uppercase tracking-widest mt-1.5 md:mt-2 px-1">
+                {msg.role === "user" ? "YOU" : "TAKECARE AI"} • {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </motion.div>
+          ))}
+          <div ref={chatEndRef} />
         </div>
+      </ScrollArea>
+
+      <div className="p-4 md:p-8 bg-black/[0.01] border-t border-black/5 shrink-0">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const input = e.currentTarget.elements.namedItem("message") as HTMLInputElement;
+            if (input.value.trim()) {
+              handleSendMessage(input.value);
+              input.value = "";
+            }
+          }}
+          className="relative group"
+        >
+          <input
+            name="message"
+            disabled={isLoading}
+            autoComplete="off"
+            placeholder="Describe your symptoms or ask about medications..."
+            className="w-full bg-white border border-black/10 rounded-2xl md:rounded-3xl py-4 md:py-5 pl-5 md:pl-6 pr-14 md:pr-16 text-xs md:text-sm font-medium placeholder:text-black/20 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all shadow-sm group-hover:shadow-md disabled:opacity-50"
+          />
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="absolute right-2 top-2 bottom-2 px-3 md:px-4 bg-black text-white rounded-xl md:rounded-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center disabled:opacity-50 disabled:hover:scale-100"
+          >
+            {isLoading ? (
+              <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Send className="h-4 w-4 md:h-5 md:w-5" />
+            )}
+          </button>
+        </form>
       </div>
     </motion.div>
   );
@@ -994,17 +998,17 @@ Based on the synthesized data from your medical records and wearable sensors, yo
 
   return (
     <div className="relative">
-      <div className="flex gap-2 mb-10 bg-white/40 backdrop-blur-xl p-1.5 rounded-2xl w-fit border border-black/5 shadow-lg shadow-black/[0.01]">
+      <div className="flex flex-col sm:flex-row gap-2 mb-6 md:mb-10 bg-white/40 backdrop-blur-xl p-1 md:p-1.5 rounded-2xl md:rounded-3xl w-full sm:w-fit border border-black/5 shadow-lg shadow-black/[0.01]">
         <button
           onClick={() => setAnalysisTab("upload")}
           className={cn(
-            "px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 relative overflow-hidden group",
+            "px-6 md:px-8 py-2 md:py-2.5 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all duration-500 relative overflow-hidden group flex-1 sm:flex-none",
             analysisTab === "upload"
               ? "bg-black text-white shadow-2xl shadow-black/20"
               : "text-black/40 hover:text-black/60 hover:bg-black/5"
           )}
         >
-          <span className="relative z-10 flex items-center gap-2">
+          <span className="relative z-10 flex items-center justify-center gap-2">
             <div className={cn("h-1.5 w-1.5 rounded-full", analysisTab === "upload" ? "bg-primary animate-pulse" : "bg-black/20")} />
             Source Records
           </span>
@@ -1013,14 +1017,14 @@ Based on the synthesized data from your medical records and wearable sensors, yo
           onClick={() => setAnalysisTab("results")}
           disabled={!medicalContext}
           className={cn(
-            "px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 relative overflow-hidden group",
+            "px-6 md:px-8 py-2 md:py-2.5 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all duration-500 relative overflow-hidden group flex-1 sm:flex-none",
             analysisTab === "results"
               ? "bg-black text-white shadow-2xl shadow-black/20"
               : "text-black/40 hover:text-black/60 hover:bg-black/5",
             !medicalContext && "opacity-30 cursor-not-allowed"
           )}
         >
-          <span className="relative z-10 flex items-center gap-2">
+          <span className="relative z-10 flex items-center justify-center gap-2">
             <div className={cn("h-1.5 w-1.5 rounded-full", analysisTab === "results" ? "bg-green-500 animate-pulse" : "bg-black/20")} />
             Clinical Results
           </span>
@@ -1034,66 +1038,66 @@ Based on the synthesized data from your medical records and wearable sensors, yo
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
           >
             {cards.map((card) => (
               <motion.div
                 key={card.id}
                 whileHover={{ y: -8 }}
                 onClick={() => setShowSim(card.id)}
-                className="group relative p-8 rounded-[2.5rem] border border-black/5 bg-white shadow-sm overflow-hidden cursor-pointer"
+                className="group relative p-6 md:p-8 rounded-3xl md:rounded-4xl border border-black/5 bg-white shadow-sm overflow-hidden cursor-pointer"
               >
                 <div className={cn("absolute -top-12 -right-12 h-32 w-32 blur-[60px] opacity-20", card.color)} />
-                <div className="relative z-10 h-full flex flex-col gap-10">
+                <div className="relative z-10 h-full flex flex-col gap-6 md:gap-10">
                   <div className="flex items-start justify-between">
-                    <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center", card.color + "10")}>
-                      <card.icon className={cn("h-7 w-7", card.color.replace('bg-', 'text-'))} />
+                    <div className={cn("h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl flex items-center justify-center", card.color + "10")}>
+                      <card.icon className={cn("h-6 w-6 md:h-7 md:w-7", card.color.replace('bg-', 'text-'))} />
                     </div>
                     {card.id === 'wearables' && bleDevice && (
                       <span className="flex h-2 w-2 rounded-full bg-green-500 animate-ping absolute top-8 right-12" />
                     )}
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black/20">{card.label}</span>
+                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-black/20">{card.label}</span>
                   </div>
-                  <div className="space-y-3">
-                    <h3 className="font-bricolage text-2xl font-extrabold tracking-tight">{card.title}</h3>
-                    <p className="text-sm font-medium text-black/50 leading-relaxed">{card.description}</p>
+                  <div className="space-y-2 md:space-y-3">
+                    <h3 className="font-bricolage text-xl md:text-2xl font-extrabold tracking-tight">{card.title}</h3>
+                    <p className="text-xs md:text-sm font-medium text-black/50 leading-relaxed">{card.description}</p>
                   </div>
                   <div className="mt-auto flex items-center justify-between">
                     <span className={cn(
-                      "text-xs font-bold",
+                      "text-[10px] md:text-xs font-bold",
                       card.id === 'wearables' && bleDevice ? "text-green-500" : "text-black/30"
                     )}>
                       {card.content}
                     </span>
-                    <Button size="icon" className="rounded-full bg-black transform group-hover:scale-110 transition-transform">
-                      <Plus className="h-5 w-5 text-white" />
+                    <Button size="icon" className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-black transform group-hover:scale-110 transition-transform">
+                      <Plus className="h-4 w-4 md:h-5 md:w-5 text-white" />
                     </Button>
                   </div>
                 </div>
               </motion.div>
             ))}
 
-            <div className="lg:col-span-3 p-10 rounded-[2.5rem] border border-primary/10 bg-white flex flex-col lg:flex-row items-center justify-between gap-8 mt-4 overflow-hidden relative shadow-2xl shadow-primary/5">
+            <div className="md:col-span-2 lg:col-span-3 p-6 md:p-10 rounded-3xl md:rounded-[2.5rem] border border-primary/10 bg-white flex flex-col lg:flex-row items-center justify-between gap-6 md:gap-8 mt-2 md:mt-4 overflow-hidden relative shadow-2xl shadow-primary/5">
               <div className="absolute top-0 right-0 h-full w-1/2 bg-linear-to-l from-primary/5 to-transparent pointer-events-none" />
-              <div className="flex items-center gap-6">
-                <div className="h-16 w-16 rounded-3xl bg-primary/10 flex items-center justify-center">
-                  <Activity className={cn("h-8 w-8 text-primary", analyzing && "animate-bounce")} />
+              <div className="flex items-center gap-4 md:gap-6 flex-1 w-full text-center lg:text-left flex-col lg:flex-row">
+                <div className="h-14 w-14 md:h-16 md:w-16 rounded-2xl md:rounded-3xl bg-primary/10 flex items-center justify-center">
+                  <Activity className={cn("h-7 w-7 md:h-8 md:w-8 text-primary", analyzing && "animate-bounce")} />
                 </div>
                 <div className="space-y-1" >
-                  <h4 className="font-bricolage text-2xl font-bold text-black">
-                    {analyzing ? `Analyzing Data... ${progress}%` : "Deep Health Context"}
+                  <h4 className="font-bricolage text-xl md:text-2xl font-bold text-black">
+                    {analyzing ? `Analyzing... ${progress}%` : "Synthesis Ready"}
                   </h4>
-                  <p className="text-black/40 text-sm font-medium">
-                    {analyzing ? "Synthesizing medical history and wearable metrics." : `Your AI context is ${medicalContext ? "85%" : "0%"} complete based on available data.`}
+                  <p className="text-black/40 text-[11px] md:text-sm font-medium">
+                    {analyzing ? "Synthesizing medical history and metrics." : `Your clinical context is ${medicalContext ? "85%" : "0%"} complete.`}
                   </p>
                 </div>
               </div>
               <Button
                 disabled={analyzing}
                 onClick={() => setAnalyzing(true)}
-                className="h-14 px-10 rounded-2xl bg-black hover:bg-primary text-white font-bold text-lg shadow-xl shadow-black/25 disabled:opacity-50 transition-all duration-300"
+                className="w-full lg:w-auto h-12 md:h-14 px-8 md:px-10 rounded-xl md:rounded-2xl bg-black hover:bg-primary text-white font-black text-xs md:text-base shadow-xl shadow-black/25 disabled:opacity-50 transition-all duration-300 uppercase tracking-widest"
               >
-                {analyzing ? "Scanning..." : "Run Full Analysis"}
+                {analyzing ? "Scanning..." : "Sync Health Data"}
               </Button>
               {analyzing && (
                 <motion.div
@@ -1113,56 +1117,56 @@ Based on the synthesized data from your medical records and wearable sensors, yo
             className="flex flex-col gap-6"
           >
             {/* Clinical Dashboard Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/40 backdrop-blur-xl p-6 rounded-[2rem] border border-black/5 shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-                  <Heart className="h-7 w-7 text-primary animate-pulse" />
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/40 backdrop-blur-xl p-5 md:p-6 rounded-3xl md:rounded-4xl border border-black/5 shadow-sm">
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="h-12 w-12 md:h-14 md:w-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <Heart className="h-6 w-6 md:h-7 md:w-7 text-primary animate-pulse" />
                 </div>
                 <div>
-                  <h3 className="font-bricolage text-2xl font-black tracking-tight">Clinical Intelligence</h3>
+                  <h3 className="font-bricolage text-xl md:text-2xl font-black tracking-tight leading-tight">Clinical Intelligence</h3>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="h-2 w-2 rounded-full bg-green-500" />
-                    <span className="text-xs font-bold text-black/40 uppercase tracking-widest">Digital Health Twin Synchronized</span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                    <span className="text-[9px] md:text-xs font-bold text-black/40 uppercase tracking-widest whitespace-nowrap">Health Twin Synchronized</span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setAnalysisTab("upload")}
-                  className="rounded-full border-black/10 text-xs font-black uppercase tracking-widest hover:bg-black/5 h-10 px-6"
+                  className="flex-1 md:flex-none rounded-2xl border-black/10 text-[10px] font-black uppercase tracking-widest hover:bg-black/5 h-10 px-4 md:px-6"
                 >
                   <ArrowLeft className="h-3 w-3 mr-2" />
-                  Update Records
+                  Records
                 </Button>
-                <div className="h-10 px-6 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-black/10">
+                <div className="h-10 px-4 md:px-6 rounded-2xl bg-black text-white flex items-center justify-center text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-black/10">
                   {ps?.id || "TC-0000"}
                 </div>
               </div>
             </div>
 
-            <ScrollArea className="h-[calc(100vh-400px)] pr-4 no-scrollbar">
-              <div className="flex flex-col gap-8 pb-10">
+            <ScrollArea className="h-[calc(100vh-320px)] md:h-[calc(100vh-400px)] pr-2 md:pr-4 no-scrollbar">
+              <div className="flex flex-col gap-6 md:gap-8 pb-10">
                 {/* Main Stats & Insights Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                   {/* AI Clinical Sentiment Card (Markdown Insight) */}
-                  <div className="md:col-span-2 p-8 rounded-[2.5rem] bg-white border border-black/5 shadow-xl relative overflow-hidden group">
+                  <div className="lg:col-span-2 p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] bg-white border border-black/5 shadow-xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity pointer-events-none">
-                      <Search className="h-40 w-40" />
+                      <Search className="h-32 w-32 md:h-40 md:w-40" />
                     </div>
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center justify-between mb-4 md:mb-6">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
                           <Brain className="h-5 w-5 text-blue-500" />
                         </div>
-                        <h4 className="font-bricolage text-xl font-bold">AI Clinical Analysis</h4>
+                        <h4 className="font-bricolage text-lg md:text-xl font-bold">AI Clinical Analysis</h4>
                       </div>
-                      <Badge className="bg-blue-50 text-blue-600 border-none font-black text-[9px] uppercase tracking-widest">Gemini 1.5 Pro</Badge>
+                      <Badge className="bg-blue-50 text-blue-600 border-none font-black text-[9px] uppercase tracking-widest">Gemini 1.5</Badge>
                     </div>
 
-                    <div className="prose prose-sm max-w-none prose-headings:font-bricolage prose-headings:text-black prose-p:text-black/60 prose-strong:text-black prose-strong:font-bold leading-relaxed">
+                    <div className="prose prose-sm max-w-none prose-headings:font-bricolage prose-headings:text-black prose-p:text-black/60 prose-strong:text-black prose-strong:font-bold leading-relaxed overflow-x-hidden">
                       {analysisResult ? (
                         <ReactMarkdown>{analysisResult}</ReactMarkdown>
                       ) : (
@@ -1176,51 +1180,51 @@ Based on the synthesized data from your medical records and wearable sensors, yo
                     </div>
                   </div>
 
-                  {/* High-Impact Vitals Card - NEW LIGHT THEME */}
-                  <div className="p-8 rounded-[2.5rem] bg-white border border-black/5 shadow-2xl shadow-black/[0.03] flex flex-col justify-between relative group overflow-hidden">
+                  {/* High-Impact Vitals Card */}
+                  <div className="p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] bg-white border border-black/5 shadow-2xl shadow-black/[0.03] flex flex-col justify-between relative group overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors duration-700" />
 
-                    <div className="space-y-6 relative z-10">
+                    <div className="space-y-6 md:space-y-8 relative z-10">
                       <div className="flex items-center justify-between">
-                        <div className="h-12 w-12 rounded-2xl bg-black flex items-center justify-center shadow-lg shadow-black/10">
-                          <Activity className="h-6 w-6 text-white" />
+                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-black flex items-center justify-center shadow-lg shadow-black/10">
+                          <Activity className="h-5 w-5 md:h-6 md:w-6 text-white" />
                         </div>
-                        <span className="text-[10px] font-black text-black/30 uppercase tracking-[0.2em]">Core Status</span>
+                        <span className="text-[9px] md:text-[10px] font-black text-black/30 uppercase tracking-[0.2em]">Core Status</span>
                       </div>
 
-                      <div className="space-y-8">
+                      <div className="space-y-6 md:space-y-8">
                         <div className="flex items-end justify-between border-b border-black/5 pb-4">
                           <div>
-                            <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em] mb-1">Blood Pressure</p>
-                            <p className="text-3xl font-bricolage font-black tracking-tighter text-black">{vitals?.blood_pressure || "--"}</p>
+                            <p className="text-[9px] md:text-[10px] font-black text-black/40 uppercase tracking-[0.2em] mb-1">Blood Pressure</p>
+                            <p className="text-2xl md:text-3xl font-bricolage font-black tracking-tighter text-black">{vitals?.blood_pressure || "--"}</p>
                           </div>
-                          <Badge className="bg-primary/10 text-primary border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">Stable</Badge>
+                          <Badge className="bg-primary/10 text-primary border-none font-black text-[9px] md:text-[10px] uppercase tracking-widest px-2.5 py-1">Stable</Badge>
                         </div>
 
                         <div className="flex items-end justify-between border-b border-black/5 pb-4">
                           <div>
-                            <p className="text-[10px] font-black text-black/40 uppercase tracking-[0.2em] mb-1">Heart Rate</p>
-                            <p className="text-3xl font-bricolage font-black tracking-tighter text-black">{vitals?.heart_rate || "--"}</p>
+                            <p className="text-[9px] md:text-[10px] font-black text-black/40 uppercase tracking-[0.2em] mb-1">Heart Rate</p>
+                            <p className="text-2xl md:text-3xl font-bricolage font-black tracking-tighter text-black">{vitals?.heart_rate || "--"}</p>
                           </div>
                           <div className="h-10 w-10 rounded-xl bg-primary/5 flex items-center justify-center">
                             <Activity className="h-4 w-4 text-primary animate-pulse" />
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="p-4 rounded-2xl bg-black/[0.02] border border-black/5">
-                            <p className="text-[9px] font-black text-black/30 uppercase tracking-[0.2em] mb-1">Temperature</p>
-                            <p className="text-xl font-black text-black">{vitals?.temperature || "--"}</p>
+                        <div className="grid grid-cols-2 gap-3 md:gap-4">
+                          <div className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-black/[0.02] border border-black/5">
+                            <p className="text-[8px] md:text-[9px] font-black text-black/30 uppercase tracking-[0.2em] mb-1">Temp</p>
+                            <p className="text-lg md:text-xl font-black text-black">{vitals?.temperature || "--"}</p>
                           </div>
-                          <div className="p-4 rounded-2xl bg-black/[0.02] border border-black/5">
-                            <p className="text-[9px] font-black text-black/30 uppercase tracking-[0.2em] mb-1">Body Mass Index</p>
-                            <p className="text-xl font-black text-black">{vitals?.bmi || "--"}</p>
+                          <div className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-black/[0.02] border border-black/5">
+                            <p className="text-[8px] md:text-[9px] font-black text-black/30 uppercase tracking-[0.2em] mb-1">BMI</p>
+                            <p className="text-lg md:text-xl font-black text-black">{vitals?.bmi || "--"}</p>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <Button className="mt-8 w-full h-15 rounded-2xl bg-black text-white font-black uppercase text-xs tracking-[0.2em] shadow-2xl shadow-black/20 border-none group hover:scale-[1.02] transition-all">
+                    <Button className="mt-8 w-full h-12 md:h-14 rounded-xl md:rounded-2xl bg-black hover:bg-primary text-white font-black uppercase text-[10px] md:text-xs tracking-[0.2em] shadow-2xl shadow-black/20 border-none group hover:scale-[1.02] transition-all">
                       Health Report PDF
                       <FileDown className="ml-2 h-4 w-4 transition-transform group-hover:translate-y-0.5" />
                     </Button>
@@ -1228,48 +1232,48 @@ Based on the synthesized data from your medical records and wearable sensors, yo
                 </div>
 
                 {/* Secondary Diagnostics & Therapeutics */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                   {/* Detailed Lab Matrix */}
-                  <div className="p-8 rounded-[3rem] bg-white border border-black/5 shadow-sm space-y-8">
+                  <div className="p-6 md:p-8 rounded-3xl md:rounded-[3rem] bg-white border border-black/5 shadow-sm space-y-6 md:space-y-8">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-2xl bg-vital-orange/10 flex items-center justify-center">
-                          <Zap className="h-6 w-6 text-vital-orange" />
+                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-vital-orange/10 flex items-center justify-center">
+                          <Zap className="h-5 w-5 md:h-6 md:w-6 text-vital-orange" />
                         </div>
                         <div>
-                          <h4 className="font-bricolage text-xl font-bold">Lab Matrix</h4>
-                          <p className="text-xs font-medium text-black/30">Validated Clinical Markers</p>
+                          <h4 className="font-bricolage text-lg md:text-xl font-bold">Lab Matrix</h4>
+                          <p className="text-[10px] md:text-xs font-medium text-black/30">Validated Clinical Markers</p>
                         </div>
                       </div>
-                      <Badge variant="outline" className="h-8 rounded-full border-black/5 text-black/40 font-bold px-4">Latest Scan</Badge>
+                      <Badge variant="outline" className="h-7 md:h-8 rounded-full border-black/5 text-black/40 font-bold px-3 md:px-4 text-[10px]">Latest</Badge>
                     </div>
 
                     <div className="space-y-4">
                       {/* Featured Lab Result */}
-                      <div className="p-6 rounded-[2rem] bg-vital-orange/[0.03] border border-vital-orange/10 flex items-center justify-between">
+                      <div className="p-5 md:p-6 rounded-2xl md:rounded-4xl bg-vital-orange/[0.03] border border-vital-orange/10 flex items-center justify-between">
                         <div className="space-y-1">
-                          <p className="text-[10px] font-black text-vital-orange uppercase tracking-widest">Malaria MP Test</p>
-                          <p className="text-2xl font-bricolage font-black tracking-tight">{labs?.malaria_test_mp || "Pending"}</p>
+                          <p className="text-[9px] md:text-[10px] font-black text-vital-orange uppercase tracking-widest">Malaria MP Test</p>
+                          <p className="text-xl md:text-2xl font-bricolage font-black tracking-tight">{labs?.malaria_test_mp || "Pending"}</p>
                         </div>
-                        <div className="h-12 w-12 rounded-full border border-vital-orange/20 flex items-center justify-center animate-pulse">
-                          <div className="h-2 w-2 rounded-full bg-vital-orange shadow-[0_0_10px_#f97316]" />
+                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-full border border-vital-orange/20 flex items-center justify-center animate-pulse">
+                          <div className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-vital-orange shadow-[0_0_10px_#f97316]" />
                         </div>
                       </div>
 
-                      <div className="p-6 rounded-[2rem] bg-red-50/30 border border-red-100/50 space-y-4">
+                      <div className="p-5 md:p-6 rounded-2xl md:rounded-4xl bg-red-50/30 border border-red-100/50 space-y-4">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm font-black text-black/40 uppercase tracking-widest">Widal Serology</span>
+                          <span className="text-xs font-black text-black/40 uppercase tracking-widest">Widal Serology</span>
                           <Badge className="bg-red-100 text-red-600 border-none font-black text-[9px] uppercase tracking-widest">{labs?.widal_test || "N/A"}</Badge>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {labs?.titers ? Object.entries(labs.titers).map((entry: any) => (
-                            <div key={entry[0]} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-black/5 shadow-sm">
-                              <span className="text-[10px] font-bold text-black/40 tracking-wider">T-{entry[0]}</span>
+                            <div key={entry[0]} className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-white border border-black/5 shadow-sm">
+                              <span className="text-[9px] font-bold text-black/40 tracking-wider">T-{entry[0]}</span>
                               <div className="h-3 w-px bg-black/10" />
-                              <span className="text-xs font-black text-red-500">{entry[1]}</span>
+                              <span className="text-[10px] font-black text-red-500">{entry[1]}</span>
                             </div>
                           )) : (
-                            <p className="text-[10px] font-medium text-black/20 italic">No specific titers available</p>
+                            <p className="text-[9px] font-medium text-black/20 italic">No specific titers available</p>
                           )}
                         </div>
                       </div>
@@ -1277,62 +1281,62 @@ Based on the synthesized data from your medical records and wearable sensors, yo
                   </div>
 
                   {/* Therapeutic Regimen */}
-                  <div className="p-8 rounded-[3rem] bg-white border border-black/5 shadow-sm space-y-8">
+                  <div className="p-6 md:p-8 rounded-3xl md:rounded-[3rem] bg-white border border-black/5 shadow-sm space-y-6 md:space-y-8">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center">
-                          <Pill className="h-6 w-6 text-blue-500" />
+                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                          <Pill className="h-5 w-5 md:h-6 md:w-6 text-blue-500" />
                         </div>
                         <div>
-                          <h4 className="font-bricolage text-xl font-bold">Therapeutic Regimen</h4>
-                          <p className="text-xs font-medium text-black/30">Active Medications</p>
+                          <h4 className="font-bricolage text-lg md:text-xl font-bold">Therapeutic Regimen</h4>
+                          <p className="text-[10px] md:text-xs font-medium text-black/30">Active Medications</p>
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-3">
                       {meds.length > 0 ? meds.map((med: any, i: number) => (
-                        <div key={i} className="group flex items-center justify-between p-5 rounded-[2rem] bg-blue-50/20 border border-blue-100/30 hover:bg-blue-50/40 transition-all cursor-pointer">
-                          <div className="flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-2xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                              <div className="h-6 w-6 rounded-full border-2 border-blue-500 flex items-center justify-center">
-                                <div className="h-2 w-2 rounded-full bg-blue-500" />
+                        <div key={i} className="group flex items-center justify-between p-4 md:p-5 rounded-2xl md:rounded-4xl bg-blue-50/20 border border-blue-100/30 hover:bg-blue-50/40 transition-all cursor-pointer">
+                          <div className="flex items-center gap-3 md:gap-4">
+                            <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                              <div className="h-5 w-5 md:h-6 md:w-6 rounded-full border-2 border-blue-500 flex items-center justify-center">
+                                <div className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-blue-500" />
                               </div>
                             </div>
                             <div className="flex flex-col">
-                              <span className="text-base font-black tracking-tight">{med.name}</span>
+                              <span className="text-sm md:text-base font-black tracking-tight">{med.name}</span>
                               <div className="flex items-center gap-2 mt-0.5">
-                                <Clock className="h-3 w-3 text-black/20" />
-                                <span className="text-[10px] font-bold text-black/30 uppercase tracking-widest">{med.dosage} - {med.frequency}</span>
+                                <Clock className="h-2.5 w-2.5 text-black/20" />
+                                <span className="text-[9px] md:text-[10px] font-bold text-black/30 uppercase tracking-widest">{med.dosage} - {med.frequency}</span>
                               </div>
                             </div>
                           </div>
-                          <ChevronRight className="h-5 w-5 text-black/10 transition-transform group-hover:translate-x-1" />
+                          <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-black/10 transition-transform group-hover:translate-x-1" />
                         </div>
                       )) : (
-                        <p className="text-sm font-medium text-black/20 p-6 text-center italic">No current medications listed</p>
+                        <p className="text-xs font-medium text-black/20 p-6 text-center italic">No current medications listed</p>
                       )}
                     </div>
 
-                    <div className="p-6 rounded-[2rem] border-2 border-dashed border-black/5 bg-black/[0.01] flex items-center justify-between group cursor-pointer hover:border-black/10 transition-all">
+                    <div className="p-5 md:p-6 rounded-2xl md:rounded-4xl border-2 border-dashed border-black/5 bg-black/[0.01] flex items-center justify-between group cursor-pointer hover:border-black/10 transition-all">
                       <div className="flex items-center gap-3">
-                        <Plus className="h-5 w-5 text-black/20 group-hover:text-black/40 transition-colors" />
-                        <span className="text-xs font-black text-black/20 group-hover:text-black/40 uppercase tracking-widest">Add OTC Medication</span>
+                        <Plus className="h-4 w-4 md:h-5 md:w-5 text-black/20 group-hover:text-black/40 transition-colors" />
+                        <span className="text-[10px] font-black text-black/20 group-hover:text-black/40 uppercase tracking-widest">Add OTC Medication</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Patient Summary & Footer Actions */}
-                <div className="p-10 rounded-[4rem] bg-indigo-50/50 border border-indigo-100 flex flex-col md:flex-row items-center gap-10">
-                  <div className="h-20 w-20 rounded-[2rem] bg-indigo-600 flex items-center justify-center shadow-xl shadow-indigo-200 shrink-0">
-                    <User className="h-10 w-10 text-white" />
+                <div className="p-6 md:p-10 rounded-3xl md:rounded-5xl bg-indigo-50/50 border border-indigo-100 flex flex-col md:flex-row items-center gap-6 md:gap-10">
+                  <div className="h-16 w-16 md:h-20 md:w-20 rounded-2xl md:rounded-[2rem] bg-indigo-600 flex items-center justify-center shadow-xl shadow-indigo-200 shrink-0">
+                    <User className="h-8 w-8 md:h-10 md:w-10 text-white" />
                   </div>
                   <div className="flex-1 space-y-2 text-center md:text-left">
-                    <h3 className="font-bricolage text-3xl font-black text-indigo-950">Patient Overview</h3>
-                    <p className="text-lg font-medium text-indigo-800/60 leading-relaxed">
-                      This analysis suggest a primary diagnosis of <span className="text-indigo-600 font-black">{ps?.diagnosis || "Incomplete data"}</span>.
-                      The clinical data shows <span className="text-indigo-600 font-bold">{symptoms.length || 0} core symptoms</span> that align with the records.
+                    <h3 className="font-bricolage text-2xl md:text-3xl font-black text-indigo-950 leading-tight">Patient Overview</h3>
+                    <p className="text-base md:text-lg font-medium text-indigo-800/60 leading-relaxed">
+                      Analysis suggests <span className="text-indigo-600 font-black">{ps?.diagnosis || "Incomplete data"}</span>.
+                      Clinical data shows <span className="text-indigo-600 font-bold">{symptoms.length || 0} core symptoms</span> aligned.
                     </p>
                   </div>
                 </div>
@@ -1356,25 +1360,25 @@ Based on the synthesized data from your medical records and wearable sensors, yo
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-white rounded-[3rem] p-8 lg:p-12 w-full max-w-4xl shadow-2xl relative overflow-hidden"
+              className="bg-white rounded-3xl md:rounded-4xl p-4 md:p-8 lg:p-12 w-full max-w-4xl shadow-2xl relative overflow-hidden h-full max-h-[90vh] md:h-auto overflow-y-auto"
             >
               <button
                 onClick={() => setShowSim(null)}
-                className="absolute top-8 right-8 h-12 w-12 rounded-2xl bg-black/5 flex items-center justify-center hover:bg-black/10 transition-colors"
+                className="absolute top-4 right-4 md:top-8 md:right-8 h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-black/5 flex items-center justify-center hover:bg-black/10 transition-colors z-20"
               >
-                <X className="h-6 w-6 text-black" />
+                <X className="h-5 w-5 md:h-6 md:w-6 text-black" />
               </button>
 
               {showSim === "records" && (
                 <div className="space-y-8 flex flex-col h-full max-h-[85vh]">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="h-14 w-14 rounded-2xl bg-blue-500/10 flex items-center justify-center">
-                        <FileText className="h-7 w-7 text-blue-500" />
+                    <div className="flex items-center gap-3 md:gap-4">
+                      <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-blue-500/10 flex items-center justify-center shrink-0">
+                        <FileText className="h-6 w-6 md:h-7 md:w-7 text-blue-500" />
                       </div>
                       <div>
-                        <h2 className="text-3xl font-bricolage font-extrabold tracking-tight underline decoration-blue-500/20 underline-offset-8">Record Intelligence</h2>
-                        <p className="text-black/50 font-medium">Capture or upload records for AI Ingestion</p>
+                        <h2 className="text-xl md:text-3xl font-bricolage font-extrabold tracking-tight underline decoration-blue-500/20 underline-offset-4 md:underline-offset-8">Record Intelligence</h2>
+                        <p className="text-[10px] md:text-sm text-black/50 font-medium">Capture or upload records for AI Ingestion</p>
                       </div>
                     </div>
                   </div>

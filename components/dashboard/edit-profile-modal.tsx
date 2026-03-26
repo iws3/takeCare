@@ -88,9 +88,9 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
           </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-xl rounded-[2.5rem] bg-white border-black/5 p-8 overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="font-bricolage text-3xl font-extrabold tracking-tighter">Edit Patient Profile</DialogTitle>
+      <DialogContent className="sm:max-w-xl rounded-3xl md:rounded-5xl bg-white border-black/5 p-8 overflow-hidden">
+        <DialogHeader className="px-0 md:px-2">
+          <DialogTitle className="font-bricolage text-2xl md:text-3xl font-extrabold tracking-tighter">Edit Patient Profile</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 mt-6">
