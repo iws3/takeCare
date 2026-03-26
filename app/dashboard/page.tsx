@@ -174,15 +174,15 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col pb-12 min-h-screen relative overflow-hidden bg-transparent">
+    <div className="flex flex-1 flex-col pb-12 min-h-screen relative overflow-x-hidden bg-transparent">
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/2 rounded-full blur-[120px] -translate-y-1/2 pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-primary/2 rounded-full blur-[120px] translate-y-1/2 pointer-events-none" />
 
-      <div className="relative z-10 w-full border-b border-black/5">
+      <header className="sticky top-0 z-50 w-full border-b border-black/5 bg-white/80 backdrop-blur-md">
         <div className="responsive-container">
           <DashboardHeader user={userData} />
         </div>
-      </div>
+      </header>
 
 
       <main className="flex flex-1 flex-col responsive-container w-full overflow-x-hidden">

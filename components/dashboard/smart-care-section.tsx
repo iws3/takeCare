@@ -109,7 +109,7 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
 
 
   return (
-    <div className="px-4 md:px-6 lg:px-12 mt-2 md:mt-4 flex flex-col gap-4 md:gap-6">
+    <div className="px-6 lg:px-12 mt-2 md:mt-4 flex flex-col gap-4 md:gap-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="bg-white/60 backdrop-blur-3xl p-1 md:p-1.5 rounded-3xl md:rounded-4xl w-full lg:w-fit h-auto flex gap-1 md:gap-1.5 mb-6 md:mb-10 border border-black/3 shadow-sm">
           {SMART_CARE_TABS.map((tab) => (
@@ -536,20 +536,21 @@ function ChatbotView({ userName }: { userName: string }) {
   const [messages, setMessages] = useState([
     { role: "assistant", content: `Hello ${userName.split(' ')[0]}! I'm your Smart Care assistant. How are you feeling today?` }
   ]);
-  const [input, setInput] = useState("");
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    scrollToBottom();
   }, [messages]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    const userMsg = { role: "user", content: input };
+  const handleSendMessage = (content: string) => {
+    const userMsg = { role: "user", content };
     setMessages(prev => [...prev, userMsg]);
-    setInput("");
+    setIsLoading(true);
 
     // Mock AI response
     setTimeout(() => {
@@ -557,8 +558,10 @@ function ChatbotView({ userName }: { userName: string }) {
         role: "assistant",
         content: "I understand. Based on your recent health records, I'd recommend monitoring your activity levels today. Would you like me to analyze your latest blood test results?"
       }]);
+      setIsLoading(false);
     }, 1000);
   };
+
 
   return (    <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
@@ -600,9 +603,11 @@ function ChatbotView({ userName }: { userName: string }) {
                     : "bg-black/[0.03] text-black rounded-tl-none border border-black/5"
                 )}
               >
-                <ReactMarkdown className="prose prose-sm md:prose-base !max-w-none text-inherit font-inherit">
-                  {msg.content}
-                </ReactMarkdown>
+                <div className="prose prose-sm md:prose-base !max-w-none text-inherit font-inherit">
+                  <ReactMarkdown>
+                    {msg.content}
+                  </ReactMarkdown>
+                </div>
               </div>
               <span className="text-[9px] md:text-[10px] font-black text-black/20 uppercase tracking-widest mt-1.5 md:mt-2 px-1">
                 {msg.role === "user" ? "YOU" : "TAKECARE AI"} • {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -680,26 +685,25 @@ function AnalysisView({
     
     try {
       setIsDownloading(true);
-      console.log("Starting high-fidelity PDF generation...");
+      console.log("Starting healthy high-fidelity PDF generation...");
       
       const canvas = await html2canvas(reportRef.current, {
-        scale: 1.5,
+        scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
-        scrollX: 0,
-        scrollY: -window.scrollY,
-        onclone: (clonedDocument) => {
-          const el = clonedDocument.querySelector('article');
+        windowWidth: reportRef.current.scrollWidth,
+        windowHeight: reportRef.current.scrollHeight,
+        onclone: (clonedDoc) => {
+          const el = clonedDoc.querySelector('article');
           if (el) {
             el.style.boxShadow = 'none';
             el.style.border = 'none';
-            el.style.borderRadius = '0';
           }
         }
       });
       
-      const imgData = canvas.toDataURL("image/png", 0.95);
+      const imgData = canvas.toDataURL("image/png", 1.0);
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -710,8 +714,21 @@ function AnalysisView({
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       
-      // If height is too large, split or scale down
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      let heightLeft = pdfHeight;
+      let position = 0;
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      // Better handling of long reports with pagination
+      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - pdfHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
+        heightLeft -= pageHeight;
+      }
+
       pdf.save(`takecare-health-report-${new Date().toISOString().split('T')[0]}.pdf`);
       
       toast.success("Health report downloaded successfully!", { id: toastId });
@@ -944,6 +961,7 @@ Based on the synthesized data from your medical records and wearable sensors, yo
 
       const data = await response.json();
       setAnalysisResult(data.analysis);
+      setFullAnalysisResult(data.analysis); // Sync with PDF report preview
 
       if (data.structuredData) {
         onContextUpdate(data.structuredData);
@@ -1224,7 +1242,11 @@ Based on the synthesized data from your medical records and wearable sensors, yo
                       </div>
                     </div>
 
-                    <Button className="mt-8 w-full h-12 md:h-14 rounded-xl md:rounded-2xl bg-black hover:bg-primary text-white font-black uppercase text-[10px] md:text-xs tracking-[0.2em] shadow-2xl shadow-black/20 border-none group hover:scale-[1.02] transition-all">
+                    <Button 
+                      onClick={() => setShowAnalysisModal(true)}
+                      disabled={!analysisResult && !fullAnalysisResult}
+                      className="mt-8 w-full h-12 md:h-14 rounded-xl md:rounded-2xl bg-black hover:bg-primary text-white font-black uppercase text-[10px] md:text-xs tracking-[0.2em] shadow-2xl shadow-black/20 border-none group hover:scale-[1.02] transition-all"
+                    >
                       Health Report PDF
                       <FileDown className="ml-2 h-4 w-4 transition-transform group-hover:translate-y-0.5" />
                     </Button>

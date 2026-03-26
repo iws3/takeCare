@@ -82,11 +82,13 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
 
   return (
     <Dialog>
-      <DialogTrigger asChild>
+      <DialogTrigger 
+        render={
           <Button variant="outline" className="rounded-2xl border-black/5 bg-black/5 font-black text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-all px-8 h-12 shadow-sm">
             Edit Profile
           </Button>
-      </DialogTrigger>
+        }
+      />
 
       <DialogContent className="sm:max-w-xl rounded-3xl md:rounded-5xl bg-white border-black/5 p-8 overflow-hidden">
         <DialogHeader className="px-0 md:px-2">
