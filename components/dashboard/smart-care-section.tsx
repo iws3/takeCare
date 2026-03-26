@@ -685,58 +685,68 @@ function AnalysisView({
     
     try {
       setIsDownloading(true);
-      console.log("Starting healthy high-fidelity PDF generation...");
+      console.log("Generating high-stability medical report...");
       
-      const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
+      const element = reportRef.current;
+      if (!element) throw new Error("Report element not found");
+
+      // Use a fixed width for the capture to ensure consistency across devices
+      // 800px is a good balance for A4 content
+      const captureWidth = 800;
+      
+      const canvas = await html2canvas(element, {
+        scale: 1.25, // Sufficient for professional prints, safe for memory
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
-        windowWidth: reportRef.current.scrollWidth,
-        windowHeight: reportRef.current.scrollHeight,
+        width: captureWidth,
+        windowWidth: captureWidth,
         onclone: (clonedDoc) => {
-          const el = clonedDoc.querySelector('article');
-          if (el) {
-            el.style.boxShadow = 'none';
-            el.style.border = 'none';
+          const report = clonedDoc.getElementById('takecare-pdf-report');
+          if (report) {
+            report.style.width = `${captureWidth}px`;
+            report.style.padding = '60px';
+            report.style.boxShadow = 'none';
+            report.style.borderRadius = '0';
           }
         }
       });
       
-      const imgData = canvas.toDataURL("image/png", 1.0);
+      const imgData = canvas.toDataURL("image/jpeg", 0.85);
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
         format: "a4"
       });
       
-      const imgProps = pdf.getImageProperties(imgData);
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const pdfHeight = pdf.internal.pageSize.getHeight();
       
-      let heightLeft = pdfHeight;
+      const imgHeightInPdf = (canvas.height * pdfWidth) / canvas.width;
+      
+      let heightLeft = imgHeightInPdf;
       let position = 0;
-      const pageHeight = pdf.internal.pageSize.getHeight();
 
-      // Better handling of long reports with pagination
-      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - pdfHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-        heightLeft -= pageHeight;
+      // Add pages while content remains
+      while (heightLeft > 0) {
+        pdf.addImage(imgData, "JPEG", 0, position, pdfWidth, imgHeightInPdf, undefined, 'FAST');
+        heightLeft -= pdfHeight;
+        
+        if (heightLeft > 0) {
+          pdf.addPage();
+          position = -pdfHeight * (pdf.internal.pages.length - 1);
+        }
       }
 
-      pdf.save(`takecare-health-report-${new Date().toISOString().split('T')[0]}.pdf`);
+      const fileName = `TakeCare_Medical_Synthesis_${new Date().toISOString().split('T')[0]}.pdf`;
+      pdf.save(fileName);
       
-      toast.success("Health report downloaded successfully!", { id: toastId });
+      toast.success("Professional health report generated!", { id: toastId });
     } catch (error) {
-      console.error("PDF generation failed:", error);
-      toast.error("We couldn't generate the PDF, but you can always view it on the dashboard.", { 
+      console.error("PDF generation critical failure:", error);
+      toast.error("Technical error while generating PDF.", { 
         id: toastId,
-        description: "Tip: Try closing and reopening the modal."
+        description: "Please close this preview, wait 2 seconds, and try again. Modern browsers sometimes block large canvas tasks on first try."
       });
     } finally {
       setIsDownloading(false);
@@ -1796,6 +1806,7 @@ Based on the synthesized data from your medical records and wearable sensors, yo
 
           <div className="flex-1 overflow-y-auto p-4 lg:p-12 bg-black/[0.02]">
             <article
+              id="takecare-pdf-report"
               ref={reportRef}
               className="prose prose-sm md:prose-base lg:prose-xl max-w-none prose-headings:font-bricolage prose-headings:text-black prose-p:text-black/70 prose-strong:text-black prose-strong:font-black leading-relaxed bg-white p-6 lg:p-16 rounded-[2rem] lg:rounded-[3.5rem] border border-black/5 shadow-2xl shadow-black/[0.02]"
             >
