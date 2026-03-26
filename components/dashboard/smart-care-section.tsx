@@ -698,27 +698,46 @@ function AnalysisView({
       // Small timeout to ensure DOM paints are set
       await new Promise(resolve => setTimeout(resolve, 300));
 
-      const captureWidth = 820; // Slightly wider for safer A4 wrapping
+      const captureWidth = 820; 
       
       const canvas = await html2canvas(element, {
-        scale: 1, // Ultra-stable for all devices
+        scale: 1, 
         useCORS: true,
-        logging: true, // Internal logs to help browser console debugging
+        logging: true,
         backgroundColor: "#ffffff",
         width: captureWidth,
         windowWidth: captureWidth,
         onclone: (clonedDoc) => {
+          // IMPORTANT: html2canvas does not support modern color functions like oklch/oklab
+          // We must force legacy-compatible colors in the cloned document
+          const style = clonedDoc.createElement('style');
+          style.innerHTML = `
+            #takecare-pdf-report, #takecare-pdf-report * {
+              color: #000000 !important;
+              border-color: #e5e7eb !important;
+              background-color: transparent !important;
+              text-shadow: none !important;
+              box-shadow: none !important;
+            }
+            #takecare-pdf-report {
+              background-color: #ffffff !important;
+              width: ${captureWidth}px !important;
+              padding: 60px !important;
+              margin: 0 !important;
+            }
+            /* Reset prose to basic elements for cleaner capture */
+            #takecare-pdf-report h1, #takecare-pdf-report h2, #takecare-pdf-report h3 {
+              color: #000000 !important;
+              font-family: sans-serif !important;
+            }
+          `;
+          clonedDoc.head.appendChild(style);
+
           const report = clonedDoc.getElementById('takecare-pdf-report');
           if (report) {
-            report.style.width = `${captureWidth}px`;
-            report.style.padding = '40px 60px';
-            report.style.margin = '0 auto';
             report.style.display = 'block';
             report.style.visibility = 'visible';
             report.style.opacity = '1';
-            report.style.position = 'relative';
-            report.style.left = '0';
-            report.style.top = '0';
           }
         }
       });
@@ -741,7 +760,6 @@ function AnalysisView({
       let heightLeft = imgHeightInPdf;
       let position = 0;
 
-      // Robust pagination loop
       while (heightLeft > 0) {
         pdf.addImage(imgData, "JPEG", 0, position, pdfWidth, imgHeightInPdf, undefined, 'FAST');
         heightLeft -= pdfHeight;
@@ -758,9 +776,9 @@ function AnalysisView({
       toast.success("Health report generated successfully!", { id: toastId });
     } catch (error: any) {
       console.error("PDF engine crash detail:", error);
-      toast.error("Process interrupted by browser limits.", { 
+      toast.error("Format compatibility error.", { 
         id: toastId,
-        description: `Error: ${error.message || 'Capture failed'}. Try refreshing the page if the issue persists.`
+        description: `Technical details: ${error.message}. We've force-simplified the colors for the PDF.`
       });
     } finally {
       setIsDownloading(false);
