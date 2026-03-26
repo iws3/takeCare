@@ -161,6 +161,7 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
               onContextUpdate={setMedicalContext}
               analysisResult={analysisResult}
               setAnalysisResult={setAnalysisResult}
+              patientId={patientId}
             />
           </TabsContent>
 
@@ -659,13 +660,15 @@ function AnalysisView({
   userName,
   onContextUpdate,
   analysisResult,
-  setAnalysisResult
+  setAnalysisResult,
+  patientId
 }: {
   medicalContext: any,
   userName: string,
   onContextUpdate: (ctx: any) => void,
   analysisResult: string | null,
-  setAnalysisResult: (res: string | null) => void
+  setAnalysisResult: (res: string | null) => void,
+  patientId: string | null
 }) {
   const [analysisTab, setAnalysisTab] = useState<"upload" | "results">("upload");
 
@@ -1864,7 +1867,7 @@ Based on the synthesized data from your medical records and wearable sensors, yo
               </div>
 
               {/* Patient Identity Section */}
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 p-10 rounded-[2.5rem] bg-black/[0.02] border border-black/5 mb-16">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 p-10 rounded-[2.5rem] bg-black/2 border border-black/5 mb-16">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-black/30 mb-2">Subject Name</p>
                   <p className="text-2xl font-black text-black font-bricolage">{userName}</p>
