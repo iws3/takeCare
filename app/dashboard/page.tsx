@@ -163,6 +163,19 @@ export default function DashboardPage() {
 
   if (loading) return <DashboardLoading />;
 
+  const combinedRecords = [
+    ...(userData?.medicalRecords || []),
+    ...(userData?.doctorInvitations || []).map((inv: any) => ({
+      id: inv.id,
+      createdAt: inv.createdAt,
+      fileName: `Invite: Dr. ${inv.doctorName}`,
+      type: `INVITATION (${inv.platform.toUpperCase()})`,
+      url: "#",
+      fallbackSummary: "Awaiting Doctor Response",
+      analysis: inv.status === 'PENDING' ? undefined : { summary: `Status: ${inv.status}. Contact: ${inv.contactInfo}` }
+    }))
+  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
@@ -217,7 +230,7 @@ export default function DashboardPage() {
             >
               <div className="mt-6 flex flex-col gap-10">
                 <StatsCards />
-                <ActivityTable records={userData?.medicalRecords || []} />
+                <ActivityTable records={combinedRecords} />
               </div>
             </motion.div>
           ) : activeTab === "messenger" ? (

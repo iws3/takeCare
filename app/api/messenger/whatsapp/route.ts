@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
-    const { whatsappNumber, contactName, doctorName } = await req.json();
+    const { whatsappNumber, contactName, doctorName, platform } = await req.json();
 
     // --- FAANG-Level Validation & Normalization ---
     if (!whatsappNumber || !doctorName) {
@@ -74,6 +76,28 @@ export async function POST(req: Request) {
           error: data.msg || data.message || "Failed to deliver message via WhatsApp gateway.", 
           details: data 
         }, { status: response.status === 200 ? 502 : response.status });
+      }
+
+      // Success - Store in DB
+      try {
+        const cookieStore = await cookies();
+        const clerkId = cookieStore.get("takecare-clerk-id")?.value;
+        if (clerkId) {
+          const user = await prisma.user.findUnique({ where: { clerkId } });
+          if (user) {
+            await prisma.doctorInvitation.create({
+              data: {
+                userId: user.id,
+                doctorName: doctorName,
+                contactInfo: formattedNumber || whatsappNumber,
+                platform: platform || "whatsapp",
+                status: "PENDING"
+              }
+            });
+          }
+        }
+      } catch (dbErr) {
+        console.error("Failed to store invitation in DB:", dbErr);
       }
 
       return NextResponse.json({ success: true, data });

@@ -147,6 +147,9 @@ export async function getMedicalHistory(clerkId: string) {
         orderBy: { createdAt: "desc" },
         include: { analysis: true }
       },
+      doctorInvitations: {
+        orderBy: { createdAt: "desc" }
+      },
       personalization: true
     }
   });

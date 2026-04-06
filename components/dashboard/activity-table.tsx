@@ -74,7 +74,7 @@ export function ActivityTable({ records = [] }: ActivityTableProps) {
                       <TableCell className="py-7 font-medium text-black/40 text-sm hidden lg:table-cell italic">{record.type}</TableCell>
                       <TableCell className="py-7">
                         <div className="flex items-center gap-3">
-                          <span className="font-bold text-black text-sm max-w-[200px] truncate">{record.analysis?.summary || "Analyzing context..."}</span>
+                          <span className="font-bold text-black text-sm max-w-[200px] truncate">{record.analysis?.summary || record.fallbackSummary || "Analyzing context..."}</span>
                           <Badge variant="outline" className="rounded-full bg-black/5 text-black border-transparent font-black text-[9px] px-3 py-0.5 whitespace-nowrap">
                             {record.analysis ? "Verified" : "Pending"}
                           </Badge>
@@ -108,9 +108,9 @@ export function ActivityTable({ records = [] }: ActivityTableProps) {
                   </div>
                   
                   <div className="bg-black/2 p-4 rounded-2xl border border-black/5">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-black/30 mb-2">Clinical Intent:</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-black/30 mb-2">Details:</p>
                     <p className="text-sm font-bold text-black leading-relaxed line-clamp-3">
-                      {record.analysis?.summary || "Clinical intelligence is currently synthesizing this record..."}
+                      {record.analysis?.summary || record.fallbackSummary || "Status is pending..."}
                     </p>
                   </div>
 

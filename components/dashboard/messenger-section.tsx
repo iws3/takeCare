@@ -81,7 +81,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
           setNotificationCount(n => n + data.messages.length);
           setLastSeenTimestamp(data.latestTimestamp);
           playNotificationSound();
-          
+
           console.log("[FAANG Ingestion] Multi-modal Data Ready for AI:", incoming);
         }
       } catch (err) {
@@ -94,16 +94,18 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Normalize to digits only for API if it's a phone number
     let formattedNumber = platform === "gmail" ? contactInfo : contactInfo.replace(/\D/g, "");
 
     try {
-      const response = await fetch("/api/messenger/whatsapp", {
+      const endpoint = `/api/messenger/${platform}`;
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          whatsappNumber: formattedNumber,
+          whatsappNumber: formattedNumber, // Kept for backwards compatibility with Whatsapp route
+          contactInfo: formattedNumber, // Used by Gmail/Telegram route
           contactName: doctorName,
           doctorName: doctorName,
           initialMessage: initialMessage,
@@ -144,7 +146,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
       sender: "user",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
-    
+
     setMessages(prev => [...prev, userMsg]);
     setNewMessage("");
   };
@@ -214,13 +216,13 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
                   onClick={(e) => e.stopPropagation()}
                   className="w-full sm:max-w-2xl bg-white rounded-t-[40px] sm:rounded-4xl max-h-[90vh] overflow-y-auto p-6 md:p-10 shadow-2xl relative cursor-default"
                 >
-                  <button 
+                  <button
                     onClick={() => setIsPopupOpen(false)}
                     className="absolute top-6 right-6 p-2 bg-black/5 rounded-full hover:bg-black/10 transition-colors z-10 cursor-pointer"
                   >
                     <X className="w-5 h-5 text-black/60" />
                   </button>
-                  
+
                   {(() => {
                     const p = PLATFORMS.find(pl => pl.id === platform) || PLATFORMS[0];
                     return (
@@ -238,7 +240,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
                                 Invite via <span className={p.color}>{p.label}</span>
                               </h3>
                               <p className="text-sm font-medium text-black/40">
-                                {p.id === "gmail" 
+                                {p.id === "gmail"
                                   ? "Send a secure invitation directly to their Gmail."
                                   : `Direct ${p.label} integration for diagnostics.`}
                               </p>
@@ -268,7 +270,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
                                 id={`contact-${p.id}`}
                                 type={p.id === "gmail" ? "email" : "tel"}
                                 required
-                                placeholder={p.id === "gmail" ? "docker@gmail.com" : "Ex: 237670000000"}
+                                placeholder={p.id === "gmail" ? "gita@gmail.com" : "Ex: 237670000000"}
                                 value={contactInfo}
                                 onChange={(e) => setContactInfo(e.target.value)}
                                 className="h-14 sm:h-16 rounded-2xl border-black/5 bg-black/5 pl-6 text-base sm:text-lg font-bold transition-all focus:bg-white focus:ring-4 focus:ring-primary/5 shadow-inner hover:bg-black/10"
@@ -324,7 +326,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
             </div>
           </div>
 
-          <div 
+          <div
             ref={scrollRef}
             className="flex-1 overflow-y-auto p-8 space-y-8 bg-black/[0.02]"
           >
@@ -337,8 +339,8 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
               >
                 <div className={cn(
                   "p-5 rounded-3xl text-sm leading-relaxed shadow-sm overflow-hidden",
-                  m.sender === "user" 
-                    ? "bg-black text-white rounded-tr-none" 
+                  m.sender === "user"
+                    ? "bg-black text-white rounded-tr-none"
                     : "bg-white text-black border border-black/5 rounded-tl-none"
                 )}>
                   {m.type === "image" && m.mediaUrl && (
@@ -348,8 +350,8 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
                   )}
                   {(m.type === "audio" || m.type === "voice") && m.mediaUrl && (
                     <div className="mb-3 p-4 bg-black/5 rounded-2xl flex items-center gap-3">
-                       <Mic className="w-5 h-5 text-primary" />
-                       <audio src={m.mediaUrl} controls className="h-10 w-48" />
+                      <Mic className="w-5 h-5 text-primary" />
+                      <audio src={m.mediaUrl} controls className="h-10 w-48" />
                     </div>
                   )}
                   <p className="font-medium">{m.text}</p>
@@ -385,7 +387,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
               />
             </div>
             <Button type="submit" className="h-14 w-14 rounded-2xl bg-black text-white shadow-xl cursor-pointer">
-               <Send className="w-6 h-6" />
+              <Send className="w-6 h-6" />
             </Button>
           </form>
         </motion.div>
