@@ -12,6 +12,7 @@ import {
 import { ReactElement } from "react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 interface PersonalizationOptionProps {
   title: string;
@@ -71,12 +72,17 @@ interface PersonalizationModalProps {
 export function PersonalizationModal({ trigger }: PersonalizationModalProps) {
   const router = useRouter();
 
-  const handlePersonalize = () => {
+  const handlePersonalize = async () => {
+    const { initSession } = await import("@/app/actions/medical");
+    const { clerkId } = await initSession();
+    localStorage.setItem("takecare-clerk-id", clerkId);
     router.push("/onboarding/personalize");
   };
 
-  const handleAnonymous = () => {
-    // Navigate back or to dashboard immediately
+  const handleAnonymous = async () => {
+    const { loginAnonymous } = await import("@/app/actions/medical");
+    const { clerkId } = await loginAnonymous();
+    localStorage.setItem("takecare-clerk-id", clerkId);
     router.push("/dashboard");
   };
 
@@ -114,6 +120,29 @@ export function PersonalizationModal({ trigger }: PersonalizationModalProps) {
               onClick={handleAnonymous}
               variant="secondary"
             />
+            
+            <div className="mt-4 flex flex-col items-center gap-3">
+               <div className="h-px w-full bg-black/5" />
+               <Button 
+                variant="ghost" 
+                onClick={async () => {
+                  const email = prompt("Please enter the clinical email used for your personalization:");
+                  if (email) {
+                    const { restoreSessionByEmail } = await import("@/app/actions/medical");
+                    const result = await restoreSessionByEmail(email);
+                    if (result.success) {
+                      localStorage.setItem("takecare-clerk-id", result.clerkId!);
+                      router.push("/dashboard");
+                    } else {
+                      alert("Health profile not found for this email address. Please personalize first.");
+                    }
+                  }
+                }}
+                className="text-xs font-black uppercase tracking-[0.2em] text-black/30 hover:text-black"
+               >
+                 I already have a profile
+               </Button>
+            </div>
           </div>
 
           <p className="mt-6 text-center text-[10px] font-medium text-black/30 lg:mt-8 lg:text-xs">

@@ -14,13 +14,24 @@ export default function PersonalizePage() {
   useEffect(() => {
     async function checkStatus() {
       const storedId = localStorage.getItem("takecare-clerk-id");
+      const hasCookie = document.cookie.includes("takecare-clerk-id");
+
       if (!storedId) {
         router.push("/");
         return;
       }
+
+      const { syncSession } = await import("@/app/actions/medical");
+      
+      if (!hasCookie) {
+        await syncSession(storedId);
+        window.location.reload();
+        return;
+      }
+
       const personalized = await hasPersonalized(storedId);
       if (personalized) {
-        // We let them stay if they want to re-personalize or just see the form
+        router.push("/dashboard");
       }
     }
     checkStatus();
@@ -37,13 +48,34 @@ export default function PersonalizePage() {
       <div className="relative mx-auto flex min-h-screen w-full max-w-[1440px] flex-col px-6 py-8 lg:px-16 lg:py-12">
         {/* Navigation / Header */}
         <header className="mb-12 flex items-center justify-between">
-          <Link 
-            href="/" 
-            className="group flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-black/40 transition-colors hover:text-black"
-          >
-            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-            Back to Home
-          </Link>
+          <div className="flex items-center gap-6">
+            <Link 
+              href="/" 
+              className="group flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-black/40 transition-colors hover:text-black"
+            >
+              <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+              Back to Home
+            </Link>
+            
+            <button 
+                onClick={async () => {
+                  const email = prompt("Please enter your profile email:");
+                  if (email) {
+                    const { restoreSessionByEmail } = await import("@/app/actions/medical");
+                    const res = await restoreSessionByEmail(email);
+                    if (res.success) {
+                      localStorage.setItem("takecare-clerk-id", res.clerkId!);
+                      window.location.href = "/dashboard";
+                    } else {
+                      alert("Health profile not found for this email address. Please personalize first.");
+                    }
+                  }
+                }}
+                className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 hover:text-blue-600 lg:text-xs"
+            >
+              Already have a profile?
+            </button>
+          </div>
           
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black">

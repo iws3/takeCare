@@ -5,22 +5,22 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PersonalizationModal } from "@/components/onboarding/personalization-modal";
-import { hasPersonalized } from "@/app/actions/medical";
 import { useRouter } from "next/navigation";
 
 export default function OnboardingPage() {
   const router = useRouter();
   useEffect(() => {
-    async function checkSatus() {
+    async function sync() {
       const storedId = localStorage.getItem("takecare-clerk-id");
       if (storedId) {
-        const personalized = await hasPersonalized(storedId);
+        const { syncSession } = await import("@/app/actions/medical");
+        const { personalized } = await syncSession(storedId);
         if (personalized) {
           router.push("/dashboard");
         }
       }
     }
-    checkSatus();
+    sync();
   }, [router]);
 
   return (
@@ -68,17 +68,14 @@ export default function OnboardingPage() {
 
             {/* CTA Button Section */}
             <div className="mt-10 flex items-center gap-6 lg:mt-16 animate-scale-in">
-              <PersonalizationModal
-                trigger={
-                  <Button
-                    size="lg"
-                    className="h-14 rounded-full cursor-pointer bg-black px-8 text-base font-bold text-white transition-all hover:scale-105 hover:bg-black/90 active:scale-95 lg:h-20 lg:px-12 lg:text-xl"
-                  >
-                    Get Started
-                    <ArrowRight className="ml-2 h-5 w-5 lg:h-6 lg:w-6" />
-                  </Button>
-                }
-              />
+              <Button
+                size="lg"
+                onClick={() => router.push("/signup")}
+                className="h-14 rounded-full cursor-pointer bg-black px-8 text-base font-bold text-white transition-all hover:scale-105 hover:bg-black/90 active:scale-95 lg:h-20 lg:px-12 lg:text-xl"
+              >
+                Get Started
+                <ArrowRight className="ml-2 h-5 w-5 lg:h-6 lg:w-6" />
+              </Button>
 
               <div className="hidden flex-col lg:flex">
                 <span className="text-sm font-bold text-black lg:text-base">Trust by 10k+ users</span>

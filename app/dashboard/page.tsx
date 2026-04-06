@@ -135,6 +135,7 @@ export default function DashboardPage() {
         const storedId = localStorage.getItem("takecare-clerk-id");
         
         if (!storedId) {
+           // Middleware usually catches this, but local storage backup
            router.push("/");
            return;
         }
@@ -145,13 +146,9 @@ export default function DashboardPage() {
         // 2. If not found, something is wrong or they were cleared
         if (!data) {
            localStorage.removeItem("takecare-clerk-id");
+           // Redirect will happen if they are not authed
            router.push("/");
            return;
-        }
-
-        const personalized = await hasPersonalized(storedId);
-        if (!personalized) {
-          router.push("/");
         }
 
         setUserData(data);

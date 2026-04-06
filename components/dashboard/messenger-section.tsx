@@ -5,14 +5,14 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Send, Phone, UserPlus, ArrowRight, CheckCircle2, Bell, BellRing, Settings, MoreVertical, Paperclip, Smile, Mic } from "lucide-react";
+import { MessageCircle, Send, Phone, UserPlus, ArrowRight, CheckCircle2, Bell, BellRing, Settings, MoreVertical, Paperclip, Smile, Mic, Mail } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const PLATFORMS = [
   { id: "whatsapp", label: "WhatsApp", icon: MessageCircle, color: "text-[#25D366]", bg: "bg-[#25D366]/10" },
   { id: "telegram", label: "Telegram", icon: Send, color: "text-[#0088cc]", bg: "bg-[#0088cc]/10" },
-  { id: "call", label: "Normal Call", icon: Phone, color: "text-primary", bg: "bg-primary/10" },
+  { id: "gmail", label: "Gmail", icon: Mail, color: "text-red-500", bg: "bg-red-500/10" },
 ];
 
 interface Message {
@@ -29,9 +29,10 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
   const [isInvited, setIsInvited] = useState(false);
   const [isChatActive, setIsChatActive] = useState(false);
   const [doctorName, setDoctorName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [contactInfo, setContactInfo] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [initialMessage, setInitialMessage] = useState("");
   const [notificationCount, setNotificationCount] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
   const [lastSeenTimestamp, setLastSeenTimestamp] = useState<string | null>(new Date().toISOString());
@@ -93,8 +94,8 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Normalize to digits only for API
-    let formattedNumber = phoneNumber.replace(/\D/g, "");
+    // Normalize to digits only for API if it's a phone number
+    let formattedNumber = platform === "gmail" ? contactInfo : contactInfo.replace(/\D/g, "");
 
     try {
       const response = await fetch("/api/messenger/whatsapp", {
@@ -104,6 +105,8 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
           whatsappNumber: formattedNumber,
           contactName: doctorName,
           doctorName: doctorName,
+          initialMessage: initialMessage,
+          platform: platform,
         }),
       });
 
@@ -116,7 +119,8 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
         setTimeout(() => {
           setIsInvited(false);
           setDoctorName("");
-          setPhoneNumber("");
+          setContactInfo("");
+          setInitialMessage("");
           setIsChatActive(true); // Auto-activate chat for demo or real use
         }, 5000);
       } else {
@@ -216,7 +220,9 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
                         Invite your Doctor via <span className={p.color}>{p.label}</span>
                       </h3>
                       <p className="text-base font-medium text-black/40 lg:text-lg max-w-sm">
-                        Direct WhatsApp integration for context-aware diagnostics.
+                        {p.id === "gmail" 
+                          ? "Send a secure invitation directly to their Gmail inbox."
+                          : `Direct ${p.label} integration for context-aware diagnostics.`}
                       </p>
                     </div>
 
@@ -236,22 +242,35 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
                       </div>
 
                       <div className="grid gap-3">
-                        <Label htmlFor={`phone-${p.id}`} className="text-xs font-black uppercase tracking-[0.2em] text-black/30">
-                          WhatsApp Number
+                        <Label htmlFor={`contact-${p.id}`} className="text-xs font-black uppercase tracking-[0.2em] text-black/30">
+                          {p.id === "gmail" ? "Doctor's Gmail" : `${p.label} Number`}
                         </Label>
                         <Input
-                          id={`phone-${p.id}`}
-                          type="tel"
+                          id={`contact-${p.id}`}
+                          type={p.id === "gmail" ? "email" : "tel"}
                           required
-                          placeholder="Ex: 237670000000"
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          placeholder={p.id === "gmail" ? "docker@gmail.com" : "Ex: 237670000000"}
+                          value={contactInfo}
+                          onChange={(e) => setContactInfo(e.target.value)}
                           className="h-16 rounded-2xl border-black/5 bg-black/5 pl-6 text-lg font-bold transition-all focus:bg-white focus:ring-4 focus:ring-primary/5 shadow-inner hover:bg-black/10"
                         />
                       </div>
 
+                      <div className="grid gap-3">
+                        <Label htmlFor={`message-${p.id}`} className="text-xs font-black uppercase tracking-[0.2em] text-black/30">
+                          Optional Message
+                        </Label>
+                        <textarea
+                          id={`message-${p.id}`}
+                          placeholder="Add a personalized message..."
+                          value={initialMessage}
+                          onChange={(e) => setInitialMessage(e.target.value)}
+                          className="min-h-24 resize-none rounded-2xl border border-black/5 bg-black/5 p-4 text-base font-medium transition-all focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 shadow-inner hover:bg-black/10"
+                        />
+                      </div>
+
                       <Button type="submit" className="h-16 md:h-20 rounded-3xl md:rounded-4xl bg-black text-white font-black text-lg md:text-xl hover:scale-[1.02] active:scale-95 shadow-2xl mt-4">
-                        Send WhatsApp Invitation
+                        Send {p.label} Invitation
                       </Button>
                     </form>
                   </div>

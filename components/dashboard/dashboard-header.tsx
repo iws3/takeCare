@@ -19,7 +19,9 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
     window.location.reload();
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const { logoutUser } = await import("@/app/actions/medical");
+    await logoutUser();
     localStorage.removeItem("takecare-clerk-id");
     router.push("/");
   };
