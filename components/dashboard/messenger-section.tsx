@@ -203,7 +203,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-4"
+                className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-4 cursor-pointer"
                 onClick={() => setIsPopupOpen(false)}
               >
                 <motion.div
@@ -212,11 +212,11 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
                   exit={{ y: "100%", opacity: 0 }}
                   transition={{ type: "spring", damping: 25, stiffness: 200 }}
                   onClick={(e) => e.stopPropagation()}
-                  className="w-full sm:max-w-2xl bg-white rounded-t-[40px] sm:rounded-4xl max-h-[90vh] overflow-y-auto p-6 md:p-10 shadow-2xl relative"
+                  className="w-full sm:max-w-2xl bg-white rounded-t-[40px] sm:rounded-4xl max-h-[90vh] overflow-y-auto p-6 md:p-10 shadow-2xl relative cursor-default"
                 >
                   <button 
                     onClick={() => setIsPopupOpen(false)}
-                    className="absolute top-6 right-6 p-2 bg-black/5 rounded-full hover:bg-black/10 transition-colors z-10"
+                    className="absolute top-6 right-6 p-2 bg-black/5 rounded-full hover:bg-black/10 transition-colors z-10 cursor-pointer"
                   >
                     <X className="w-5 h-5 text-black/60" />
                   </button>
@@ -288,7 +288,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
                               />
                             </div>
 
-                            <Button type="submit" className="h-14 sm:h-16 rounded-[24px] sm:rounded-3xl bg-black text-white font-black text-base sm:text-lg hover:scale-[1.02] active:scale-95 shadow-xl mt-2">
+                            <Button type="submit" className="h-14 sm:h-16 rounded-[24px] sm:rounded-3xl bg-black text-white font-black text-base sm:text-lg hover:scale-[1.02] active:scale-95 shadow-xl mt-2 cursor-pointer">
                               Send {p.label} Invitation
                             </Button>
                           </form>
@@ -319,8 +319,8 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="ghost" size="icon" className="rounded-xl opacity-40"><Phone className="w-5 h-5" /></Button>
-              <Button variant="ghost" size="icon" className="rounded-xl opacity-40"><Bell className="w-5 h-5" /></Button>
+              <Button variant="ghost" size="icon" className="rounded-xl opacity-40 cursor-pointer"><Phone className="w-5 h-5" /></Button>
+              <Button variant="ghost" size="icon" className="rounded-xl opacity-40 cursor-pointer"><Bell className="w-5 h-5" /></Button>
             </div>
           </div>
 
@@ -374,8 +374,8 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
           </div>
 
           <form onSubmit={sendMessage} className="p-6 bg-white border-t border-black/5 flex gap-4 items-center">
-            <Button type="button" variant="ghost" size="icon" className="rounded-xl opacity-40"><Smile /></Button>
-            <Button type="button" variant="ghost" size="icon" className="rounded-xl opacity-40"><Paperclip /></Button>
+            <Button type="button" variant="ghost" size="icon" className="rounded-xl opacity-40 cursor-pointer"><Smile /></Button>
+            <Button type="button" variant="ghost" size="icon" className="rounded-xl opacity-40 cursor-pointer"><Paperclip /></Button>
             <div className="flex-1 relative">
               <Input
                 placeholder="Direct message to Doctor..."
@@ -384,7 +384,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
                 className="h-14 rounded-2xl border-black/5 bg-black/5 pl-6 text-base font-bold transition-all focus:bg-white focus:ring-0 shadow-inner"
               />
             </div>
-            <Button type="submit" className="h-14 w-14 rounded-2xl bg-black text-white shadow-xl">
+            <Button type="submit" className="h-14 w-14 rounded-2xl bg-black text-white shadow-xl cursor-pointer">
                <Send className="w-6 h-6" />
             </Button>
           </form>
