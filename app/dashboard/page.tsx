@@ -129,36 +129,31 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    async function initDashboard() {
-      try {
-        const storedId = localStorage.getItem("takecare-clerk-id");
-        
-        if (!storedId) {
-           // Middleware usually catches this, but local storage backup
-           router.push("/");
-           return;
-        }
-
-        // 1. Fetch user from DB
-        let data = await getMedicalHistory(storedId);
-        
-        // 2. If not found, something is wrong or they were cleared
-        if (!data) {
-           localStorage.removeItem("takecare-clerk-id");
-           // Redirect will happen if they are not authed
-           router.push("/");
-           return;
-        }
-
-        setUserData(data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setTimeout(() => setLoading(false), 2000); 
+  const fetchData = async () => {
+    try {
+      const storedId = localStorage.getItem("takecare-clerk-id");
+      
+      if (!storedId) {
+         router.push("/");
+         return;
       }
+
+      let data = await getMedicalHistory(storedId);
+      
+      if (!data) {
+         localStorage.removeItem("takecare-clerk-id");
+         router.push("/");
+         return;
+      }
+
+      setUserData(data);
+    } catch (e) {
+      console.error(e);
     }
-    initDashboard();
+  };
+
+  useEffect(() => {
+    fetchData().finally(() => setTimeout(() => setLoading(false), 2000));
   }, [router]);
 
   if (loading) return <DashboardLoading />;
@@ -242,7 +237,13 @@ export default function DashboardPage() {
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
               <div className="mt-6 mb-12">
-                <MessengerSection onNotificationSync={setMessengerUnreadCount} />
+                <MessengerSection 
+                  onNotificationSync={setMessengerUnreadCount} 
+                  onInviteSuccess={async () => {
+                    await fetchData();
+                    setActiveTab("overview");
+                  }}
+                />
               </div>
             </motion.div>
           ) : activeTab === "smart-care" ? (

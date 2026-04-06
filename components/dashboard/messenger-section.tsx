@@ -24,7 +24,7 @@ interface Message {
   mediaUrl?: string; // URL for the media
 }
 
-export function MessengerSection({ onNotificationSync }: { onNotificationSync?: (count: number) => void }) {
+export function MessengerSection({ onNotificationSync, onInviteSuccess }: { onNotificationSync?: (count: number) => void; onInviteSuccess?: () => void; }) {
   const [platform, setPlatform] = useState("whatsapp");
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isInvited, setIsInvited] = useState(false);
@@ -121,14 +121,19 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
         setIsInvited(true);
         setIsPopupOpen(false); // Close the popup upon success
         // After showing the success modal, we stay on this page 
-        // and just reset the form after a while, per user request.
+        // briefly, then reset the form and trigger the success callback
         setTimeout(() => {
           setIsInvited(false);
           setDoctorName("");
           setContactInfo("");
           setInitialMessage("");
-          setIsChatActive(true); // Auto-activate chat for demo or real use
-        }, 5000);
+          
+          if (onInviteSuccess) {
+            onInviteSuccess();
+          } else {
+            setIsChatActive(true); // Fallback if no callback
+          }
+        }, 1500);
       } else {
         alert(`WhatsApp Delivery Error: ${result.error}. Check campaign: ${process.env.NEXT_PUBLIC_CAMPAIGN || 'health_check'}`);
       }
