@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Send, Phone, UserPlus, ArrowRight, CheckCircle2, Bell, BellRing, Settings, MoreVertical, Paperclip, Smile, Mic, Mail } from "lucide-react";
+import { MessageCircle, Send, Phone, UserPlus, ArrowRight, CheckCircle2, Bell, BellRing, Settings, MoreVertical, Paperclip, Smile, Mic, Mail, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +26,7 @@ interface Message {
 
 export function MessengerSection({ onNotificationSync }: { onNotificationSync?: (count: number) => void }) {
   const [platform, setPlatform] = useState("whatsapp");
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isInvited, setIsInvited] = useState(false);
   const [isChatActive, setIsChatActive] = useState(false);
   const [doctorName, setDoctorName] = useState("");
@@ -114,6 +115,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
 
       if (response.ok) {
         setIsInvited(true);
+        setIsPopupOpen(false); // Close the popup upon success
         // After showing the success modal, we stay on this page 
         // and just reset the form after a while, per user request.
         setTimeout(() => {
@@ -174,111 +176,131 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
       </div>
 
       {!isChatActive ? (
-        <Tabs value={platform} onValueChange={setPlatform} className="w-full">
-          <TabsList className="bg-black/5 p-1 rounded-2xl w-full lg:w-fit h-auto flex gap-1">
+        <div className="w-full">
+          <div className="bg-black/5 p-1 rounded-2xl w-full lg:w-fit h-auto flex gap-1">
             {PLATFORMS.map((p) => (
-              <TabsTrigger
+              <button
+                type="button"
                 key={p.id}
-                value={p.id}
+                onClick={() => {
+                  setPlatform(p.id);
+                  setIsPopupOpen(true);
+                }}
                 className={cn(
-                  "rounded-xl px-6 py-2.5 transition-all duration-300 cursor-pointer flex-1 lg:flex-none",
-                  "data-[state=active]:bg-[#007AFF] data-[state=active]:text-white shadow-medical active:scale-95 flex items-center justify-center gap-2 font-outfit font-bold text-sm"
+                  "rounded-xl px-6 py-2.5 transition-all duration-300 cursor-pointer flex-1 lg:flex-none flex items-center justify-center gap-2 font-outfit font-bold text-sm",
+                  "hover:bg-white hover:shadow-sm text-black/60 focus:outline-none active:scale-95"
                 )}
               >
-                <p.icon className={cn("h-4 w-4 transition-colors", platform === p.id ? "text-white" : p.color)} />
+                <p.icon className={cn("h-4 w-4 transition-colors", p.color)} />
                 {p.label}
-              </TabsTrigger>
+              </button>
             ))}
-          </TabsList>
+          </div>
 
-          <AnimatePresence mode="wait">
-            {PLATFORMS.map((p) => (
-              <TabsContent value={p.id} key={p.id}>
+          <AnimatePresence>
+            {isPopupOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-4"
+                onClick={() => setIsPopupOpen(false)}
+              >
                 <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.4 }}
-                  className="mt-4 md:mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center rounded-3xl md:rounded-5xl border border-black/5 bg-white p-5 md:p-8 lg:p-12 shadow-2xl relative overflow-hidden"
+                  initial={{ y: "100%", opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: "100%", opacity: 0 }}
+                  transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full sm:max-w-2xl bg-white rounded-t-[40px] sm:rounded-4xl max-h-[90vh] overflow-y-auto p-6 md:p-10 shadow-2xl relative"
                 >
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32" />
-                  <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -ml-32 -mb-32" />
+                  <button 
+                    onClick={() => setIsPopupOpen(false)}
+                    className="absolute top-6 right-6 p-2 bg-black/5 rounded-full hover:bg-black/10 transition-colors z-10"
+                  >
+                    <X className="w-5 h-5 text-black/60" />
+                  </button>
+                  
+                  {(() => {
+                    const p = PLATFORMS.find(pl => pl.id === platform) || PLATFORMS[0];
+                    return (
+                      <div className="flex flex-col gap-8 relative overflow-hidden mt-2">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -ml-32 -mb-32 pointer-events-none" />
 
-                  <div className="flex items-center justify-center lg:justify-start">
-                    <div className={cn("relative flex h-56 w-56 lg:h-80 lg:w-80 items-center justify-center rounded-4xl shadow-2xl transition-transform hover:scale-105 duration-500", p.bg)}>
-                      <div className="absolute inset-0 animate-pulse-ring rounded-4xl bg-current opacity-20" />
-                      <p.icon className={cn("h-28 w-28 lg:h-44 lg:w-44", p.color)} />
-                    </div>
-                  </div>
+                        <div className="flex flex-col gap-8">
+                          <div className="flex items-center gap-6">
+                            <div className={cn("relative flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl shadow-xl", p.bg)}>
+                              <p.icon className={cn("h-10 w-10", p.color)} />
+                            </div>
+                            <div className="space-y-1">
+                              <h3 className="font-bricolage text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight">
+                                Invite via <span className={p.color}>{p.label}</span>
+                              </h3>
+                              <p className="text-sm font-medium text-black/40">
+                                {p.id === "gmail" 
+                                  ? "Send a secure invitation directly to their Gmail."
+                                  : `Direct ${p.label} integration for diagnostics.`}
+                              </p>
+                            </div>
+                          </div>
 
-                  <div className="flex flex-col gap-10">
-                    <div className="space-y-3">
-                      <div className="inline-flex items-center px-3 py-1 rounded-full bg-black/5 text-[10px] font-black tracking-widest uppercase text-black/40">
-                        Secure Connection
+                          <form onSubmit={handleInvite} className="grid gap-5">
+                            <div className="grid gap-2">
+                              <Label htmlFor={`doctor-name-${p.id}`} className="text-[10px] font-black uppercase tracking-[0.2em] text-black/30">
+                                Doctor's Full Name
+                              </Label>
+                              <Input
+                                id={`doctor-name-${p.id}`}
+                                placeholder="e.g. Dr. Sarah Jenkins"
+                                required
+                                value={doctorName}
+                                onChange={(e) => setDoctorName(e.target.value)}
+                                className="h-14 sm:h-16 rounded-2xl border-black/5 bg-black/5 pl-6 text-base sm:text-lg font-bold transition-all focus:bg-white focus:ring-4 focus:ring-primary/5 shadow-inner hover:bg-black/10"
+                              />
+                            </div>
+
+                            <div className="grid gap-2">
+                              <Label htmlFor={`contact-${p.id}`} className="text-[10px] font-black uppercase tracking-[0.2em] text-black/30">
+                                {p.id === "gmail" ? "Doctor's Gmail" : `${p.label} Number`}
+                              </Label>
+                              <Input
+                                id={`contact-${p.id}`}
+                                type={p.id === "gmail" ? "email" : "tel"}
+                                required
+                                placeholder={p.id === "gmail" ? "docker@gmail.com" : "Ex: 237670000000"}
+                                value={contactInfo}
+                                onChange={(e) => setContactInfo(e.target.value)}
+                                className="h-14 sm:h-16 rounded-2xl border-black/5 bg-black/5 pl-6 text-base sm:text-lg font-bold transition-all focus:bg-white focus:ring-4 focus:ring-primary/5 shadow-inner hover:bg-black/10"
+                              />
+                            </div>
+
+                            <div className="grid gap-2">
+                              <Label htmlFor={`message-${p.id}`} className="text-[10px] font-black uppercase tracking-[0.2em] text-black/30">
+                                Optional Message
+                              </Label>
+                              <textarea
+                                id={`message-${p.id}`}
+                                placeholder="Add a personalized message..."
+                                value={initialMessage}
+                                onChange={(e) => setInitialMessage(e.target.value)}
+                                className="min-h-[80px] sm:min-h-24 resize-none rounded-2xl border border-black/5 bg-black/5 p-4 text-sm sm:text-base font-medium transition-all focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 shadow-inner hover:bg-black/10"
+                              />
+                            </div>
+
+                            <Button type="submit" className="h-14 sm:h-16 rounded-[24px] sm:rounded-3xl bg-black text-white font-black text-base sm:text-lg hover:scale-[1.02] active:scale-95 shadow-xl mt-2">
+                              Send {p.label} Invitation
+                            </Button>
+                          </form>
+                        </div>
                       </div>
-                      <h3 className="font-bricolage text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
-                        Invite your Doctor via <span className={p.color}>{p.label}</span>
-                      </h3>
-                      <p className="text-base font-medium text-black/40 lg:text-lg max-w-sm">
-                        {p.id === "gmail" 
-                          ? "Send a secure invitation directly to their Gmail inbox."
-                          : `Direct ${p.label} integration for context-aware diagnostics.`}
-                      </p>
-                    </div>
-
-                    <form onSubmit={handleInvite} className="grid gap-6">
-                      <div className="grid gap-3">
-                        <Label htmlFor={`doctor-name-${p.id}`} className="text-xs font-black uppercase tracking-[0.2em] text-black/30">
-                          Doctor's Full Name
-                        </Label>
-                        <Input
-                          id={`doctor-name-${p.id}`}
-                          placeholder="e.g. Dr. Sarah Jenkins"
-                          required
-                          value={doctorName}
-                          onChange={(e) => setDoctorName(e.target.value)}
-                          className="h-16 rounded-2xl border-black/5 bg-black/5 pl-6 text-lg font-bold transition-all focus:bg-white focus:ring-4 focus:ring-primary/5 shadow-inner hover:bg-black/10"
-                        />
-                      </div>
-
-                      <div className="grid gap-3">
-                        <Label htmlFor={`contact-${p.id}`} className="text-xs font-black uppercase tracking-[0.2em] text-black/30">
-                          {p.id === "gmail" ? "Doctor's Gmail" : `${p.label} Number`}
-                        </Label>
-                        <Input
-                          id={`contact-${p.id}`}
-                          type={p.id === "gmail" ? "email" : "tel"}
-                          required
-                          placeholder={p.id === "gmail" ? "docker@gmail.com" : "Ex: 237670000000"}
-                          value={contactInfo}
-                          onChange={(e) => setContactInfo(e.target.value)}
-                          className="h-16 rounded-2xl border-black/5 bg-black/5 pl-6 text-lg font-bold transition-all focus:bg-white focus:ring-4 focus:ring-primary/5 shadow-inner hover:bg-black/10"
-                        />
-                      </div>
-
-                      <div className="grid gap-3">
-                        <Label htmlFor={`message-${p.id}`} className="text-xs font-black uppercase tracking-[0.2em] text-black/30">
-                          Optional Message
-                        </Label>
-                        <textarea
-                          id={`message-${p.id}`}
-                          placeholder="Add a personalized message..."
-                          value={initialMessage}
-                          onChange={(e) => setInitialMessage(e.target.value)}
-                          className="min-h-24 resize-none rounded-2xl border border-black/5 bg-black/5 p-4 text-base font-medium transition-all focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 shadow-inner hover:bg-black/10"
-                        />
-                      </div>
-
-                      <Button type="submit" className="h-16 md:h-20 rounded-3xl md:rounded-4xl bg-black text-white font-black text-lg md:text-xl hover:scale-[1.02] active:scale-95 shadow-2xl mt-4">
-                        Send {p.label} Invitation
-                      </Button>
-                    </form>
-                  </div>
+                    );
+                  })()}
                 </motion.div>
-              </TabsContent>
-            ))}
+              </motion.div>
+            )}
           </AnimatePresence>
-        </Tabs>
+        </div>
       ) : (
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
