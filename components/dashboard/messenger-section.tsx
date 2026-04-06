@@ -28,6 +28,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
   const [platform, setPlatform] = useState("whatsapp");
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isInvited, setIsInvited] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isChatActive, setIsChatActive] = useState(false);
   const [doctorName, setDoctorName] = useState("");
   const [contactInfo, setContactInfo] = useState("");
@@ -97,6 +98,7 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
 
     // Normalize to digits only for API if it's a phone number
     let formattedNumber = platform === "gmail" ? contactInfo : contactInfo.replace(/\D/g, "");
+    setIsSubmitting(true);
 
     try {
       const endpoint = `/api/messenger/${platform}`;
@@ -132,7 +134,9 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
       }
     } catch (err) {
       console.error(err);
-      alert("Network Error: Could not reach WhatsApp Gateway.");
+      alert("Network Error: Could not reach communication gateway.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -290,8 +294,15 @@ export function MessengerSection({ onNotificationSync }: { onNotificationSync?: 
                               />
                             </div>
 
-                            <Button type="submit" className="h-14 sm:h-16 rounded-[24px] sm:rounded-3xl bg-black text-white font-black text-base sm:text-lg hover:scale-[1.02] active:scale-95 shadow-xl mt-2 cursor-pointer">
-                              Send {p.label} Invitation
+                            <Button type="submit" disabled={isSubmitting} className="h-14 sm:h-16 rounded-[24px] sm:rounded-3xl bg-black text-white font-black text-base sm:text-lg hover:scale-[1.02] active:scale-95 shadow-xl mt-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
+                              {isSubmitting ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                  Sending...
+                                </div>
+                              ) : (
+                                `Send ${p.label} Invitation`
+                              )}
                             </Button>
                           </form>
                         </div>
