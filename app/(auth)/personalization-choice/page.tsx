@@ -8,12 +8,18 @@ import { Button } from "@/components/ui/button";
 export default function PersonalizationChoicePage() {
   const router = useRouter();
 
-  const handleChoice = (isAnonymous: boolean) => {
-    // We could make an API call to save their preference, but for now we just route.
+  const handleChoice = async (isAnonymous: boolean) => {
     if (isAnonymous) {
-      router.push("/dashboard"); // Skip personalization
+      // Set the personalized cookie via server action (marks as "done" even for anonymous)
+      const { saveMyPersonalization } = await import("@/app/actions/medical");
+      await saveMyPersonalization({
+        healthGoals: [],
+        theme: "default",
+      });
+      router.push("/dashboard");
+      router.refresh();
     } else {
-      router.push("/personalization-onboarding"); // Route to actual personalization flow
+      router.push("/personalization-onboarding");
     }
   };
 

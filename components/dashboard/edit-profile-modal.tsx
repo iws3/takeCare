@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Camera, User, Image as ImageIcon, Loader2, Trash2 } from "lucide-react";
-import { updateProfile, deleteUser } from "@/app/actions/medical";
+import { updateMyProfile, deleteMyAccount } from "@/app/actions/medical";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 interface EditProfileModalProps {
   user: {
@@ -59,7 +60,7 @@ export function EditProfileModal({ user, onUpdate }: EditProfileModalProps) {
     }
     setLoading(true);
     try {
-      await updateProfile(user.clerkId, formData);
+      await updateMyProfile(formData);
       toast.success("Profile updated successfully!");
       onUpdate();
     } catch (error) {
@@ -194,12 +195,10 @@ function DeleteConfirm({ clerkId }: { clerkId: string }) {
     const toastId = toast.loading("Securely wiping your clinical data...");
     
     try {
-      await deleteUser(clerkId);
-      localStorage.removeItem("takecare-clerk-id");
+      await deleteMyAccount();
       toast.success("Account and data successfully deleted.", { id: toastId });
-      setTimeout(() => {
-        router.push("/");
-        window.location.reload();
+      setTimeout(async () => {
+        await signOut({ callbackUrl: "/" });
       }, 1500);
     } catch (e) {
       toast.error("Failed to delete account. Please try again.", { id: toastId });

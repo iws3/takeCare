@@ -1,27 +1,18 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PersonalizationModal } from "@/components/onboarding/personalization-modal";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  useEffect(() => {
-    async function sync() {
-      const storedId = localStorage.getItem("takecare-clerk-id");
-      if (storedId) {
-        const { syncSession } = await import("@/app/actions/medical");
-        const { personalized } = await syncSession(storedId);
-        if (personalized) {
-          router.push("/dashboard");
-        }
-      }
-    }
-    sync();
-  }, [router]);
+  const { data: session, status } = useSession();
+
+  // If signed in + personalized, middleware handles redirect.
+  // But if they land here while loading, show the page anyway.
 
   return (
     <main className="relative h-screen w-full overflow-hidden bg-white font-sans text-black selection:bg-black selection:text-white">
@@ -70,10 +61,16 @@ export default function OnboardingPage() {
             <div className="mt-10 flex items-center gap-6 lg:mt-16 animate-scale-in">
               <Button
                 size="lg"
-                onClick={() => router.push("/signup")}
+                onClick={() => {
+                  if (status === "authenticated") {
+                    router.push("/dashboard");
+                  } else {
+                    router.push("/signup");
+                  }
+                }}
                 className="h-14 rounded-full cursor-pointer bg-black px-8 text-base font-bold text-white transition-all hover:scale-105 hover:bg-black/90 active:scale-95 lg:h-20 lg:px-12 lg:text-xl"
               >
-                Get Started
+                {status === "authenticated" ? "Go to Dashboard" : "Get Started"}
                 <ArrowRight className="ml-2 h-5 w-5 lg:h-6 lg:w-6" />
               </Button>
 

@@ -280,7 +280,7 @@ export function MessengerSection({ onNotificationSync, onInviteSuccess }: { onNo
                                 type={p.id === "gmail" ? "email" : "tel"}
                                 required
                                 placeholder={p.id === "gmail" ? "gita@gmail.com" : "Ex: 237670000000"}
-                                value={contactInfo}
+                              value={contactInfo}
                                 onChange={(e) => setContactInfo(e.target.value)}
                                 className="h-14 sm:h-16 rounded-2xl border-black/5 bg-black/5 pl-6 text-base sm:text-lg font-bold transition-all focus:bg-white focus:ring-4 focus:ring-primary/5 shadow-inner hover:bg-black/10"
                               />

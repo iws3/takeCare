@@ -42,7 +42,17 @@ function SignInForm() {
         toast.error("Invalid email or password");
       } else {
         toast.success("Welcome back!");
-        router.push(callbackUrl);
+        
+        // Sync the personalization cookie server-side
+        const { syncPersonalizationCookie } = await import("@/app/actions/medical");
+        const { personalized } = await syncPersonalizationCookie();
+        
+        if (personalized) {
+          router.push(callbackUrl);
+        } else {
+          router.push("/personalization-choice");
+        }
+        router.refresh(); // Force middleware re-evaluation
       }
     } catch (error) {
       toast.error("Something went wrong");

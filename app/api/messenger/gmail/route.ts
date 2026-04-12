@@ -17,10 +17,11 @@ export async function POST(req: Request) {
 
     // Store in DB
     try {
-      const cookieStore = await cookies();
-      const clerkId = cookieStore.get("takecare-clerk-id")?.value;
-      if (clerkId) {
-        userPatient = await prisma.user.findUnique({ where: { clerkId } });
+      const { auth } = await import("@/auth");
+      const session = await auth();
+      
+      if (session?.user?.id) {
+        userPatient = await prisma.user.findUnique({ where: { id: session.user.id } });
         if (userPatient) {
           const invite = await prisma.doctorInvitation.create({
             data: {

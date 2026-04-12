@@ -57,7 +57,9 @@ export default function SignUpPage() {
         toast.error("Failed to auto-login. Please sign in manually.");
         router.push("/signin");
       } else {
+        // New user — send to personalization choice
         router.push("/personalization-choice");
+        router.refresh();
       }
     } catch (error: any) {
       toast.error(error.message);

@@ -59,16 +59,18 @@ export default function PersonalizationOnboardingPage() {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/user/personalization", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+      const { saveMyPersonalization } = await import("@/app/actions/medical");
+      await saveMyPersonalization({
+        healthGoals: formData.healthGoals,
+        bloodType: formData.bloodType || undefined,
+        allergies: formData.allergies,
+        emergencyPhone: formData.emergencyPhone || undefined,
+        theme: formData.theme || undefined,
       });
-
-      if (!res.ok) throw new Error("Failed to save personalization");
 
       toast.success("Profile fully configured!");
       router.push("/dashboard");
+      router.refresh();
     } catch (error) {
       toast.error("An error occurred. Please try again.");
     } finally {

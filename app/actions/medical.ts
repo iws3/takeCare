@@ -3,91 +3,250 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { auth } from "@/auth";
 
-export async function syncSession(clerkId: string) {
-  const cookieStore = await cookies();
-  cookieStore.set("takecare-clerk-id", clerkId, { path: "/" });
+// ============================================================
+// SECURE SERVER ACTIONS — all use auth() to identify the user
+// No client-provided IDs are trusted for identity
+// ============================================================
+
+/**
+ * Get the current authenticated user's medical history.
+ * Uses NextAuth session — no client-side ID needed.
+ */
+export async function getMyMedicalHistory() {
+  const session = await auth();
+  if (!session?.user?.id) return null;
 
   const user = await prisma.user.findUnique({
-    where: { clerkId },
-    include: { personalization: true }
-  });
-
-  const isPersonalized = !!(user && user.personalization);
-  if (isPersonalized) {
-    const cookieStore2 = await cookies();
-    cookieStore2.set("takecare-personalized", "true", { path: "/" });
-  } else {
-    const cookieStore3 = await cookies();
-    cookieStore3.delete("takecare-personalized");
-  }
-  return { personalized: isPersonalized };
-}
-
-export async function initSession() {
-  const guestClerkId = `guest-${Math.random().toString(36).substring(2, 11)}`;
-  const cookieStore = await cookies();
-  cookieStore.set("takecare-clerk-id", guestClerkId, { path: "/" });
-  return { clerkId: guestClerkId };
-}
-
-export async function loginAnonymous() {
-  const { clerkId } = await initSession();
-  const cookieStore = await cookies();
-  cookieStore.set("takecare-personalized", "true", { path: "/" }); 
-  return { clerkId };
-}
-
-// Type for creating a user
-export async function ensureUser(clerkId: string, email: string, name?: string) {
-  // 1. Try to find user by email first (this is our primary identity)
-  let user = await prisma.user.findUnique({
-    where: { email }
-  });
-
-  if (user) {
-    // We found the user by email. Update their clerkId to match the current session.
-    // This effectively "logs them in" or "merges" their current session with their permanent account.
-    user = await prisma.user.update({
-      where: { id: user.id },
-      data: { 
-        clerkId, 
-        name: name || user.name 
+    where: { id: session.user.id },
+    include: {
+      medicalRecords: {
+        orderBy: { createdAt: "desc" },
+        include: { analysis: true }
       },
-    });
-  } else {
-    // 2. No user with this email. Check if a user with this clerkId exists.
-    user = await prisma.user.findUnique({
-      where: { clerkId }
-    });
-
-    if (user) {
-       // Update guest user with their new email/name
-       user = await prisma.user.update({
-         where: { id: user.id },
-         data: { email, name: name || user.name }
-       });
-    } else {
-       // 3. Create fresh user
-       user = await prisma.user.create({
-         data: { clerkId, email, name },
-       });
+      doctorInvitations: {
+        orderBy: { createdAt: "desc" }
+      },
+      personalization: true
     }
-  }
-
-  const personalized = user.clerkId ? await hasPersonalized(user.clerkId) : false;
-  const cookieStore = await cookies();
-  if (user.clerkId) {
-    cookieStore.set("takecare-clerk-id", user.clerkId, { path: "/" });
-  }
-  if (personalized) {
-    cookieStore.set("takecare-personalized", "true", { path: "/" });
-  }
+  });
 
   return user;
 }
 
-// Store Personalization
+/**
+ * Check if the current user has completed personalization.
+ */
+export async function checkMyPersonalization() {
+  const session = await auth();
+  if (!session?.user?.id) return false;
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    include: { personalization: true }
+  });
+
+  return !!user?.personalization;
+}
+
+/**
+ * Save personalization data for the current user.
+ * Also sets the `takecare-personalized` cookie securely (httpOnly).
+ */
+export async function saveMyPersonalization(data: {
+  healthGoals?: string[];
+  bloodType?: string;
+  allergies?: string[];
+  emergencyPhone?: string;
+  theme?: string;
+}) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const result = await prisma.personalization.upsert({
+    where: { userId: session.user.id },
+    create: {
+      userId: session.user.id,
+      ...data,
+    },
+    update: {
+      ...data,
+    },
+  });
+
+  // Set the personalized cookie (httpOnly, secure)
+  const cookieStore = await cookies();
+  cookieStore.set("takecare-personalized", "true", {
+    path: "/",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  });
+
+  return result;
+}
+
+/**
+ * Update the current user's profile.
+ */
+export async function updateMyProfile(data: {
+  name?: string;
+  avatarUrl?: string;
+  coverImageUrl?: string;
+}) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const res = await prisma.user.update({
+    where: { id: session.user.id },
+    data: { ...data },
+  });
+  revalidatePath("/dashboard");
+  return res;
+}
+
+/**
+ * Delete the current user's account and all data.
+ */
+export async function deleteMyAccount() {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await prisma.user.delete({
+    where: { id: session.user.id }
+  });
+
+  // Clear the personalized cookie
+  const cookieStore = await cookies();
+  cookieStore.delete("takecare-personalized");
+
+  revalidatePath("/");
+  return { success: true };
+}
+
+/**
+ * Create a medical record for the current user.
+ */
+export async function createMyMedicalRecord(data: {
+  type: string;
+  url: string;
+  fileName: string;
+  description?: string;
+  extractedText?: string;
+}) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const record = await prisma.medicalRecord.create({
+    data: {
+      userId: session.user.id,
+      ...data
+    }
+  });
+
+  revalidatePath("/dashboard");
+  return record;
+}
+
+/**
+ * Add analysis to a medical record.
+ */
+export async function addAnalysis(recordId: string, analysisData: {
+  summary: string;
+  severity?: string;
+  recommendations?: string[];
+  rawJson?: any;
+}) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  // Verify the record belongs to this user
+  const record = await prisma.medicalRecord.findFirst({
+    where: { id: recordId, userId: session.user.id }
+  });
+  if (!record) throw new Error("Record not found or unauthorized");
+
+  return await prisma.analysis.create({
+    data: {
+      medicalRecordId: recordId,
+      ...analysisData
+    }
+  });
+}
+
+/**
+ * Logout — clear personalized cookie.
+ * NextAuth handles its own session cookie via signOut().
+ */
+export async function logoutUser() {
+  const cookieStore = await cookies();
+  cookieStore.delete("takecare-personalized");
+}
+
+/**
+ * Set the personalized cookie after sign-in (called once after auth).
+ * Checks if the current user has personalization data and sets cookie accordingly.
+ */
+export async function syncPersonalizationCookie() {
+  const session = await auth();
+  if (!session?.user?.id) return { personalized: false };
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    include: { personalization: true }
+  });
+
+  const isPersonalized = !!user?.personalization;
+  const cookieStore = await cookies();
+
+  if (isPersonalized) {
+    cookieStore.set("takecare-personalized", "true", {
+      path: "/",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60,
+    });
+  } else {
+    cookieStore.delete("takecare-personalized");
+  }
+
+  return { personalized: isPersonalized };
+}
+
+// ============================================================
+// LEGACY ACTIONS — kept for backward compatibility with
+// components that haven't been migrated yet (e.g., doctor pages)
+// ============================================================
+
+export async function getMedicalHistory(clerkId: string) {
+  const user = await prisma.user.findUnique({
+    where: { clerkId },
+    include: {
+      medicalRecords: {
+        orderBy: { createdAt: "desc" },
+        include: { analysis: true }
+      },
+      doctorInvitations: {
+        orderBy: { createdAt: "desc" }
+      },
+      personalization: true
+    }
+  });
+
+  return user;
+}
+
+export async function hasPersonalized(clerkId: string) {
+  const user = await prisma.user.findUnique({
+    where: { clerkId },
+    include: { personalization: true }
+  });
+  return !!user?.personalization;
+}
+
 export async function savePersonalization(clerkId: string, data: {
   healthGoals?: string[];
   bloodType?: string;
@@ -109,14 +268,76 @@ export async function savePersonalization(clerkId: string, data: {
     },
   });
 
-  // Update cookie after personalization
   const cookieStore = await cookies();
-  cookieStore.set("takecare-personalized", "true", { path: "/" });
+  cookieStore.set("takecare-personalized", "true", {
+    path: "/",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 30 * 24 * 60 * 60,
+  });
 
   return result;
 }
 
-// Store Medical Record
+export async function updateProfile(clerkId: string, data: {
+  name?: string;
+  avatarUrl?: string;
+  coverImageUrl?: string;
+}) {
+  const res = await prisma.user.update({
+    where: { clerkId },
+    data: { ...data },
+  });
+  revalidatePath("/dashboard");
+  return res;
+}
+
+export async function deleteUser(clerkId: string) {
+  const user = await prisma.user.findUnique({ where: { clerkId } });
+  if (!user) throw new Error("User not found");
+
+  await prisma.user.delete({
+    where: { id: user.id }
+  });
+
+  revalidatePath("/");
+  return { success: true };
+}
+
+export async function ensureUser(clerkId: string, email: string, name?: string) {
+  let user = await prisma.user.findUnique({
+    where: { email }
+  });
+
+  if (user) {
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { 
+        clerkId, 
+        name: name || user.name 
+      },
+    });
+  } else {
+    user = await prisma.user.findUnique({
+      where: { clerkId }
+    });
+
+    if (user) {
+       user = await prisma.user.update({
+         where: { id: user.id },
+         data: { email, name: name || user.name }
+       });
+    } else {
+       user = await prisma.user.create({
+         data: { clerkId, email, name },
+       });
+    }
+  }
+
+  return user;
+}
+
 export async function createMedicalRecord(clerkId: string, data: {
   type: string;
   url: string;
@@ -138,64 +359,6 @@ export async function createMedicalRecord(clerkId: string, data: {
   return record;
 }
 
-// Fetch user medical history
-export async function getMedicalHistory(clerkId: string) {
-  const user = await prisma.user.findUnique({
-    where: { clerkId },
-    include: {
-      medicalRecords: {
-        orderBy: { createdAt: "desc" },
-        include: { analysis: true }
-      },
-      doctorInvitations: {
-        orderBy: { createdAt: "desc" }
-      },
-      personalization: true
-    }
-  });
-
-  return user;
-}
-
-// Update User Profile
-export async function updateProfile(clerkId: string, data: {
-  name?: string;
-  avatarUrl?: string;
-  coverImageUrl?: string;
-}) {
-  const res = await prisma.user.update({
-    where: { clerkId },
-    data: { ...data },
-  });
-  revalidatePath("/dashboard");
-  return res;
-}
-
-// Check if user has already personalized
-export async function hasPersonalized(clerkId: string) {
-  const user = await prisma.user.findUnique({
-    where: { clerkId },
-    include: { personalization: true }
-  });
-  return !!user?.personalization;
-}
-
-// Add Analysis result
-
-export async function addAnalysis(recordId: string, analysisData: {
-  summary: string;
-  severity?: string;
-  recommendations?: string[];
-  rawJson?: any;
-}) {
-  return await prisma.analysis.create({
-    data: {
-      medicalRecordId: recordId,
-      ...analysisData
-    }
-  });
-}
-
 export async function restoreSessionByEmail(email: string) {
   const user = await prisma.user.findUnique({
     where: { email },
@@ -204,32 +367,17 @@ export async function restoreSessionByEmail(email: string) {
 
   if (user) {
     const cookieStore = await cookies();
-    if (user.clerkId) {
-      cookieStore.set("takecare-clerk-id", user.clerkId, { path: "/" });
-    }
     if (user.personalization) {
-      const cookieStore2 = await cookies();
-      cookieStore2.set("takecare-personalized", "true", { path: "/" });
+      cookieStore.set("takecare-personalized", "true", {
+        path: "/",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 30 * 24 * 60 * 60,
+      });
     }
     return { success: true, clerkId: user.clerkId };
   }
 
   return { success: false };
-}
-export async function deleteUser(clerkId: string) {
-  const user = await prisma.user.findUnique({ where: { clerkId } });
-  if (!user) throw new Error("User not found");
-
-  await prisma.user.delete({
-    where: { id: user.id }
-  });
-
-  revalidatePath("/");
-  return { success: true };
-}
-
-export async function logoutUser() {
-  const cookieStore = await cookies();
-  cookieStore.delete("takecare-clerk-id");
-  cookieStore.delete("takecare-personalized");
 }

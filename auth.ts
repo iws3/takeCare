@@ -7,7 +7,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 }, // 30 days session
   pages: {
     signIn: "/signin",
-    newUser: "/personalization", // after signup, they can go here
+    newUser: "/personalization-choice", // after signup, they go here
   },
   providers: [
     CredentialsProvider({
@@ -23,6 +23,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
+          include: { personalization: true },
         });
 
         if (!user || !user.password) {
@@ -38,7 +39,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error("Invalid credentials");
         }
 
-        return { id: user.id, email: user.email, name: user.username };
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.username || user.name,
+          isPersonalized: !!user.personalization,
+        };
       },
     }),
   ],
@@ -46,14 +52,38 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
+        token.isPersonalized = (user as any).isPersonalized ?? false;
       }
+
+      // Allow updating the token (e.g., after personalization is completed)
+      if (trigger === "update" && session) {
+        if (session.isPersonalized !== undefined) {
+          token.isPersonalized = session.isPersonalized;
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string;
+        (session as any).isPersonalized = token.isPersonalized as boolean;
       }
       return session;
+    },
+  },
+  events: {
+    async signIn({ user }) {
+      // After successful sign-in, check personalization status and set cookie
+      if (user?.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: { personalization: true },
+        });
+
+        // We can't set cookies directly in events, but we handle it via
+        // the signIn response and API routes
+      }
     },
   },
 });

@@ -80,21 +80,19 @@ export async function POST(req: Request) {
 
       // Success - Store in DB
       try {
-        const cookieStore = await cookies();
-        const clerkId = cookieStore.get("takecare-clerk-id")?.value;
-        if (clerkId) {
-          const user = await prisma.user.findUnique({ where: { clerkId } });
-          if (user) {
-            await prisma.doctorInvitation.create({
-              data: {
-                userId: user.id,
-                doctorName: doctorName,
-                contactInfo: formattedNumber || whatsappNumber,
-                platform: platform || "whatsapp",
-                status: "PENDING"
-              }
-            });
-          }
+        const { auth } = await import("@/auth");
+        const session = await auth();
+        
+        if (session?.user?.id) {
+          await prisma.doctorInvitation.create({
+            data: {
+              userId: session.user.id,
+              doctorName: doctorName,
+              contactInfo: formattedNumber || whatsappNumber,
+              platform: platform || "whatsapp",
+              status: "PENDING"
+            }
+          });
         }
       } catch (dbErr) {
         console.error("Failed to store invitation in DB:", dbErr);

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Bell, Search, Settings, LogOut } from "lucide-react";
 import { EditProfileModal } from "./edit-profile-modal";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 interface DashboardHeaderProps {
   user: any;
@@ -20,10 +21,11 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
   };
 
   const handleLogout = async () => {
+    // Clear the personalized cookie server-side
     const { logoutUser } = await import("@/app/actions/medical");
     await logoutUser();
-    localStorage.removeItem("takecare-clerk-id");
-    router.push("/");
+    // Sign out via NextAuth (clears session cookie)
+    await signOut({ callbackUrl: "/" });
   };
 
   return (
@@ -60,7 +62,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           <div className="h-8 w-px bg-black/5 mx-2" />
           
           <div className="flex items-center gap-6">
-            <EditProfileModal user={user || { clerkId: "guest", name: "Guest", avatarUrl: null, coverImageUrl: null }} onUpdate={handleUpdate} />
+            <EditProfileModal user={user || { id: "guest", name: "Guest", avatarUrl: null, coverImageUrl: null }} onUpdate={handleUpdate} />
             
             <div className="flex items-center gap-3">
               <div className="hidden flex-col items-end lg:flex">

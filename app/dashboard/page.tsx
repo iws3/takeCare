@@ -9,8 +9,9 @@ import { ActivityTable } from "@/components/dashboard/activity-table";
 import { MessengerSection } from "@/components/dashboard/messenger-section";
 import { SmartCareSection } from "@/components/dashboard/smart-care-section";
 import { motion, AnimatePresence } from "framer-motion";
-import { hasPersonalized, getMedicalHistory } from "@/app/actions/medical";
+import { getMyMedicalHistory } from "@/app/actions/medical";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 import { Heart, Activity, Pill, ShieldCheck, Loader2 } from "lucide-react";
 
@@ -128,21 +129,15 @@ export default function DashboardPage() {
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   const fetchData = async () => {
     try {
-      const storedId = localStorage.getItem("takecare-clerk-id");
-      
-      if (!storedId) {
-         router.push("/");
-         return;
-      }
-
-      let data = await getMedicalHistory(storedId);
+      // Use the secure server action (identifies user via NextAuth session)
+      const data = await getMyMedicalHistory();
       
       if (!data) {
-         localStorage.removeItem("takecare-clerk-id");
-         router.push("/");
+         router.push("/signin");
          return;
       }
 
@@ -153,10 +148,15 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
+    if (status === "loading") return;
+    if (status === "unauthenticated") {
+      router.push("/signin");
+      return;
+    }
     fetchData().finally(() => setTimeout(() => setLoading(false), 2000));
-  }, [router]);
+  }, [status, router]);
 
-  if (loading) return <DashboardLoading />;
+  if (loading || status === "loading") return <DashboardLoading />;
 
   const combinedRecords = [
     ...(userData?.medicalRecords || []),
