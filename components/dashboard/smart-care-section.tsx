@@ -79,15 +79,13 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
   useEffect(() => {
     async function loadHistory() {
       try {
-        const clerkId = localStorage.getItem("takecare-clerk-id");
-        if (!clerkId) return;
-        setPatientId(clerkId);
-        const data = await getMedicalHistory(clerkId);
+        const { getMyMedicalHistory } = await import("@/app/actions/medical");
+        const data = await getMyMedicalHistory();
 
         if (data && data.medicalRecords && data.medicalRecords.length > 0) {
           setAllRecords(data.medicalRecords);
           // Find the most recent record with a valid analysis
-          const recentRecord = data.medicalRecords.find(r => r.analysis);
+          const recentRecord = data.medicalRecords.find((r: any) => r.analysis);
           if (recentRecord && recentRecord.analysis) {
             setMedicalContext(recentRecord.analysis.rawJson || null);
             setAnalysisResult(recentRecord.analysis.summary);
