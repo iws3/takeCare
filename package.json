@@ -49,5 +49,8 @@
     "prisma": "^7.5.0",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "nodemailer": "$nodemailer"
   }
 }
