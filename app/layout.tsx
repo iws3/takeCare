@@ -30,19 +30,57 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "TakeCare AI — Intelligent Health Companion",
-  description:
-    "TakeCare AI is your next-generation healthcare assistant. Powered by the latest in AI and computer vision to help you stay on top of your health.",
-  keywords: ["healthcare", "AI", "medication", "reminders", "health assistant"],
+  metadataBase: new URL('https://takecare-ai.vercel.app'),
+  title: {
+    default: "TakeCare AI | Your Intelligent Health Companion",
+    template: "%s | TakeCare AI",
+  },
+  description: "TakeCare AI is your next-generation healthcare assistant. Powered by advanced artificial intelligence to help you track, optimize, and secure your health data seamlessly.",
+  keywords: ["healthcare AI", "medical assistant", "AI doctor", "personal health record", "symptom checker", "TakeCare AI", "AI in healthcare", "telemedicine", "medical tracking"],
+  authors: [{ name: "TakeCare AI Team" }],
+  creator: "TakeCare AI",
+  publisher: "TakeCare AI",
   openGraph: {
-    title: "TakeCare AI",
-    description: "Your intelligent health companion. Coming soon.",
+    title: "TakeCare AI | Your Intelligent Health Companion",
+    description: "TakeCare AI is your next-generation healthcare assistant. Powered by advanced artificial intelligence to help you track, optimize, and secure your health data seamlessly.",
+    url: "https://takecare-ai.vercel.app",
+    siteName: "TakeCare AI",
+    images: [
+      {
+        url: "https://i.ibb.co/LXwrFDNT/patient-black-female-removebg-1773219328794.png",
+        width: 1200,
+        height: 630,
+        alt: "TakeCare AI - Intelligent Health Companion Interface",
+      },
+    ],
+    locale: "en_US",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TakeCare AI | Your Intelligent Health Companion",
+    description: "Experience the next generation healthcare assistant. Track and manage your health precisely with TakeCare AI.",
+    images: ["https://i.ibb.co/LXwrFDNT/patient-black-female-removebg-1773219328794.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  alternates: {
+    canonical: "https://takecare-ai.vercel.app",
   },
 };
 
 import { BackgroundGrid } from "@/components/ui/background-grid";
 import { Toaster } from "sonner";
+import { AuthProvider } from "@/components/providers/session-provider";
 
 export default function RootLayout({
   children,
@@ -52,9 +90,11 @@ export default function RootLayout({
       <body
         className={`${syne.variable} ${spaceGrotesk.variable} ${outfit.variable} ${bricolage.variable} antialiased`}
       >
-        <BackgroundGrid />
-        {children}
-        <Toaster closeButton position="top-center" expand visibleToasts={1} />
+        <AuthProvider>
+          <BackgroundGrid />
+          {children}
+          <Toaster closeButton position="top-center" expand visibleToasts={1} />
+        </AuthProvider>
       </body>
     </html>
   );
