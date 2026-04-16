@@ -120,8 +120,8 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
               value={tab.id}
               className={cn(
                 "rounded-2xl md:rounded-3xl px-4 py-2.5 md:px-8 md:py-3 transition-all duration-500 cursor-pointer flex-1 lg:flex-none relative group",
-                "data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-2xl data-[state=active]:shadow-black/20",
-                "data-[state=inactive]:text-black/40 data-[state=inactive]:hover:bg-black/5 data-[state=inactive]:hover:text-black/60",
+                "data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-2xl data-[state=active]:shadow-primary/20",
+                "data-[state=inactive]:text-black/60 data-[state=inactive]:hover:bg-primary/5 data-[state=inactive]:hover:text-primary",
                 "flex items-center justify-center gap-2 md:gap-3 font-outfit font-black text-[10px] md:text-xs uppercase tracking-widest"
               )}
             >
@@ -130,7 +130,7 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
               {activeTab === tab.id && (
                 <motion.div
                   layoutId="smart-active-pill"
-                  className="absolute inset-0 bg-black rounded-2xl md:rounded-3xl -z-10"
+                  className="absolute inset-0 bg-primary rounded-2xl md:rounded-3xl -z-10"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                 />
               )}
@@ -573,8 +573,11 @@ function ChatbotView({ userName }: { userName: string }) {
     >
       <div className="p-4 md:p-6 border-b border-black/5 bg-black/[0.02] flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2 md:gap-4">
-          <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-black flex items-center justify-center shadow-lg shadow-black/20">
-            <Bot className="h-5 w-5 md:h-6 md:w-6 text-white" />
+          <div className="relative">
+            <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30 z-10 relative">
+              <Bot className="h-5 w-5 md:h-6 md:w-6 text-white" />
+            </div>
+            <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" style={{ animationDuration: '2s' }} />
           </div>
           <div>
             <h3 className="font-bricolage text-base md:text-xl font-bold text-black tracking-tight">Clinical Assistant</h3>
@@ -600,9 +603,9 @@ function ChatbotView({ userName }: { userName: string }) {
             >
               <div
                 className={cn(
-                  "p-3.5 md:p-5 rounded-2xl md:rounded-3xl text-xs md:text-sm font-medium leading-relaxed shadow-sm",
+                  "p-3.5 md:p-5 rounded-2xl md:rounded-3xl text-xs md:text-sm font-bold leading-relaxed shadow-sm",
                   msg.role === "user"
-                    ? "bg-black text-white rounded-tr-none"
+                    ? "bg-primary text-white rounded-tr-none shadow-primary/20"
                     : "bg-black/[0.03] text-black rounded-tl-none border border-black/5"
                 )}
               >
@@ -643,7 +646,7 @@ function ChatbotView({ userName }: { userName: string }) {
           <button
             type="submit"
             disabled={isLoading}
-            className="absolute right-2 top-2 bottom-2 px-3 md:px-4 bg-black text-white rounded-xl md:rounded-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center disabled:opacity-50 disabled:hover:scale-100"
+            className="absolute right-2 top-2 bottom-2 px-3 md:px-4 bg-primary text-white rounded-xl md:rounded-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center disabled:opacity-50 disabled:hover:scale-100 shadow-md shadow-primary/20"
           >
             {isLoading ? (
               <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
