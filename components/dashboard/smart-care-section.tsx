@@ -1014,7 +1014,6 @@ Based on the synthesized data from your medical records and wearable sensors, yo
 
       setTimeout(() => {
         setAnalysisTab("results");
-        loadHistory(); 
       }, 2500);
     } catch (err: any) {
       setAnalysisError(err.message || "Failed to analyze record.");
