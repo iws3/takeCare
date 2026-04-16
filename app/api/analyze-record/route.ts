@@ -1,6 +1,8 @@
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 import { NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
@@ -90,41 +92,63 @@ Do not include any text outside of the JSON object.
       ],
     });
 
-    // Parse the JSON result
+    // Parse the JSON result with robust extraction
     let parsedResult;
     try {
-      const text = result.text.replace(/```json\n?/, "").replace(/\n?```/, "").trim();
+      // Find the first '{' and the last '}' to extract the JSON object
+      const jsonMatch = result.text.match(/\{[\s\S]*\}/);
+      const jsonText = jsonMatch ? jsonMatch[0] : result.text;
+      
+      const text = jsonText.replace(/```json\n?/, "").replace(/\n?```/, "").trim();
       parsedResult = JSON.parse(text);
+      
+      // Ensure specific fields exist
+      if (!parsedResult.analysis) {
+        parsedResult.analysis = result.text;
+      }
     } catch (parseError) {
-      console.error("Failed to parse AI response as JSON:", result.text);
-      parsedResult = { analysis: result.text, structuredData: null };
+      console.error("Failed to parse AI response as JSON. Raw text:", result.text);
+      parsedResult = { 
+        analysis: result.text, 
+        structuredData: null,
+        error: "Structural parsing failed" 
+      };
     }
 
-    // Optional: Save to Database if clerkId is provided
-    const clerkId = formData.get("clerkId") as string;
-    if (clerkId) {
-      try {
-        const { createMedicalRecord, addAnalysis } = await import("@/app/actions/medical");
+    // Save to Database securely if authenticated
+    try {
+      const session = await auth();
 
+      if (session?.user?.id) {
         // Use the first file as the main record for simplicity
         const file = files[0];
-        const record = await createMedicalRecord(clerkId, {
-          type: file.type.startsWith("image") ? "IMAGE" : "PDF",
-          url: "local-blob",
-          fileName: file.name,
-          description: parsedResult.structuredData?.diagnosis || "Patient uploaded medical record",
-          extractedText: result.text
+        
+        // Use direct Prisma call instead of calling server actions from a route handler
+        const record = await prisma.medicalRecord.create({
+          data: {
+            userId: session.user.id,
+            type: file.type.startsWith("image") ? "IMAGE" : "PDF",
+            url: "local-blob",
+            fileName: file.name,
+            description: parsedResult.structuredData?.diagnosis || "Patient uploaded medical record",
+            extractedText: result.text
+          }
         });
 
-        await addAnalysis(record.id, {
-          summary: parsedResult.analysis,
-          severity: "MEDIUM",
-          recommendations: [],
-          rawJson: parsedResult.structuredData
+        await prisma.medicalAnalysis.create({
+          data: {
+            recordId: record.id,
+            summary: parsedResult.analysis,
+            severity: "MEDIUM",
+            rawJson: parsedResult.structuredData || {}
+          }
         });
-      } catch (dbError) {
-        console.error("Database saving error:", dbError);
+        
+        console.log("[Route] Successfully saved medical record and analysis for user:", session.user.id);
       }
+    } catch (authDbError) {
+      // In production, log error but don't crash the entire request
+      console.error("Authentication or database error during analysis save:", authDbError);
     }
 
     return NextResponse.json(parsedResult);
@@ -137,3 +161,4 @@ Do not include any text outside of the JSON object.
     );
   }
 }
+

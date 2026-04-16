@@ -58,7 +58,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Vapi from "@vapi-ai/web";
 import { getVapiConfiguration } from "@/app/actions/vapi";
-import { getMedicalHistory } from "@/app/actions/medical";
+import { getMyMedicalHistory } from "@/app/actions/medical";
+import { useSession } from "next-auth/react";
 
 
 const SMART_CARE_TABS = [
@@ -75,11 +76,14 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
   const [patientId, setPatientId] = useState<string | null>(null);
 
+  const { data: session, status } = useSession();
+
   // Automatically load the extracted context from the database
   useEffect(() => {
     async function loadHistory() {
+      if (status !== "authenticated") return;
+      
       try {
-        const { getMyMedicalHistory } = await import("@/app/actions/medical");
         const data = await getMyMedicalHistory();
 
         if (data && data.medicalRecords && data.medicalRecords.length > 0) {
@@ -982,29 +986,43 @@ Based on the synthesized data from your medical records and wearable sensors, yo
     setAnalysisError(null);
     setAnalysisResult(null);
 
-    const clerkId = localStorage.getItem("takecare-clerk-id");
-    if (!clerkId) {
-      toast.error("Session expired. Please log in again.");
-      setIsIngesting(false);
-      return;
-    }
     const formData = new FormData();
     selectedFiles.forEach(file => formData.append("file", file));
-    formData.append("clerkId", clerkId);
 
     try {
+      console.log("[SmartCare] Analysis requested. Session status:", status);
+      
+      if (status === "unauthenticated") {
+        toast.error("Session expired. Please log in again.");
+        return;
+      }
+
+      if (status === "loading") {
+        toast.info("Establishing secure session... Please try again in a moment.");
+        return;
+      }
+
       const response = await fetch("/api/analyze-record", {
         method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error("Analysis failed. Please try again.");
+        if (response.status === 401) {
+          throw new Error("Session expired. Please log in again.");
+        }
+        throw new Error(`Analysis failed (Status: ${response.status}). Please try again.`);
       }
 
       const data = await response.json();
-      setAnalysisResult(data.analysis);
-      setFullAnalysisResult(data.analysis); // Sync with PDF report preview
+      
+      // Robustly extract the human-readable clinical summary
+      const clinicalSummary = typeof data.analysis === 'string' 
+        ? data.analysis 
+        : (data.analysis?.clinicalSummary || data.analysis?.summary || JSON.stringify(data.analysis || data, null, 2));
+
+      setAnalysisResult(clinicalSummary);
+      setFullAnalysisResult(clinicalSummary); // Sync with PDF report preview
 
       if (data.structuredData) {
         onContextUpdate(data.structuredData);
@@ -1012,7 +1030,8 @@ Based on the synthesized data from your medical records and wearable sensors, yo
 
       setTimeout(() => {
         setAnalysisTab("results");
-      }, 1500);
+        loadHistory(); 
+      }, 2500);
     } catch (err: any) {
       setAnalysisError(err.message || "Failed to analyze record.");
     } finally {

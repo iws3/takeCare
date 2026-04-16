@@ -22,21 +22,21 @@ function StatCard({ title, value, subtitle, icon: Icon, delay = 0 }: StatCardPro
     >
       <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-primary/5 transition-transform group-hover:scale-150 group-hover:bg-primary/10" />
       
-      <div className="relative flex flex-col gap-4">
+      <div className="relative flex flex-col gap-3 md:gap-4">
         <div className="flex items-center justify-between">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-black transition-colors group-hover:bg-primary">
-            <Icon className="h-6 w-6 text-white" />
+          <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-black transition-colors group-hover:bg-primary">
+            <Icon className="h-5 w-5 md:h-6 md:w-6 text-white" />
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/30 group-hover:text-primary/50 transition-colors">
+          <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-black/30 group-hover:text-primary/50 transition-colors">
             {title}
           </span>
         </div>
         
         <div className="flex flex-col">
-          <span className="font-outfit text-4xl font-extrabold tracking-tighter lg:text-5xl">
+          <span className="font-outfit text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tighter">
             {value}
           </span>
-          <span className="font-outfit text-sm font-bold text-black/50 lg:text-base">
+          <span className="font-outfit text-xs md:text-sm font-bold text-black/50 lg:text-base">
             {subtitle}
           </span>
         </div>

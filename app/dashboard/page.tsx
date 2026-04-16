@@ -13,7 +13,8 @@ import { getMyMedicalHistory } from "@/app/actions/medical";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-import { Heart, Activity, Pill, ShieldCheck, Loader2 } from "lucide-react";
+import { Heart, Activity, Pill, ShieldCheck, Loader2, Brain } from "lucide-react";
+import { MobileNav } from "@/components/dashboard/mobile-nav";
 
 function DashboardLoading() {
   return (
@@ -190,22 +191,28 @@ export default function DashboardPage() {
       </header>
 
 
-      <main className="flex flex-1 flex-col responsive-container w-full overflow-x-hidden">
-        {/* Welcome Section */}
-        <div className="px-6 py-8 md:py-12 lg:px-0 lg:py-20 animate-fade-up">
-          <h1 className="font-bricolage text-3xl md:text-5xl lg:text-7xl font-extrabold tracking-tighter flex flex-wrap items-center gap-x-3 md:gap-x-4">
-            <span className="text-black/30 whitespace-nowrap">{getGreeting()},</span> 
-            <span className="text-black inline-block">{userData?.name?.split(' ')[0] || "Patient"}.</span>
-          </h1>
-          <p className="mt-4 md:mt-6 text-sm md:text-lg lg:text-2xl font-semibold text-black/40 max-w-3xl leading-snug md:leading-relaxed">
-            I hope you are <span className="text-primary font-black uppercase tracking-widest text-[10px] md:text-xs lg:text-lg">feeling better now</span>. 
-            Here&apos;s a look at your <span className="text-black font-bold italic underline decoration-primary/40 underline-offset-4 md:underline-offset-8 cursor-help">comprehensive health profile</span> today.
-          </p>
-        </div>
+      <main className="flex flex-1 flex-col responsive-container w-full overflow-x-hidden md:pb-20">
+        <AnimatePresence mode="wait">
+          {activeTab === "overview" && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="px-6 py-6 md:py-12 lg:px-0 lg:py-20 animate-fade-up"
+            >
+              <h1 className="font-bricolage text-2xl md:text-5xl lg:text-7xl font-extrabold tracking-tighter flex flex-wrap items-center gap-x-2 md:gap-x-4 transition-all">
+                <span className="text-black/30 whitespace-nowrap">{getGreeting()},</span> 
+                <span className="text-black inline-block">{userData?.name?.split(' ')[0] || "Patient"}.</span>
+              </h1>
+              <p className="mt-3 md:mt-6 text-xs md:text-lg lg:text-2xl font-semibold text-black/40 max-w-3xl leading-snug md:leading-relaxed">
+                Your <span className="text-black font-bold italic underline decoration-primary/40 underline-offset-4 cursor-help">comprehensive health profile</span> is ready.
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-
-        {/* Dashboard Navigation */}
-        <div className="lg:px-0">
+        {/* Dashboard Navigation - Desktop Only */}
+        <div className="hidden lg:block">
           <DashboardTabs
             value={activeTab}
             onValueChange={setActiveTab}
@@ -258,6 +265,29 @@ export default function DashboardPage() {
                 <SmartCareSection userName={userData?.name || "Patient"} />
               </div>
             </motion.div>
+          ) : activeTab === "ai" ? (
+            <motion.div
+              key="ai-assistant"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.4 }}
+              className="mt-6 px-6 lg:px-0"
+            >
+              <div className="rounded-[2.5rem] border border-black/5 bg-black/95 p-12 text-center text-white relative overflow-hidden h-[500px] flex flex-col items-center justify-center gap-8 shadow-2xl">
+                 <div className="absolute top-0 inset-x-0 h-1 bg-primary" />
+                 <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
+                   <Brain className="h-12 w-12 text-primary" />
+                 </div>
+                 <div className="space-y-4">
+                   <h3 className="font-bricolage text-3xl font-black tracking-tight">AI Health Assistant</h3>
+                   <p className="text-white/40 font-medium max-w-sm mx-auto">Your personalized diagnostic co-pilot is being calibrated for your health profile.</p>
+                 </div>
+                 <div className="flex gap-4">
+                    <div className="px-6 py-3 rounded-2xl bg-white/10 text-[10px] font-black uppercase tracking-widest">Available Q3</div>
+                 </div>
+              </div>
+            </motion.div>
           ) : (
             <motion.div
               key="placeholder"
@@ -270,8 +300,17 @@ export default function DashboardPage() {
             </motion.div>
           )}
         </AnimatePresence>
+        
+        {/* Bottom padding for mobile nav */}
+        <div className="h-32 lg:hidden" />
       </main>
 
+      <MobileNav 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab} 
+        messengerCount={messengerUnreadCount}
+        notificationCount={unreadNotifications}
+      />
     </div>
   );
 }

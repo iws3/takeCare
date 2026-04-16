@@ -29,19 +29,19 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
   };
 
   return (
-    <header className="flex items-center justify-between px-6 py-5 lg:px-0 lg:py-6 animate-slide-right w-full">
+    <header className="flex items-center justify-between px-6 py-4 lg:px-0 lg:py-6 animate-slide-right w-full">
 
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black shadow-2xl lg:h-12 lg:w-12">
-          <span className="font-syne text-xl font-extrabold text-white lg:text-2xl">T</span>
+      <div className="flex items-center gap-2 md:gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-black shadow-xl lg:h-12 lg:w-12">
+          <span className="font-syne text-lg font-extrabold text-white lg:text-2xl">T</span>
         </div>
         <div className="flex flex-col">
-          <span className="font-outfit text-lg font-bold tracking-tight lg:text-xl leading-none">TakeCare</span>
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-black/40 lg:text-[10px]">Dashboard</span>
+          <span className="font-outfit text-base font-bold tracking-tight lg:text-xl leading-none">TakeCare</span>
+          <span className="text-[8px] font-black uppercase tracking-[0.2em] text-black/40 lg:text-[10px]">Portal</span>
         </div>
       </div>
 
-      <div className="flex items-center gap-4 lg:gap-6">
+      <div className="flex items-center gap-3 lg:gap-6">
         <div className="hidden items-center gap-2 rounded-full bg-black/5 px-4 py-2 lg:flex">
           <Search className="h-4 w-4 text-black/40" />
           <input 
@@ -52,17 +52,19 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         </div>
         
         <div className="flex items-center gap-2 lg:gap-3">
-          <Button variant="ghost" size="icon" className="rounded-full hover:bg-black/5 h-10 w-10">
+          <Button variant="ghost" size="icon" className="hidden lg:flex rounded-full hover:bg-black/5 h-10 w-10">
             <Bell className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="icon" className="rounded-full hover:bg-black/5 h-10 w-10">
+          <Button variant="ghost" size="icon" className="hidden lg:flex rounded-full hover:bg-black/5 h-10 w-10">
             <Settings className="h-5 w-5" />
           </Button>
           
-          <div className="h-8 w-px bg-black/5 mx-2" />
+          <div className="hidden lg:block h-8 w-px bg-black/5 mx-2" />
           
-          <div className="flex items-center gap-6">
-            <EditProfileModal user={user || { id: "guest", name: "Guest", avatarUrl: null, coverImageUrl: null }} onUpdate={handleUpdate} />
+          <div className="flex items-center gap-3 lg:gap-6">
+            <div className="lg:block">
+              <EditProfileModal user={user || { id: "guest", name: "Guest", avatarUrl: null, coverImageUrl: null }} onUpdate={handleUpdate} />
+            </div>
             
             <div className="flex items-center gap-3">
               <div className="hidden flex-col items-end lg:flex">
@@ -71,7 +73,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                    Log out
                 </span>
               </div>
-              <Avatar className="h-10 w-10 border-2 border-white shadow-lg lg:h-12 lg:w-12">
+              <Avatar className="h-9 w-9 border-2 border-white shadow-lg lg:h-12 lg:w-12">
                 <AvatarImage src={user?.avatarUrl || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&auto=format&fit=crop"} />
                 <AvatarFallback className="bg-primary text-white font-bold">{user?.name?.slice(0, 2).toUpperCase() || "PT"}</AvatarFallback>
               </Avatar>

@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Check for NextAuth session cookie (Auth.js v5 uses these cookie names)
   const hasSession =
     request.cookies.has('authjs.session-token') ||
-    request.cookies.has('__Secure-authjs.session-token')
+    request.cookies.has('__Secure-authjs.session-token') ||
+    request.cookies.has('next-auth.session-token')
 
   const isPersonalized = request.cookies.get('takecare-personalized')?.value === 'true'
 
@@ -51,3 +52,5 @@ export const config = {
     '/((?!api|_next/static|_next/image|favicon.ico|onboarding|images|public).*)',
   ],
 }
+
+export default proxy;
