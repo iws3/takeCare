@@ -135,9 +135,9 @@ Do not include any text outside of the JSON object.
           }
         });
 
-        await prisma.medicalAnalysis.create({
+        await prisma.analysis.create({
           data: {
-            recordId: record.id,
+            medicalRecordId: record.id,
             summary: parsedResult.analysis,
             severity: "MEDIUM",
             rawJson: parsedResult.structuredData || {}
