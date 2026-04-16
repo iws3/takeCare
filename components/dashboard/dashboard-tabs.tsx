@@ -13,13 +13,13 @@ const TABS = [
   { id: "smart-care", label: "Smart Care", icon: Plus },
 ];
 
-export function DashboardTabs({ 
-  value, 
+export function DashboardTabs({
+  value,
   onValueChange,
   notificationCount = 0,
   messengerCount = 0
-}: { 
-  value: string; 
+}: {
+  value: string;
   onValueChange: (val: string) => void;
   notificationCount?: number;
   messengerCount?: number;
@@ -44,7 +44,7 @@ export function DashboardTabs({
                   "h-4 w-4 md:h-6 md:w-6 transition-transform duration-500 group-hover:scale-110 group-data-[state=active]:scale-110",
                   tab.id === "smart-care" && value !== "smart-care" && "text-vital-orange animate-pulse"
                 )} />
-                
+
                 {/* Messenger Badge */}
                 {tab.id === "messenger" && messengerCount > 0 && (
                   <motion.span
@@ -55,7 +55,7 @@ export function DashboardTabs({
                     {messengerCount}
                   </motion.span>
                 )}
-                
+
                 {/* Notifications Badge */}
                 {tab.id === "notifications" && notificationCount > 0 && (
                   <motion.span
@@ -67,9 +67,9 @@ export function DashboardTabs({
                   </motion.span>
                 )}
               </div>
-              
+
               <span className="uppercase text-[10px] md:text-xs font-black tracking-[0.2em] md:tracking-[0.25em]">{tab.label}</span>
-              
+
               {value === tab.id && (
                 <motion.div
                   layoutId="active-pill"

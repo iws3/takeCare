@@ -317,217 +317,198 @@ function VoiceAgentView({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -30 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="relative flex flex-col lg:flex-row p-4 md:p-8 lg:p-12 rounded-3xl md:rounded-[3.5rem] border border-black/5 bg-white shadow-2xl overflow-hidden min-h-[500px] lg:min-h-[600px] gap-6 md:gap-8 lg:gap-12"
+      className="relative flex flex-col items-center p-6 md:p-12 rounded-3xl md:rounded-[3.5rem] border border-black/5 bg-white shadow-2xl overflow-hidden min-h-[500px]"
     >
-      {/* Background Decor */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl -mr-64 -mt-64 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-vital-orange/5 rounded-full blur-3xl -ml-40 -mb-40 pointer-events-none" />
+      {/* Background Ambient Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-vital-orange/5 rounded-full blur-[80px] pointer-events-none" />
 
-      {/* LEFT SIDE: Doctor Image & Call Controls */}
-      <div className="w-full lg:w-5/12 flex flex-col items-center justify-center gap-4 md:gap-6 relative z-10 shrink-0">
-        <div className="relative h-48 w-48 sm:h-64 sm:w-64 md:h-80 md:w-80 lg:h-96 lg:w-full lg:max-w-sm rounded-4xl md:rounded-[3rem] overflow-hidden shadow-2xl border-4 md:border-[6px] border-white group shrink-0">
+      {/* Main Content Area */}
+      <div className="w-full max-w-2xl mx-auto flex flex-col items-center gap-8 md:gap-12 relative z-10 pt-4 md:pt-8">
+        
+        {/* BIG PULSING AVATAR */}
+        <div className="relative flex flex-col items-center justify-center">
           <AnimatePresence>
+            {callStatus !== "inactive" && (
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1.4, opacity: 0.15 }}
+                transition={{ repeat: Infinity, duration: 2, ease: "easeOut" }}
+                className="absolute inset-0 bg-primary rounded-full z-0 pointer-events-none"
+              />
+            )}
             {isDoctorSpeaking && (
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1.5, opacity: 0 }}
+                animate={{ scale: 1.8, opacity: 0 }}
                 transition={{ repeat: Infinity, duration: 1.5, ease: "easeOut" }}
-                className="absolute inset-0 bg-primary/30 rounded-[3rem] z-0 blur-lg"
+                className="absolute inset-0 bg-primary/30 rounded-full z-0 pointer-events-none"
               />
             )}
           </AnimatePresence>
 
-          <img
-            src="https://i.ibb.co/C3w7WQnk/doc.jpg"
-            alt="TakeCare Doc"
-            className={cn(
-              "absolute inset-0 h-full w-full object-cover transition-all duration-700 z-10",
-              callStatus === "active" ? "scale-105" : "scale-100 grayscale-[20%]"
-            )}
-          />
-
-          <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/90 via-black/40 to-transparent p-4 md:p-6 z-20 flex flex-col justify-end h-3/4">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="relative flex items-center justify-center">
-                {callStatus === "active" ? (
-                  <>
-                    <div className="h-2 w-2 md:h-3 md:w-3 bg-green-500 rounded-full" />
-                    <div className="absolute h-2 w-2 md:h-3 md:w-3 bg-green-500 rounded-full animate-ping" />
-                  </>
-                ) : (
-                  <div className="h-2 w-2 md:h-3 md:w-3 bg-white/40 rounded-full" />
-                )}
-              </div>
-              <h3 className="font-bricolage text-xl md:text-2xl font-bold text-white tracking-tight">Dr. Leo</h3>
-            </div>
-            <p className="text-white/60 text-[10px] md:text-sm font-medium mt-0.5 md:mt-1">TakeCare Clinical AI Assistant</p>
+          <div className="relative h-44 w-44 md:h-64 md:w-64 rounded-full overflow-hidden shadow-2xl shadow-primary/20 border-4 md:border-[8px] border-white z-10">
+            <img
+              src="https://i.ibb.co/fYy0cwxb/Chat-GPT-Image-Apr-16-2026-09-01-03-AM.png"
+              alt="Dr. Leo"
+              className={cn(
+                "h-full w-full object-cover transition-all duration-700",
+                callStatus === "active" ? "scale-105" : "scale-100 grayscale-[10%]"
+              )}
+            />
+            {/* Soft inner shadow overlay */}
+            <div className="absolute inset-0 shadow-[inset_0_0_30px_rgba(0,0,0,0.1)] rounded-full pointer-events-none" />
+          </div>
+          
+          <div className="mt-6 text-center z-10">
+            <h3 className="font-bricolage text-2xl md:text-4xl font-extrabold text-black tracking-tighter flex items-center justify-center gap-2">
+              Dr. Leo
+              {callStatus === "active" && (
+                <span className="relative flex h-3 w-3 md:h-4 md:w-4 -mt-1 md:-mt-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-full w-full bg-green-500"></span>
+                </span>
+              )}
+            </h3>
+            <p className="text-black/50 font-bold text-[10px] md:text-xs mt-1 md:mt-2 uppercase tracking-[0.2em]">
+              AI Clinical Assistant
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-2 md:gap-3 bg-white/80 backdrop-blur-2xl p-2.5 md:p-4 rounded-3xl md:rounded-4xl border border-black/5 shadow-xl w-fit relative z-20">
-          <button
-            onClick={toggleMute}
-            disabled={callStatus !== "active"}
-            className={cn(
-              "h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl flex items-center justify-center transition-all",
-              isMuted ? "bg-red-50 text-red-500" : "bg-black/5 text-black hover:bg-black/10",
-              callStatus !== "active" && "opacity-40 cursor-not-allowed"
-            )}
-          >
-            {isMuted ? <MicOff className="h-4 w-4 md:h-6 md:w-6" /> : <Mic className="h-4 w-4 md:h-6 md:w-6" />}
-          </button>
-
-          <button
-            disabled={callStatus !== "active"}
-            className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl flex items-center justify-center transition-all bg-black/5 text-black hover:bg-black/10 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <Video className="h-4 w-4 md:h-6 md:w-6" />
-          </button>
-
-          <div className="w-[1px] h-6 md:h-8 bg-black/10 mx-0.5 md:mx-1" />
-
-          {callStatus === "active" ? (
-            <button
-              onClick={endCall}
-              className="h-10 px-4 md:h-14 md:px-6 rounded-xl md:rounded-2xl flex items-center gap-2 transition-all bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20 font-black text-[10px] md:text-xs uppercase tracking-widest"
-            >
-              <PhoneOff className="h-4 w-4" />
-              <span>End Call</span>
-            </button>
-          ) : (
-            <button
-              disabled={callStatus === "connecting"}
-              onClick={toggleVoiceConsultation}
-              className="h-10 px-5 md:h-14 md:px-8 rounded-xl md:rounded-2xl flex items-center gap-2 transition-all bg-black hover:scale-105 text-white shadow-xl shadow-black/20 font-black text-[10px] md:text-xs uppercase tracking-widest"
-            >
-              {callStatus === "connecting" ? (
-                <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <Mic className="h-4 w-4" />
-              )}
-              {callStatus === "connecting" ? "Connecting" : "Consult Now"}
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* RIGHT SIDE: Interactive Clinical Context */}
-      <div className="w-full lg:w-7/12 flex flex-col gap-6 md:gap-8 relative z-10 text-center lg:text-left">
-        <div className="space-y-3 md:space-y-4 flex flex-col items-center lg:items-start pt-2 md:pt-4 lg:pt-0">
+        {/* CALL CONTROLS */}
+        <div className="flex flex-col items-center gap-6 w-full z-10">
           <Badge
             className={cn(
-              "px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[9px] md:text-xs font-black uppercase tracking-[0.2em] w-fit",
-              callStatus === "active" ? "bg-green-500/10 text-green-600 border border-green-500/20" : "bg-black/5 text-black/40 shadow-inner",
+              "px-4 md:px-6 py-1.5 md:py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transition-all",
+              callStatus === "active" ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-black/5 text-black/40 border-transparent",
               callStatus !== "inactive" && "animate-pulse"
             )}
           >
-            {callStatus === "active" ? (isDoctorSpeaking ? "Doctor Speaking..." : "Listening...") : callStatus === "connecting" ? "Secure Handshake..." : "AI Health Orchestration"}
+            {callStatus === "active" ? (isDoctorSpeaking ? "Doctor Speaking..." : "Listening...") : callStatus === "connecting" ? "Secure Handshake..." : "Ready to Consult"}
           </Badge>
 
-          <h2 className="font-bricolage text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tighter leading-tight text-black max-w-xl">
-            {callStatus === "active" ? `Ready to assist, ${userName.split(' ')[0]}?` : "Digital Voice Consultation."}
-          </h2>
-          <p className="text-black/40 font-bold text-sm md:text-xl max-w-md leading-relaxed">
-            {medicalContext
-              ? `Reviewing your ${medicalContext?.patient_summary?.diagnosis || "health trends"} in real-time.`
-              : `Select a patient record below to initiate a context-aware consultation.`}
-          </p>
-        </div>
+          <div className="flex items-center justify-center gap-4 bg-white/60 backdrop-blur-3xl p-3 md:p-4 rounded-full border border-black/5 shadow-xl w-fit">
+            <button
+              onClick={toggleMute}
+              disabled={callStatus !== "active"}
+              className={cn(
+                "h-12 w-12 md:h-16 md:w-16 rounded-full flex items-center justify-center transition-all",
+                isMuted ? "bg-red-50 text-red-500" : "bg-black/5 text-black hover:bg-black/10 hover:scale-105",
+                callStatus !== "active" && "opacity-30 cursor-not-allowed"
+              )}
+            >
+              {isMuted ? <MicOff className="h-5 w-5 md:h-7 md:w-7" /> : <Mic className="h-5 w-5 md:h-7 md:w-7" />}
+            </button>
 
-        {/* CONSULTATION SELECTION UI */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <p className="text-[9px] md:text-[10px] font-black text-black/40 uppercase tracking-[0.2em]">Patient Records Library:</p>
-            <Badge variant="outline" className="text-[8px] md:text-[9px] font-black border-black/5 opacity-40">{allConsultations.length} RECORDS</Badge>
-          </div>
-
-          <div className="flex flex-row overflow-x-auto gap-3 pb-4 no-scrollbar -mx-4 px-4 lg:grid lg:grid-cols-2 lg:max-h-[220px] lg:overflow-y-auto lg:pr-2 lg:mx-0 lg:px-1">
-            {allConsultations.length > 0 ? allConsultations.map((record) => (
+            {callStatus === "active" ? (
               <button
-                key={record.id}
-                onClick={() => onSelectionChange(record)}
-                className={cn(
-                  "p-4 rounded-2xl md:rounded-3xl border transition-all text-left flex flex-col gap-3 group relative overflow-hidden min-w-[240px] md:min-w-[280px] lg:min-w-0 md:bg-white",
-                  selectedRecordId === record.id
-                    ? "bg-black text-white border-black shadow-xl"
-                    : "bg-white text-black border-black/5 hover:border-black/10 shadow-sm hover:scale-[1.02]"
-                )}
+                onClick={endCall}
+                className="h-12 px-6 md:h-16 md:px-8 rounded-full flex items-center gap-2 transition-all bg-red-500 hover:bg-red-600 active:scale-95 text-white shadow-lg shadow-red-500/30 font-black text-[11px] md:text-sm uppercase tracking-widest hover:scale-105"
               >
-                {selectedRecordId === record.id && (
-                  <motion.div layoutId="active-consult" className="absolute top-0 right-0 p-3">
-                    <ShieldCheck className="h-4 w-4 text-primary" />
-                  </motion.div>
-                )}
-                <div className="flex items-center gap-2">
-                  <div className={cn(
-                    "h-8 w-8 rounded-xl flex items-center justify-center shrink-0",
-                    selectedRecordId === record.id ? "bg-white/10" : "bg-black/5"
-                  )}>
-                    <FileText className={cn("h-4 w-4", selectedRecordId === record.id ? "text-white" : "text-black/40")} />
-                  </div>
-                  <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest truncate max-w-[140px]">
-                    {record.fileName}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[11px] md:text-xs font-bold line-clamp-1 opacity-80">{record.description || "Medical Record Analysis"}</p>
-                  <p className="text-[9px] font-medium opacity-40 mt-1">{new Date(record.createdAt).toLocaleDateString()} • {record.type}</p>
-                </div>
+                <PhoneOff className="h-5 w-5 md:h-6 md:w-6" />
+                <span>End Call</span>
               </button>
-            )) : (
-              <div className="col-span-full p-8 md:p-10 rounded-3xl md:rounded-4xl border-2 border-dashed border-black/5 bg-black/1 flex flex-col items-center justify-center gap-3 w-full">
-                <Bot className="h-8 w-8 text-black/10" />
-                <p className="text-[9px] md:text-[10px] font-black text-black/20 uppercase tracking-widest text-center leading-relaxed">No medical records found.<br />Upload in the Analyze section.</p>
-              </div>
+            ) : (
+              <button
+                disabled={callStatus === "connecting"}
+                onClick={toggleVoiceConsultation}
+                className="h-12 px-8 md:h-16 md:px-10 rounded-full flex items-center gap-2 transition-all bg-primary hover:bg-primary/90 hover:scale-105 active:scale-95 text-white shadow-xl shadow-primary/30 font-black text-[11px] md:text-sm uppercase tracking-widest"
+              >
+                {callStatus === "connecting" ? (
+                  <Loader2 className="h-5 w-5 md:h-6 md:w-6 animate-spin" />
+                ) : (
+                  <Mic className="h-5 w-5 md:h-6 md:w-6" />
+                )}
+                {callStatus === "connecting" ? "Connecting" : "Consult Now"}
+              </button>
             )}
+
+            <button
+              disabled={callStatus !== "active"}
+              className="h-12 w-12 md:h-16 md:w-16 rounded-full flex items-center justify-center transition-all bg-black/5 text-black hover:bg-black/10 hover:scale-105 disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <Video className="h-5 w-5 md:h-7 md:w-7" />
+            </button>
           </div>
         </div>
 
-        {/* Medication Selection UI */}
-        {medicalContext && (
-          <div className="flex flex-col gap-3 md:gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <p className="text-[9px] md:text-[10px] font-black text-black/40 uppercase tracking-[0.2em] px-1">Consultation Topics:</p>
-            <div className="flex flex-nowrap overflow-x-auto gap-2 pb-2 no-scrollbar px-1">
-              {medicalContext?.patient_summary?.medications?.map((med: any) => (
-                <button
-                  key={med.name}
-                  onClick={() => toggleMedication(med.name)}
-                  className={cn(
-                    "px-4 py-2 rounded-xl md:rounded-2xl border transition-all flex items-center gap-2 shrink-0",
-                    selectedMeds.includes(med.name)
-                      ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.05]"
-                      : "bg-white text-black/60 border-black/5 hover:border-black/10 shadow-sm hover:scale-105"
+        {/* MEDICAL CONTEXT SELECTORS (Hidden when call is active to keep UI completely clean) */}
+        <AnimatePresence>
+          {callStatus === "inactive" && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="w-full flex justify-center overflow-hidden pb-4 md:pb-0"
+            >
+              <div className="w-full max-w-lg flex flex-col gap-5 border-t border-black/5 pt-8 mt-2">
+                <p className="text-[9px] md:text-[10px] font-black text-black/30 uppercase tracking-[0.2em] text-center w-full">Context & Records</p>
+                
+                <div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar px-2 -mx-2 items-center snap-x">
+                  {allConsultations.length > 0 ? (
+                    allConsultations.map((record) => (
+                      <button
+                        key={record.id}
+                        onClick={() => onSelectionChange(record)}
+                        className={cn(
+                          "p-3 md:p-4 rounded-[1.5rem] border transition-all text-left flex flex-col gap-2 relative overflow-hidden min-w-[220px] shrink-0 snap-center",
+                          selectedRecordId === record.id
+                            ? "bg-black text-white border-black shadow-lg"
+                            : "bg-white text-black border-black/5 hover:border-black/10 shadow-sm hover:scale-[1.02]"
+                        )}
+                      >
+                        {selectedRecordId === record.id && (
+                          <div className="absolute top-4 right-4">
+                            <div className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <div className={cn(
+                            "h-8 w-8 rounded-full flex items-center justify-center shrink-0",
+                            selectedRecordId === record.id ? "bg-white/10" : "bg-black/5"
+                          )}>
+                            <FileText className={cn("h-4 w-4", selectedRecordId === record.id ? "text-white" : "text-black/40")} />
+                          </div>
+                          <p className="text-[10px] font-black uppercase tracking-widest truncate w-[85%]">
+                            {record.fileName}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[11px] md:text-xs font-bold line-clamp-1 opacity-80 mt-1">{record.description || "Medical Analysis"}</p>
+                        </div>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-center w-full text-xs text-black/40 font-medium">No prior records linked to this consultation.</p>
                   )}
-                >
-                  <Pill className={cn("h-3 w-3 md:h-3.5 md:w-3.5", selectedMeds.includes(med.name) ? "text-white" : "text-primary")} />
-                  <span className="text-[10px] md:text-xs font-bold whitespace-nowrap">{med.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+                </div>
 
-        <div className="grid grid-cols-2 gap-3 md:gap-4 lg:mt-2">
-          <div className="p-4 md:p-6 rounded-2xl md:rounded-3xl bg-black/2 border border-black/5 text-left flex flex-col gap-3 md:gap-4 shadow-sm group">
-            <div className="h-8 w-8 md:h-10 md:w-10 rounded-xl md:rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm">
-              <Activity className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-[8px] md:text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1">Queue</p>
-              <p className="text-[11px] md:text-sm font-bold text-black leading-tight">{selectedMeds.length} Contexts Active</p>
-            </div>
-          </div>
+                {medicalContext?.patient_summary?.medications?.length > 0 && (
+                  <div className="flex overflow-x-auto gap-2 pb-2 no-scrollbar px-2 -mx-2 snap-x items-center">
+                    <span className="text-[9px] md:text-[10px] font-black text-black/30 uppercase tracking-[0.2em] shrink-0 mr-1">Topics:</span>
+                    {medicalContext.patient_summary.medications.map((med: any) => (
+                      <button
+                        key={med.name}
+                        onClick={() => toggleMedication(med.name)}
+                        className={cn(
+                          "px-4 py-2 rounded-full border transition-all flex items-center gap-1.5 shrink-0 snap-center",
+                          selectedMeds.includes(med.name)
+                            ? "bg-primary text-white border-primary shadow-md shadow-primary/20"
+                            : "bg-white text-black/60 border-black/5 hover:bg-black/[0.02]"
+                        )}
+                      >
+                        <Pill className={cn("h-3 w-3", selectedMeds.includes(med.name) ? "text-white" : "text-primary")} />
+                        <span className="text-[10px] md:text-xs font-bold whitespace-nowrap">{med.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-          <div className="p-4 md:p-6 rounded-2xl md:rounded-3xl bg-black/2 border border-black/5 text-left flex flex-col gap-3 md:gap-4 shadow-sm group">
-            <div className="h-8 w-8 md:h-10 md:w-10 rounded-xl md:rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm">
-              <Zap className="h-4 w-4 md:h-5 md:w-5 text-vital-orange" />
-            </div>
-            <div>
-              <p className="text-[8px] md:text-[10px] font-black text-vital-orange uppercase tracking-[0.2em] mb-1">AI Focus</p>
-              <p className="text-[11px] md:text-sm font-bold text-black leading-tight">Proactive Monitoring</p>
-            </div>
-          </div>
-        </div>
       </div>
     </motion.div>
   );

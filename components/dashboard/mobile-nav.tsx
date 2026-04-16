@@ -57,13 +57,13 @@ export function MobileNav({ activeTab, onTabChange, messengerCount = 0, notifica
                   isActive ? "bg-white/20 text-white scale-110 shadow-sm" : "text-white/60 hover:text-white hover:bg-white/5"
                 )}>
                   <Icon className="h-6 w-6 stroke-[2.5px]" />
-                  
+
                   {item.id === "messenger" && messengerCount > 0 && (
                     <span className="absolute -top-1 -right-1 h-4 w-4 bg-vital-orange rounded-full border-2 border-primary text-[8px] font-black text-white flex items-center justify-center">
                       {messengerCount}
                     </span>
                   )}
-                  
+
                   {item.id === "notifications" && notificationCount > 0 && (
                     <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full border-2 border-primary text-[8px] font-black text-white flex items-center justify-center">
                       {notificationCount}
@@ -71,12 +71,12 @@ export function MobileNav({ activeTab, onTabChange, messengerCount = 0, notifica
                   )}
                 </div>
                 <span className={cn(
-                  "text-[8px] font-black uppercase tracking-widest transition-opacity duration-300",
+                  "text-[8px] font-black text-white uppercase tracking-widest transition-opacity duration-300",
                   isActive ? "opacity-100 text-white" : "opacity-60"
                 )}>
                   {item.label}
                 </span>
-                
+
                 {isActive && (
                   <motion.div
                     layoutId="mobile-nav-indicator"

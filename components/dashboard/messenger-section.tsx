@@ -208,6 +208,52 @@ export function MessengerSection({ onNotificationSync, onInviteSuccess }: { onNo
             ))}
           </div>
 
+          {/* Creative Display Area */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="mt-2 relative w-full h-[450px] md:h-[550px] overflow-hidden flex items-end justify-center pb-8"
+          >
+            {/* The Image Area with Radial Mask to perfectly hide sharp edges */}
+            <div 
+              className="absolute inset-0 w-full h-full z-0 pointer-events-none"
+              style={{
+                WebkitMaskImage: 'radial-gradient(ellipse at center, black 40%, transparent 80%)',
+                maskImage: 'radial-gradient(ellipse at center, black 40%, transparent 80%)',
+              }}
+            >
+              <motion.img 
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                src="https://i.ibb.co/Y77ZSmfz/Chat-GPT-Image-Apr-16-2026-08-45-07-AM.png"
+                alt="AI Health Communication"
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            {/* Glowing orb to slightly highlight the text box area */}
+            <div className="absolute bottom-8 bg-white/70 w-[80%] max-w-sm h-24 rounded-full blur-[30px] z-0" />
+
+            {/* Floating Horizontal Glass Box pushed to the bottom so the image is fully visible */}
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+              className="relative z-10 bg-white/60 backdrop-blur-2xl border border-white p-4 rounded-[28px] shadow-xl w-[90%] max-w-sm flex items-center gap-4 group cursor-default"
+            >
+              <div className="w-12 h-12 shrink-0 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                <MessageCircle className="text-primary group-hover:text-white w-5 h-5 transition-colors" />
+              </div>
+              <div className="flex flex-col text-left">
+                <h3 className="font-bricolage text-[16px] font-black text-black tracking-tight leading-none mb-1">Sync & Send</h3>
+                <p className="text-black/60 font-medium text-[11px] leading-relaxed">
+                  Link your preferred messenger and start health analysis instantly.
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+
           <AnimatePresence>
             {isPopupOpen && (
               <motion.div
