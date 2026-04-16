@@ -68,12 +68,12 @@ export function DashboardTabs({
                 )}
               </div>
               
-              <span className="uppercase text-[9px] md:text-xs tracking-[0.15em] md:tracking-widest">{tab.label}</span>
+              <span className="uppercase text-[10px] md:text-xs font-black tracking-[0.2em] md:tracking-[0.25em]">{tab.label}</span>
               
               {value === tab.id && (
                 <motion.div
                   layoutId="active-pill"
-                  className="absolute inset-0 bg-black rounded-2xl md:rounded-3xl -z-10 shadow-xl shadow-black/20"
+                  className="absolute inset-0 bg-primary rounded-2xl md:rounded-3xl -z-10 shadow-xl shadow-primary/20"
                   transition={{ type: "spring", bounce: 0.15, duration: 0.6 }}
                 />
               )}

@@ -24,7 +24,7 @@ function StatCard({ title, value, subtitle, icon: Icon, delay = 0 }: StatCardPro
       
       <div className="relative flex flex-col gap-3 md:gap-4">
         <div className="flex items-center justify-between">
-          <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-black transition-colors group-hover:bg-primary">
+          <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-primary transition-all shadow-lg shadow-primary/20 group-hover:scale-110">
             <Icon className="h-5 w-5 md:h-6 md:w-6 text-white" />
           </div>
           <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-black/30 group-hover:text-primary/50 transition-colors">

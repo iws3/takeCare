@@ -299,7 +299,7 @@ export function MessengerSection({ onNotificationSync, onInviteSuccess }: { onNo
                               />
                             </div>
 
-                            <Button type="submit" disabled={isSubmitting} className="h-14 sm:h-16 rounded-[24px] sm:rounded-3xl bg-black text-white font-black text-base sm:text-lg hover:scale-[1.02] active:scale-95 shadow-xl mt-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
+                            <Button type="submit" disabled={isSubmitting} className="h-14 sm:h-16 rounded-[24px] sm:rounded-3xl bg-primary text-white font-black text-base sm:text-lg hover:scale-[1.02] active:scale-95 shadow-xl mt-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
                               {isSubmitting ? (
                                 <div className="flex items-center gap-2">
                                   <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />

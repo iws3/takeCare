@@ -34,7 +34,7 @@ export function ActivityTable({ records = [] }: ActivityTableProps) {
           <h3 className="font-bricolage text-xl font-bold lg:text-3xl tracking-tight">Health History</h3>
           <p className="text-xs font-medium text-black/30 lg:text-sm">Your verified medical visits and clinical record chronology</p>
         </div>
-        <Button variant="outline" className="rounded-2xl border-black/5 bg-black/5 font-black text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-all px-8 h-12 shadow-sm">
+        <Button variant="outline" className="rounded-2xl border-black/5 bg-black/5 font-black text-xs uppercase tracking-widest hover:bg-primary hover:text-white transition-all px-8 h-12 shadow-sm">
           {hasRecords ? "View Full Timeline" : "No Records Available"}
         </Button>
       </div>
@@ -81,7 +81,7 @@ export function ActivityTable({ records = [] }: ActivityTableProps) {
                         </div>
                       </TableCell>
                       <TableCell className="py-7 pr-10 text-right">
-                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl bg-black shadow-lg text-white opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl bg-primary shadow-lg shadow-primary/20 text-white opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300">
                           <FileText className="h-5 w-5" />
                         </Button>
                       </TableCell>
@@ -116,7 +116,7 @@ export function ActivityTable({ records = [] }: ActivityTableProps) {
 
                   <div className="flex items-center justify-between mt-2">
                     <span className="text-[10px] font-black uppercase tracking-widest text-black/20 italic">{record.type}</span>
-                    <Button variant="outline" size="sm" className="h-10 px-6 rounded-xl border-black/5 font-black text-[10px] uppercase tracking-widest">
+                    <Button variant="outline" size="sm" className="h-10 px-6 rounded-xl border-black/5 font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all">
                       View Results
                     </Button>
                   </div>

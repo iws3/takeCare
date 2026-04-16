@@ -24,7 +24,7 @@ export function MobileNav({ activeTab, onTabChange, messengerCount = 0, notifica
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden p-4 pointer-events-none">
       <div className="max-w-md mx-auto w-full pointer-events-auto">
-        <nav className="bg-black/95 backdrop-blur-2xl rounded-[32px] border border-white/10 p-2 shadow-2xl flex items-center justify-between">
+        <nav className="bg-primary backdrop-blur-3xl rounded-[32px] border border-white/20 p-2 shadow-2xl shadow-primary/30 flex items-center justify-between">
           {NAV_ITEMS.map((item) => {
             const isActive = activeTab === item.id;
             const Icon = item.icon;
@@ -34,13 +34,13 @@ export function MobileNav({ activeTab, onTabChange, messengerCount = 0, notifica
                 <button
                   key={item.id}
                   onClick={() => onTabChange(item.id)}
-                  className="relative -top-8 bg-primary h-16 w-16 rounded-full flex items-center justify-center shadow-2xl shadow-primary/40 active:scale-90 transition-transform"
+                  className="relative -top-8 bg-white h-16 w-16 rounded-full flex items-center justify-center shadow-2xl shadow-black/10 active:scale-90 transition-transform group"
                 >
-                  <Icon className="h-8 w-8 text-white" />
+                  <Icon className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
                   <motion.div
-                    animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.2, 0.5] }}
+                    animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.1, 0.3] }}
                     transition={{ repeat: Infinity, duration: 2 }}
-                    className="absolute inset-0 bg-primary rounded-full -z-10"
+                    className="absolute inset-0 bg-white rounded-full -z-10"
                   />
                 </button>
               );
@@ -54,25 +54,25 @@ export function MobileNav({ activeTab, onTabChange, messengerCount = 0, notifica
               >
                 <div className={cn(
                   "relative p-2 rounded-2xl transition-all duration-300",
-                  isActive ? "bg-white/10 text-white scale-110" : "text-white/40"
+                  isActive ? "bg-white/20 text-white scale-110 shadow-sm" : "text-white/60 hover:text-white hover:bg-white/5"
                 )}>
-                  <Icon className="h-6 w-6" />
+                  <Icon className="h-6 w-6 stroke-[2.5px]" />
                   
                   {item.id === "messenger" && messengerCount > 0 && (
-                    <span className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full border-2 border-black text-[8px] font-black text-white flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 h-4 w-4 bg-vital-orange rounded-full border-2 border-primary text-[8px] font-black text-white flex items-center justify-center">
                       {messengerCount}
                     </span>
                   )}
                   
                   {item.id === "notifications" && notificationCount > 0 && (
-                    <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full border-2 border-black text-[8px] font-black text-white flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full border-2 border-primary text-[8px] font-black text-white flex items-center justify-center">
                       {notificationCount}
                     </span>
                   )}
                 </div>
                 <span className={cn(
-                  "text-[8px] font-bold uppercase tracking-widest transition-opacity duration-300",
-                  isActive ? "opacity-100 text-white" : "opacity-40"
+                  "text-[8px] font-black uppercase tracking-widest transition-opacity duration-300",
+                  isActive ? "opacity-100 text-white" : "opacity-60"
                 )}>
                   {item.label}
                 </span>
@@ -80,7 +80,7 @@ export function MobileNav({ activeTab, onTabChange, messengerCount = 0, notifica
                 {isActive && (
                   <motion.div
                     layoutId="mobile-nav-indicator"
-                    className="absolute -bottom-1 h-1 w-1 bg-white rounded-full"
+                    className="absolute -bottom-1 h-1 w-1 bg-white rounded-full shadow-lg shadow-white/50"
                   />
                 )}
               </button>
