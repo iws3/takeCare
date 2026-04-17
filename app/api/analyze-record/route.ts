@@ -98,20 +98,20 @@ Do not include any text outside of the JSON object.
       // Find the first '{' and the last '}' to extract the JSON object
       const jsonMatch = result.text.match(/\{[\s\S]*\}/);
       const jsonText = jsonMatch ? jsonMatch[0] : result.text;
-      
+
       const text = jsonText.replace(/```json\n?/, "").replace(/\n?```/, "").trim();
       parsedResult = JSON.parse(text);
-      
+
       // Ensure specific fields exist
       if (!parsedResult.analysis) {
         parsedResult.analysis = result.text;
       }
     } catch (parseError) {
       console.error("Failed to parse AI response as JSON. Raw text:", result.text);
-      parsedResult = { 
-        analysis: result.text, 
+      parsedResult = {
+        analysis: result.text,
         structuredData: null,
-        error: "Structural parsing failed" 
+        error: "Structural parsing failed"
       };
     }
 
@@ -122,7 +122,7 @@ Do not include any text outside of the JSON object.
       if (session?.user?.id) {
         // Use the first file as the main record for simplicity
         const file = files[0];
-        
+
         // Use direct Prisma call instead of calling server actions from a route handler
         const record = await prisma.medicalRecord.create({
           data: {
@@ -143,7 +143,7 @@ Do not include any text outside of the JSON object.
             rawJson: parsedResult.structuredData || {}
           }
         });
-        
+
         console.log("[Route] Successfully saved medical record and analysis for user:", session.user.id);
       }
     } catch (authDbError) {
