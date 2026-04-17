@@ -19,10 +19,10 @@ export async function POST(req: Request) {
 
     // Initialize SerpApi search
     const apiKey = process.env.SERPAPI_API_KEY || "fb3cd784e9089222a009187a55f866635848bb2909438fa73295c55676ee5256";
-    
+
     // We add clinical context to the search query if available
-    const contextString = medicalContext 
-      ? `Patient Clinical Context: ${JSON.stringify(medicalContext)}` 
+    const contextString = medicalContext
+      ? `Patient Clinical Context: ${JSON.stringify(medicalContext)}`
       : "";
 
     // Perform the search using SerpApi (Google Search Engine)
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
       prompt,
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       report: text,
       sources: snippets.map(r => ({ title: r.title, url: r.link }))
     });
