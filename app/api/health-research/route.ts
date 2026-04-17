@@ -1,4 +1,4 @@
-import { tavily } from "@tavily/core";
+import { getJson } from "serpapi";
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { NextResponse } from "next/server";
@@ -17,20 +17,27 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Query is required" }, { status: 400 });
     }
 
-    // Initialize Tavily client
-    const tvly = tavily({ apiKey: process.env.TAVILY_API_KEY || "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" });
-
-    // 1. Perform a context-aware search using Tavily
+    // Initialize SerpApi search
+    const apiKey = process.env.SERPAPI_API_KEY || "fb3cd784e9089222a009187a55f866635848bb2909438fa73295c55676ee5256";
+    
     // We add clinical context to the search query if available
     const contextString = medicalContext 
-      ? `Patient Context: ${JSON.stringify(medicalContext)}` 
+      ? `Patient Clinical Context: ${JSON.stringify(medicalContext)}` 
       : "";
-    
-    const searchResponse = await tvly.search(query, {
-      searchDepth: "advanced",
-      includeAnswer: true,
-      maxResults: 5,
+
+    // Perform the search using SerpApi (Google Search Engine)
+    const searchResponse = await getJson({
+      engine: "google",
+      q: `${query} medical research`,
+      api_key: apiKey,
     });
+
+    const searchResults = searchResponse.organic_results?.slice(0, 5) || [];
+    const snippets = searchResults.map((r: any) => ({
+      title: r.title,
+      link: r.link,
+      snippet: r.snippet
+    }));
 
     // 2. Use Gemini to synthesize the search results into a professional report
     const prompt = `
@@ -39,18 +46,15 @@ export async function POST(req: Request) {
       USER RESEARCH GOAL: "${query}"
       PATIENT CLINICAL CONTEXT: ${contextString}
       
-      RAW RESEARCH DATA (Tavily Results):
-      ${JSON.stringify(searchResponse.results, null, 2)}
-      
-      INITIAL SEARCH SUMMARY:
-      ${searchResponse.answer || "No direct answer found."}
+      RAW RESEARCH DATA (SerpApi Search Results):
+      ${JSON.stringify(snippets, null, 2)}
       
       TASK:
-      Synthesize the above research into a high-end clinical report. 
+      Synthesize the above research results into a high-end clinical report. 
       The report MUST be structured with the following sections:
       
       ### 🔬 Latest Clinical Insights
-      Summarize the most recent and relevant medical findings regarding the user's query. focus on 2024-2026 data if available.
+      Summarize the most recent and relevant medical findings regarding the user's query based on the search snippets. focus on 2024-2026 data if available.
       
       ### 🧬 Personalized Correlation
       Analyze how these findings relate specifically to the patient's context (medications, vitals, or diagnoses). Point out potential benefits or risks.
@@ -74,7 +78,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ 
       report: text,
-      sources: searchResponse.results.map(r => ({ title: r.title, url: r.url }))
+      sources: snippets.map(r => ({ title: r.title, url: r.link }))
     });
 
   } catch (error: any) {
