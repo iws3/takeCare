@@ -670,6 +670,32 @@ function AnalysisView({
   const [isDownloading, setIsDownloading] = useState(false);
 
   const reportRef = useRef<HTMLElement>(null);
+  const researchReportRef = useRef<HTMLDivElement>(null);
+
+  const handleDownloadResearchPDF = async () => {
+    if (!researchReportRef.current) return;
+    
+    const toastId = toast.loading("Generating your clinical research PDF...");
+    try {
+      const element = researchReportRef.current;
+      const canvas = await html2canvas(element, { 
+        scale: 2, 
+        useCORS: true,
+        backgroundColor: "#ffffff"
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, Math.min(pdfHeight, 290));
+      pdf.save(`Research_${researchQuery.replace(/\s+/g, "_")}_${new Date().getTime()}.pdf`);
+      toast.success("Research report downloaded successfully!", { id: toastId });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate research PDF", { id: toastId });
+    }
+  };
 
   const handleDownloadReport = async () => {
     if (!reportRef.current || isDownloading) return;
@@ -1871,40 +1897,30 @@ function AnalysisView({
                           animate={{ opacity: 1, y: 0 }}
                           className="space-y-8"
                         >
-                          <div className="prose prose-sm max-w-none bg-purple-50/30 p-8 rounded-[2rem] border border-purple-100/50">
+                          <div ref={researchReportRef} className="prose prose-sm max-w-none bg-purple-50/30 p-8 rounded-[2rem] border border-purple-100/50">
                             <ReactMarkdown>{researchResult}</ReactMarkdown>
                           </div>
                           
-                          {researchSources.length > 0 && (
-                            <div className="space-y-3">
-                              <p className="text-[10px] font-black text-black/20 uppercase tracking-widest px-4">Sources Cited</p>
-                              <div className="flex flex-wrap gap-2 px-2">
-                                {researchSources.map((source, idx) => (
-                                  <a 
-                                    key={idx} 
-                                    href={source.url} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="px-4 py-2 rounded-full bg-white border border-black/5 text-[10px] font-bold text-purple-600 hover:bg-purple-50 transition-all flex items-center gap-2"
-                                  >
-                                    <ExternalLink className="h-3 w-3" />
-                                    {source.title}
-                                  </a>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          
-                          <Button 
-                            variant="ghost" 
-                            onClick={() => {
-                              setResearchResult(null);
-                              setResearchQuery("");
-                            }}
-                            className="w-full h-14 rounded-2xl border border-black/5 font-black text-[10px] uppercase tracking-widest text-black/40"
-                          >
-                            New Research Topic
-                          </Button>
+                          <div className="flex flex-col sm:flex-row gap-3">
+                            <Button 
+                              onClick={handleDownloadResearchPDF}
+                              className="flex-1 h-14 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20"
+                            >
+                              <FileDown className="h-5 w-5" />
+                              Download Analysis PDF
+                            </Button>
+                            
+                            <Button 
+                              variant="outline" 
+                              onClick={() => {
+                                setResearchResult(null);
+                                setResearchQuery("");
+                              }}
+                              className="flex-1 h-14 rounded-2xl border-black/5 font-bold text-black/60 hover:bg-black/5"
+                            >
+                              New Research
+                            </Button>
+                          </div>
                         </motion.div>
                       ) : (
                         <motion.div 
