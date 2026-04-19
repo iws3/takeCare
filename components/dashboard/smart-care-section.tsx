@@ -1898,7 +1898,8 @@ function AnalysisView({
                   </div>
 
                   {/* Content Area */}
-                  <div className="flex-1 overflow-y-auto pb-12 sm:pb-6">
+                  <ScrollArea className="flex-1 -mx-2 px-2 pb-12 sm:pb-6">
+                    <div className="space-y-6">
                       {researching ? (
                         <div className="py-20 flex flex-col items-center justify-center gap-4 text-center">
                           <Loader2 className="h-10 w-10 text-blue-600 animate-spin" />
@@ -1980,7 +1981,7 @@ function AnalysisView({
                             <p className="text-[10px] font-black text-black/30 uppercase tracking-widest">Recent & Popular</p>
                           </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20 sm:pb-0">
                             {[
                               { topic: "Sleep & Vitamin D", desc: "Latest info on sleep quality" },
                               { topic: "Heart Health", desc: "New cardio research" },
@@ -1997,15 +1998,16 @@ function AnalysisView({
                                   <Search className="h-5 w-5" />
                                 </div>
                                 <div>
-                                  <h4 className="font-bold text-lg text-black">{item.topic}</h4>
-                                  <p className="text-xs text-black/40">{item.desc}</p>
+                                  <h4 className="text-sm font-bold text-black group-hover:text-blue-600 transition-colors">{item.topic}</h4>
+                                  <p className="text-[10px] font-medium text-black/40">{item.desc}</p>
                                 </div>
                               </div>
                             ))}
                           </div>
                         </motion.div>
                       )}
-                  </div>
+                    </div>
+                  </ScrollArea>
                 </div>
               )}
             </motion.div>
