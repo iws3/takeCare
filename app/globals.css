@@ -19,8 +19,8 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
 
-  /* Vitality Blue/Teal - Professional Healthcare Brand */
-  --primary: oklch(0.55 0.18 245);
+  /* Vitality Blue - Sharp Professional Healthcare Brand */
+  --primary: oklch(0.6 0.2 250);
   --primary-foreground: oklch(0.985 0 0);
 
   /* Accents: Orange for Notifications, Red for Alerts, Neon for Branding */
@@ -31,9 +31,9 @@
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.7 0.22 45 / 15%);
-  --accent-foreground: oklch(0.7 0.22 45);
+  --muted-foreground: oklch(0.4 0 0);
+  --accent: oklch(0.6 0.2 250 / 10%);
+  --accent-foreground: oklch(0.6 0.2 250);
   --destructive: oklch(0.6 0.25 25);
   --destructive-foreground: oklch(0.985 0 0);
 
@@ -70,7 +70,21 @@
 
 /* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  display: none;
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
 }
 
 /* ─── Animations ────────────────────────────────────────────────────────────── */
@@ -340,8 +354,8 @@
     padding: 0;
     overflow-x: hidden;
     overflow-y: auto;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: thin; /* Show thin scrollbar */
+    -ms-overflow-style: auto;  
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

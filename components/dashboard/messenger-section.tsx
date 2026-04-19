@@ -199,7 +199,7 @@ export function MessengerSection({ onNotificationSync, onInviteSuccess }: { onNo
                 }}
                 className={cn(
                   "rounded-xl px-6 py-2.5 transition-all duration-300 cursor-pointer flex-1 lg:flex-none flex items-center justify-center gap-2 font-outfit font-bold text-sm",
-                  "hover:bg-white hover:shadow-sm text-black/60 focus:outline-none active:scale-95"
+                  "hover:bg-white hover:shadow-sm text-black/80 focus:outline-none active:scale-95"
                 )}
               >
                 <p.icon className={cn("h-4 w-4 transition-colors", p.color)} />

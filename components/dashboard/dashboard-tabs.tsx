@@ -35,13 +35,13 @@ export function DashboardTabs({
               className={cn(
                 "rounded-2xl md:rounded-3xl px-5 py-3 md:px-10 md:py-4 transition-all duration-500 cursor-pointer whitespace-nowrap relative group shrink-0",
                 "data-[state=active]:text-white",
-                "data-[state=inactive]:text-black/40 data-[state=inactive]:hover:text-black/60 data-[state=inactive]:hover:bg-black/5",
+                "data-[state=inactive]:text-black/70 data-[state=inactive]:hover:text-black/80 data-[state=inactive]:hover:bg-black/5",
                 "flex items-center justify-center gap-2 md:gap-4 font-outfit font-black text-xs md:text-base border border-transparent"
               )}
             >
               <div className="relative">
                 <tab.icon className={cn(
-                  "h-4 w-4 md:h-6 md:w-6 transition-transform duration-500 group-hover:scale-110 group-data-[state=active]:scale-110",
+                  "h-4 w-4 md:h-6 md:w-6 transition-transform duration-500 group-hover:scale-110 group-data-[state=active]:scale-110 group-data-[state=active]:text-white",
                   tab.id === "smart-care" && value !== "smart-care" && "text-vital-orange animate-pulse"
                 )} />
 
@@ -68,12 +68,12 @@ export function DashboardTabs({
                 )}
               </div>
 
-              <span className="uppercase text-[10px] md:text-xs font-black tracking-[0.2em] md:tracking-[0.25em]">{tab.label}</span>
+              <span className="capitalize text-[10px] md:text-xs font-black tracking-normal md:tracking-wider group-data-[state=active]:text-white">{tab.label}</span>
 
               {value === tab.id && (
                 <motion.div
                   layoutId="active-pill"
-                  className="absolute inset-0 bg-primary rounded-2xl md:rounded-3xl -z-10 shadow-xl shadow-primary/20"
+                  className="absolute inset-0 bg-primary rounded-2xl md:rounded-3xl -z-10 shadow-xl shadow-primary/30"
                   transition={{ type: "spring", bounce: 0.15, duration: 0.6 }}
                 />
               )}

@@ -157,6 +157,13 @@ export default function DashboardPage() {
     fetchData().finally(() => setTimeout(() => setLoading(false), 2000));
   }, [status, router]);
 
+  // Scroll to top when active tab changes to ensure visibility of new content
+  useEffect(() => {
+    if (!loading) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [activeTab, loading]);
+
   if (loading || status === "loading") return <DashboardLoading />;
 
   const combinedRecords = [
@@ -191,7 +198,7 @@ export default function DashboardPage() {
       </header>
 
 
-      <main className="flex flex-1 flex-col responsive-container w-full overflow-x-hidden md:pb-20">
+      <main className="flex flex-1 flex-col responsive-container w-full overflow-x-hidden md:pb-6">
         <AnimatePresence mode="wait">
           {activeTab === "overview" && (
             <motion.div 

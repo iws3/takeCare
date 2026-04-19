@@ -73,7 +73,7 @@ const SMART_CARE_TABS = [
 ];
 
 export function SmartCareSection({ userName = "Patient" }: { userName?: string }) {
-  const [activeTab, setActiveTab] = useState("text");
+  const [activeTab, setActiveTab] = useState("talk");
   const [medicalContext, setMedicalContext] = useState<any>(null);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const [allRecords, setAllRecords] = useState<any[]>([]);
@@ -115,26 +115,26 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
 
 
   return (
-    <div className="px-6 lg:px-12 mt-2 md:mt-4 flex flex-col gap-4 md:gap-6">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-white/60 backdrop-blur-3xl p-1 md:p-1.5 rounded-3xl md:rounded-4xl w-full lg:w-fit h-auto flex gap-1 md:gap-1.5 mb-6 md:mb-10 border border-black/3 shadow-sm">
+    <div className="px-6 lg:px-12 mt-2 flex flex-col gap-4 flex-1 min-h-0">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col min-h-0">
+        <TabsList className="bg-black/[0.03] backdrop-blur-3xl p-1.5 rounded-[2rem] w-full lg:w-fit h-auto flex gap-1.5 mb-4 border border-black/[0.05] shadow-sm self-center lg:self-start shrink-0">
           {SMART_CARE_TABS.map((tab) => (
             <TabsTrigger
               key={tab.id}
               value={tab.id}
               className={cn(
-                "rounded-2xl md:rounded-3xl px-4 py-2.5 md:px-8 md:py-3 transition-all duration-500 cursor-pointer flex-1 lg:flex-none relative group",
-                "data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-2xl data-[state=active]:shadow-primary/20",
-                "data-[state=inactive]:text-black/60 data-[state=inactive]:hover:bg-primary/5 data-[state=inactive]:hover:text-primary",
-                "flex items-center justify-center gap-2 md:gap-3 font-outfit font-black text-[10px] md:text-xs uppercase tracking-widest"
+                "rounded-[1.75rem] px-5 py-2.5 md:px-10 md:py-3 transition-all duration-500 cursor-pointer flex-1 lg:flex-none relative group overflow-hidden",
+                "data-[state=active]:text-white text-black/60",
+                "data-[state=inactive]:hover:text-black/90 data-[state=inactive]:hover:bg-black/5",
+                "flex items-center justify-center gap-2.5 md:gap-4 font-outfit font-black text-[11px] md:text-sm capitalize tracking-tight z-0"
               )}
             >
-              <tab.icon className="h-3.5 w-3.5 md:h-4 md:w-4 transition-transform duration-500 group-hover:scale-110 group-data-[state=active]:scale-110" />
-              {tab.label}
+              <tab.icon className="h-4 w-4 md:h-5 md:w-5 transition-all duration-500 group-hover:scale-110 group-data-[state=active]:scale-110 relative z-10 group-data-[state=active]:text-white" />
+              <span className="relative z-10 group-data-[state=active]:text-white">{tab.label}</span>
               {activeTab === tab.id && (
                 <motion.div
                   layoutId="smart-active-pill"
-                  className="absolute inset-0 bg-primary rounded-2xl md:rounded-3xl -z-10"
+                  className="absolute inset-0 bg-primary -z-10 shadow-xl shadow-primary/40"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                 />
               )}
@@ -321,7 +321,7 @@ function VoiceAgentView({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -30 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="relative flex flex-col items-center p-6 md:p-12 rounded-3xl md:rounded-[3.5rem] border border-black/5 bg-white shadow-2xl overflow-hidden min-h-[500px]"
+      className="relative flex flex-col items-center p-6 md:p-12 rounded-3xl md:rounded-[3.5rem] border border-black/5 bg-white shadow-2xl min-h-[500px]"
     >
       {/* Background Ambient Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
@@ -554,94 +554,55 @@ function ChatbotView({ userName }: { userName: string }) {
   return (    <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col h-[500px] md:h-[650px] bg-white rounded-3xl md:rounded-[3rem] border border-black/5 shadow-2xl overflow-hidden"
+      className="flex flex-col flex-1 min-h-[500px] h-[calc(100vh-280px)] bg-slate-50/50 rounded-[2rem] md:rounded-[3rem] border border-black/[0.05] overflow-hidden relative group"
     >
-      <div className="p-4 md:p-6 border-b border-black/5 bg-black/[0.02] flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2 md:gap-4">
-          <div className="relative">
-            <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30 z-10 relative">
-              <Bot className="h-5 w-5 md:h-6 md:w-6 text-white" />
-            </div>
-            <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" style={{ animationDuration: '2s' }} />
-          </div>
-          <div>
-            <h3 className="font-bricolage text-base md:text-xl font-bold text-black tracking-tight">Clinical Assistant</h3>
-            <div className="flex items-center gap-1.5 md:gap-2">
-              <span className="h-1.5 w-1.5 md:h-2 md:w-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-[10px] md:text-xs font-black text-black/30 uppercase tracking-widest">Always Online</span>
-            </div>
-          </div>
+      {/* Blurred Background Chat Mockup */}
+      <div className="absolute inset-0 opacity-20 blur-xl scale-110 pointer-events-none select-none">
+        <div className="flex flex-col gap-8 p-10">
+          <div className="h-20 w-3/4 bg-primary/20 rounded-3xl self-start" />
+          <div className="h-16 w-1/2 bg-black/10 rounded-3xl self-end" />
+          <div className="h-24 w-2/3 bg-primary/20 rounded-3xl self-start" />
+          <div className="h-12 w-1/3 bg-black/10 rounded-3xl self-end" />
         </div>
       </div>
 
-      <ScrollArea className="flex-1 p-4 md:p-8">
-        <div className="flex flex-col gap-4 md:gap-6">
-          {messages.map((msg, idx) => (
-            <motion.div
-              initial={{ opacity: 0, x: msg.role === "user" ? 20 : -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              key={idx}
-              className={cn(
-                "flex flex-col max-w-[85%] md:max-w-[70%]",
-                msg.role === "user" ? "ml-auto items-end" : "items-start"
-              )}
-            >
-              <div
-                className={cn(
-                  "p-3.5 md:p-5 rounded-2xl md:rounded-3xl text-xs md:text-sm font-bold leading-relaxed shadow-sm",
-                  msg.role === "user"
-                    ? "bg-primary text-white rounded-tr-none shadow-primary/20"
-                    : "bg-black/[0.03] text-black rounded-tl-none border border-black/5"
-                )}
-              >
-                <div className="prose prose-sm md:prose-base !max-w-none text-inherit font-inherit">
-                  <ReactMarkdown>
-                    {msg.content}
-                  </ReactMarkdown>
-                </div>
-              </div>
-              <span className="text-[9px] md:text-[10px] font-black text-black/20 uppercase tracking-widest mt-1.5 md:mt-2 px-1">
-                {msg.role === "user" ? "YOU" : "TAKECARE AI"} • {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            </motion.div>
-          ))}
-          <div ref={chatEndRef} />
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-8 text-center space-y-6">
+        <div className="relative">
+          <div className="h-24 w-24 bg-white rounded-[2rem] shadow-2xl flex items-center justify-center relative z-10 border border-black/[0.03]">
+            <Bot className="h-10 w-10 text-primary animate-pulse" />
+          </div>
+          <div className="absolute -inset-4 bg-primary/5 rounded-full blur-2xl animate-pulse" />
         </div>
-      </ScrollArea>
 
-      <div className="p-4 md:p-8 bg-black/[0.01] border-t border-black/5 shrink-0">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const input = e.currentTarget.elements.namedItem("message") as HTMLInputElement;
-            if (input.value.trim()) {
-              handleSendMessage(input.value);
-              input.value = "";
-            }
-          }}
-          className="relative group"
-        >
-          <input
-            name="message"
-            disabled={isLoading}
-            autoComplete="off"
-            placeholder="Describe your symptoms or ask about medications..."
-            className="w-full bg-white border border-black/10 rounded-2xl md:rounded-3xl py-4 md:py-5 pl-5 md:pl-6 pr-14 md:pr-16 text-xs md:text-sm font-medium placeholder:text-black/20 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all shadow-sm group-hover:shadow-md disabled:opacity-50"
-          />
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="absolute right-2 top-2 bottom-2 px-3 md:px-4 bg-primary text-white rounded-xl md:rounded-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center disabled:opacity-50 disabled:hover:scale-100 shadow-md shadow-primary/20"
-          >
-            {isLoading ? (
-              <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Send className="h-4 w-4 md:h-5 md:w-5" />
-            )}
-          </button>
-        </form>
+        <div className="space-y-2 max-w-sm">
+          <h2 className="text-3xl font-black font-bricolage tracking-tighter">AI Chat Refining</h2>
+          <p className="text-sm font-medium text-black/50 leading-relaxed">
+            We're currently fine-tuning our medical intelligence engine for a more precise diagnostic experience.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="px-5 py-2 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase tracking-widest border border-primary/20">
+            Coming Soon
+          </span>
+          <span className="px-5 py-2 bg-black/[0.03] text-black/40 rounded-full text-[10px] font-black uppercase tracking-widest border border-black/[0.05]">
+            Q2 2026
+          </span>
+        </div>
+      </div>
+
+      {/* Modern Glass Footer */}
+      <div className="p-8 mt-auto flex justify-center border-t border-black/[0.03]">
+         <div className="flex items-center gap-6 opacity-30">
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
+              <div className="h-1 w-1 bg-green-500 rounded-full" />
+              Secure Ingestion active
+            </span>
+            <span className="text-[9px] font-black uppercase tracking-[0.2em]">Next-Gen Medical AI</span>
+          </div>
       </div>
     </motion.div>
+
   );
 }
 
