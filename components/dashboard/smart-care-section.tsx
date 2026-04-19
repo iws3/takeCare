@@ -124,13 +124,19 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
               value={tab.id}
               className={cn(
                 "rounded-[1.75rem] px-5 py-2.5 md:px-10 md:py-3 transition-all duration-500 cursor-pointer flex-1 lg:flex-none relative group overflow-hidden",
-                "data-[state=active]:text-white text-black/60",
+                activeTab === tab.id ? "text-white" : "text-black/60",
                 "data-[state=inactive]:hover:text-black/90 data-[state=inactive]:hover:bg-black/5",
                 "flex items-center justify-center gap-2.5 md:gap-4 font-outfit font-black text-[11px] md:text-sm capitalize tracking-tight z-0"
               )}
             >
-              <tab.icon className="h-4 w-4 md:h-5 md:w-5 transition-all duration-500 group-hover:scale-110 group-data-[state=active]:scale-110 relative z-10 group-data-[state=active]:text-white" />
-              <span className="relative z-10 group-data-[state=active]:text-white">{tab.label}</span>
+              <tab.icon className={cn(
+                "h-4 w-4 md:h-5 md:w-5 transition-all duration-500 group-hover:scale-110 relative z-10",
+                activeTab === tab.id ? "text-white" : "text-black/60"
+              )} />
+              <span className={cn(
+                "relative z-10",
+                activeTab === tab.id ? "text-white" : ""
+              )}>{tab.label}</span>
               {activeTab === tab.id && (
                 <motion.div
                   layoutId="smart-active-pill"

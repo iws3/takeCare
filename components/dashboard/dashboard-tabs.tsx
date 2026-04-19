@@ -41,7 +41,8 @@ export function DashboardTabs({
             >
               <div className="relative">
                 <tab.icon className={cn(
-                  "h-4 w-4 md:h-6 md:w-6 transition-transform duration-500 group-hover:scale-110 group-data-[state=active]:scale-110 group-data-[state=active]:text-white",
+                  "h-4 w-4 md:h-6 md:w-6 transition-transform duration-500 group-hover:scale-110",
+                  value === tab.id ? "text-white" : "text-black/70",
                   tab.id === "smart-care" && value !== "smart-care" && "text-vital-orange animate-pulse"
                 )} />
 
@@ -68,7 +69,10 @@ export function DashboardTabs({
                 )}
               </div>
 
-              <span className="capitalize text-[10px] md:text-xs font-black tracking-normal md:tracking-wider group-data-[state=active]:text-white">{tab.label}</span>
+              <span className={cn(
+                "capitalize text-[10px] md:text-xs font-black tracking-normal md:tracking-wider transition-colors duration-500",
+                value === tab.id ? "text-white" : "text-black/70"
+              )}>{tab.label}</span>
 
               {value === tab.id && (
                 <motion.div
