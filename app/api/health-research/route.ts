@@ -81,7 +81,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       report: text,
-      sources: snippets.map(r => ({ title: r.title, url: r.link }))
+      sources: snippets.map((r: any) => ({ title: r.title, url: r.link }))
     });
 
   } catch (error: any) {
