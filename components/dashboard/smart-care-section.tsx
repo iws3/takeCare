@@ -1854,7 +1854,7 @@ function AnalysisView({
               )}
 
               {showSim === "research" && (
-                <div className="flex flex-col h-full overflow-hidden">
+                <div className="flex flex-col h-full min-h-0">
                   {/* Simple Header */}
                   <div className="flex items-center justify-between mb-4 md:mb-6 shrink-0">
                     <div className="flex items-center gap-3">
@@ -1898,7 +1898,7 @@ function AnalysisView({
                   </div>
 
                   {/* Content Area */}
-                  <div className="flex-1 min-h-0 overflow-y-auto -mx-2 px-2 pb-12 sm:pb-6">
+                  <div className="flex-1 min-h-0 overflow-y-auto -mx-2 px-2 pb-12 sm:pb-6" style={{ scrollbarGutter: 'stable' }}>
                     <div className="space-y-6">
                       {researching ? (
                         <div className="py-20 flex flex-col items-center justify-center gap-4 text-center">
