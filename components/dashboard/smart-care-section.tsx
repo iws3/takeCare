@@ -45,7 +45,11 @@ import {
   ChevronRight,
   FileDown,
   ArrowLeft,
-  ShieldCheck
+  ShieldCheck,
+  History,
+  Sparkles,
+  BookOpen,
+  ArrowUpRight
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import jsPDF from "jspdf";
@@ -1091,11 +1095,11 @@ function AnalysisView({
     {
       id: "research",
       title: "Health Research",
-      label: "ISSUE EXPLORER",
-      description: "Search across 10M+ medical papers validated by specialists.",
+      label: "RESEARCH HUB",
+      description: "Search the latest medical findings and clinical research online.",
       icon: Search,
-      color: "bg-purple-500",
-      content: "Browse Database"
+      color: "bg-blue-500",
+      content: "Search Online"
     },
     {
       id: "wearables",
@@ -1117,36 +1121,32 @@ function AnalysisView({
 
   return (
     <div className="relative">
-      <div className="flex flex-col sm:flex-row gap-2 mb-6 md:mb-10 bg-white/40 backdrop-blur-xl p-1 md:p-1.5 rounded-2xl md:rounded-3xl w-full sm:w-fit border border-black/5 shadow-lg shadow-black/[0.01]">
+      <div className="flex flex-row overflow-x-auto no-scrollbar gap-2 mb-6 md:mb-10 bg-white/40 backdrop-blur-xl p-1.5 rounded-2xl md:rounded-3xl w-full sm:w-fit border border-black/5 shadow-lg shadow-black/[0.01]">
         <button
           onClick={() => setAnalysisTab("upload")}
           className={cn(
-            "px-6 md:px-8 py-2 md:py-2.5 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all duration-500 relative overflow-hidden group flex-1 sm:flex-none",
+            "px-6 md:px-8 py-3 md:py-3 rounded-xl md:rounded-2xl text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all duration-500 relative flex items-center justify-center gap-2 flex-1 sm:flex-none whitespace-nowrap",
             analysisTab === "upload"
               ? "bg-black text-white shadow-2xl shadow-black/20"
               : "text-black/40 hover:text-black/60 hover:bg-black/5"
           )}
         >
-          <span className="relative z-10 flex items-center justify-center gap-2">
-            <div className={cn("h-1.5 w-1.5 rounded-full", analysisTab === "upload" ? "bg-primary animate-pulse" : "bg-black/20")} />
-            Source Records
-          </span>
+          <History className={cn("h-4 w-4", analysisTab === "upload" ? "text-primary" : "text-black/20")} />
+          Medical Records
         </button>
         <button
           onClick={() => setAnalysisTab("results")}
           disabled={!medicalContext}
           className={cn(
-            "px-6 md:px-8 py-2 md:py-2.5 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all duration-500 relative overflow-hidden group flex-1 sm:flex-none",
+            "px-6 md:px-8 py-3 md:py-3 rounded-xl md:rounded-2xl text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all duration-500 relative flex items-center justify-center gap-2 flex-1 sm:flex-none whitespace-nowrap",
             analysisTab === "results"
               ? "bg-black text-white shadow-2xl shadow-black/20"
               : "text-black/40 hover:text-black/60 hover:bg-black/5",
             !medicalContext && "opacity-30 cursor-not-allowed"
           )}
         >
-          <span className="relative z-10 flex items-center justify-center gap-2">
-            <div className={cn("h-1.5 w-1.5 rounded-full", analysisTab === "results" ? "bg-green-500 animate-pulse" : "bg-black/20")} />
-            Clinical Results
-          </span>
+          <BarChart3 className={cn("h-4 w-4", analysisTab === "results" ? "text-blue-500" : "text-black/20")} />
+          Analysis Results
         </button>
       </div>
 
@@ -1242,10 +1242,10 @@ function AnalysisView({
                   <Heart className="h-6 w-6 md:h-7 md:w-7 text-primary animate-pulse" />
                 </div>
                 <div>
-                  <h3 className="font-bricolage text-xl md:text-2xl font-black tracking-tight leading-tight">Clinical Intelligence</h3>
+                  <h3 className="font-bricolage text-xl md:text-2xl font-black tracking-tight leading-tight">Health Summary</h3>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                    <span className="text-[9px] md:text-xs font-bold text-black/40 uppercase tracking-widest whitespace-nowrap">Health Twin Synchronized</span>
+                    <span className="text-[9px] md:text-xs font-bold text-black/40 uppercase tracking-widest whitespace-nowrap">Health Data Connected</span>
                   </div>
                 </div>
               </div>
@@ -1285,15 +1285,40 @@ function AnalysisView({
                       <Badge className="bg-blue-50 text-blue-600 border-none font-black text-[9px] uppercase tracking-widest">Gemini 1.5</Badge>
                     </div>
 
-                    <div className="prose prose-sm max-w-none prose-headings:font-bricolage prose-headings:text-black prose-p:text-black/60 prose-strong:text-black prose-strong:font-bold leading-relaxed overflow-x-hidden">
+                    <div className="prose prose-sm md:prose-base max-w-none text-black/70 leading-relaxed overflow-x-hidden">
                       {analysisResult ? (
-                        <ReactMarkdown>{analysisResult}</ReactMarkdown>
+                        <ReactMarkdown
+                          components={{
+                            h1: ({node, ...props}) => <h1 className="text-2xl font-bricolage font-black tracking-tighter text-black mt-8 mb-4 border-b-2 border-black/5 pb-2" {...props} />,
+                            h2: ({node, ...props}) => <h2 className="text-xl font-bricolage font-black text-black mt-6 mb-3 flex items-center gap-2" {...props}><div className="h-4 w-1 bg-primary rounded-full" /> {props.children}</h2>,
+                            p: ({node, ...props}) => <p className="mb-4 font-medium" {...props} />,
+                            strong: ({node, ...props}) => <strong className="text-black font-black" {...props} />,
+                            ul: ({node, ...props}) => <ul className="space-y-3 my-6" {...props} />,
+                            li: ({node, ...props}) => (
+                              <li className="flex items-start gap-3 bg-black/[0.02] p-4 rounded-2xl border border-black/5" {...props}>
+                                <div className="h-2 w-2 rounded-full bg-primary mt-1.5 shrink-0" />
+                                <div className="text-sm font-bold">{props.children}</div>
+                              </li>
+                            ),
+                          }}
+                        >
+                          {analysisResult}
+                        </ReactMarkdown>
                       ) : (
-                        <div className="space-y-4 py-4">
-                          <div className="h-4 w-full bg-black/5 rounded-full animate-pulse" />
-                          <div className="h-4 w-3/4 bg-black/5 rounded-full animate-pulse" />
-                          <div className="h-4 w-5/6 bg-black/5 rounded-full animate-pulse" />
-                          <div className="h-20 w-full bg-black/5 rounded-2xl animate-pulse" />
+                        <div className="space-y-6 py-4">
+                          <div className="flex gap-4 items-center">
+                            <div className="h-10 w-10 bg-black/5 rounded-xl animate-pulse" />
+                            <div className="h-4 w-1/2 bg-black/5 rounded-full animate-pulse" />
+                          </div>
+                          <div className="space-y-3">
+                            <div className="h-4 w-full bg-black/5 rounded-full animate-pulse" />
+                            <div className="h-4 w-full bg-black/5 rounded-full animate-pulse" />
+                            <div className="h-4 w-3/4 bg-black/5 rounded-full animate-pulse" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="h-24 bg-black/5 rounded-3xl animate-pulse" />
+                            <div className="h-24 bg-black/5 rounded-3xl animate-pulse" />
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1450,17 +1475,26 @@ function AnalysisView({
                   </div>
                 </div>
 
-                {/* Patient Summary & Footer Actions */}
-                <div className="p-6 md:p-10 rounded-3xl md:rounded-5xl bg-indigo-50/50 border border-indigo-100 flex flex-col md:flex-row items-center gap-6 md:gap-10">
-                  <div className="h-16 w-16 md:h-20 md:w-20 rounded-2xl md:rounded-[2rem] bg-indigo-600 flex items-center justify-center shadow-xl shadow-indigo-200 shrink-0">
-                    <User className="h-8 w-8 md:h-10 md:w-10 text-white" />
+                {/* Clinical Insights Summary Card */}
+                <div className="p-8 md:p-12 rounded-3xl md:rounded-5xl bg-linear-to-br from-blue-900 to-blue-950 border border-blue-500/20 flex flex-col md:flex-row items-center gap-8 md:gap-12 relative overflow-hidden group shadow-2xl shadow-blue-500/10">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-blue-500/20 transition-colors duration-1000" />
+                  <div className="h-20 w-20 md:h-28 md:w-28 rounded-[2.5rem] bg-white flex items-center justify-center shadow-2xl shadow-black/20 shrink-0 relative z-10 transition-transform group-hover:scale-105 duration-700">
+                    <User className="h-10 w-10 md:h-14 md:w-14 text-blue-600" />
                   </div>
-                  <div className="flex-1 space-y-2 text-center md:text-left">
-                    <h3 className="font-bricolage text-2xl md:text-3xl font-black text-indigo-950 leading-tight">Patient Overview</h3>
-                    <p className="text-base md:text-lg font-medium text-indigo-800/60 leading-relaxed">
-                      Analysis suggests <span className="text-indigo-600 font-black">{ps?.diagnosis || "Incomplete data"}</span>.
-                      Clinical data shows <span className="text-indigo-600 font-bold">{symptoms.length || 0} core symptoms</span> aligned.
+                  <div className="flex-1 space-y-4 text-center md:text-left relative z-10">
+                    <h3 className="font-bricolage text-3xl md:text-5xl font-black text-white tracking-tighter leading-tight">Patient Synopsis</h3>
+                    <p className="text-lg md:text-2xl font-medium text-blue-100/60 leading-relaxed max-w-2xl px-2 md:px-0">
+                      Our intelligence platform suggests a primary diagnosis of <span className="text-blue-300 font-black underline decoration-blue-300/30 underline-offset-8">{ps?.diagnosis || "Analyzing Context..."}</span>.
+                      We&apos;ve mapped <span className="text-blue-300 font-bold">{symptoms.length || 0} neurological & clinical markers</span> corresponding to this profile.
                     </p>
+                    <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-4">
+                      <Button className="h-14 px-8 rounded-2xl bg-white text-blue-950 hover:bg-blue-50 font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-black/20">
+                        View Detailed Log
+                      </Button>
+                      <Button variant="outline" className="h-14 px-8 rounded-2xl border-white/20 text-white hover:bg-white/5 font-black text-xs uppercase tracking-[0.2em]">
+                        Share with MD
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1480,10 +1514,13 @@ function AnalysisView({
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-6"
           >
             <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="bg-white rounded-3xl md:rounded-4xl p-4 md:p-8 lg:p-12 w-full max-w-4xl shadow-2xl relative overflow-hidden h-full max-h-[90vh] md:h-auto overflow-y-auto"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className={cn(
+                "bg-white p-4 md:p-10 w-full max-w-5xl shadow-2xl relative flex flex-col h-[90vh] md:h-[80vh] mb-24 md:mb-0",
+                showSim === "research" ? "rounded-3xl md:rounded-[2rem]" : "rounded-3xl"
+              )}
             >
               <button
                 onClick={() => setShowSim(null)}
@@ -1493,15 +1530,15 @@ function AnalysisView({
               </button>
 
               {showSim === "records" && (
-                <div className="space-y-8 flex flex-col h-full max-h-[85vh]">
+                <div className="space-y-6 flex flex-col h-full overflow-hidden">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 md:gap-4">
-                      <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-blue-500/10 flex items-center justify-center shrink-0">
-                        <FileText className="h-6 w-6 md:h-7 md:w-7 text-blue-500" />
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center">
+                        <FileText className="h-5 w-5 text-white" />
                       </div>
                       <div>
-                        <h2 className="text-xl md:text-3xl font-bricolage font-extrabold tracking-tight underline decoration-blue-500/20 underline-offset-4 md:underline-offset-8">Record Intelligence</h2>
-                        <p className="text-[10px] md:text-sm text-black/50 font-medium">Capture or upload records for AI Ingestion</p>
+                        <h2 className="text-xl md:text-3xl font-bricolage font-black text-black">Medical Records</h2>
+                        <p className="text-[10px] md:text-xs font-bold text-black/40 uppercase tracking-widest">Upload or scan your documents</p>
                       </div>
                     </div>
                   </div>
@@ -1571,11 +1608,8 @@ function AnalysisView({
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-black/40">Ready for Analysis</h4>
                         <AnimatePresence>
                           {selectedFiles.length === 0 ? (
-                            <div className="py-12 text-center rounded-[2.5rem] border border-black/5 bg-black/[0.01] flex flex-col items-center justify-center gap-3">
-                              <div className="h-12 w-12 rounded-full border border-black/5 flex items-center justify-center text-black/10">
-                                <Search className="h-5 w-5" />
-                              </div>
-                              <p className="text-xs font-black text-black/20 uppercase tracking-widest">Awaiting digital artifacts</p>
+                            <div className="py-10 text-center rounded-2xl border border-black/5 bg-black/[0.01] flex flex-col items-center justify-center gap-2">
+                              <p className="text-xs font-bold text-black/20 uppercase tracking-widest">No files added yet</p>
                             </div>
                           ) : (
                             <div className="grid grid-cols-1 gap-3">
@@ -1623,28 +1657,17 @@ function AnalysisView({
                       </div>
 
                       <div className="mt-auto space-y-4">
-                        <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100/50">
-                          <p className="text-[10px] font-bold text-blue-600/60 uppercase tracking-widest leading-tight">RAG Context Status</p>
-                          <p className="text-xs font-medium text-blue-800/80 mt-1">Files in queue will be vector-indexed for assistant awareness.</p>
+                        <div className="p-4 rounded-xl bg-blue-50 border border-blue-100">
+                          <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest leading-tight">Stored Knowledge</p>
+                          <p className="text-xs font-medium text-black/60 mt-1">Your records will be analyzed to help our AI understand your health better.</p>
                         </div>
 
                         <Button
                           onClick={runMedicalAnalysis}
                           disabled={selectedFiles.length === 0 || isIngesting}
-                          className="w-full h-18 rounded-2xl bg-black text-white hover:bg-blue-600 shadow-xl shadow-black/10 font-bold text-lg disabled:opacity-30 group relative overflow-hidden transition-all"
+                          className="w-full h-14 rounded-xl bg-black text-white hover:bg-blue-600 shadow-xl shadow-black/10 font-bold"
                         >
-                          {isIngesting ? (
-                            <div className="flex items-center gap-3 relative z-10">
-                              <Loader2 className="h-6 w-6 animate-spin" />
-                              <span>AI Context Syncing...</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 relative z-10 px-4">
-                              <span>Start Clinical Extraction</span>
-                              <div className="h-6 w-px bg-white/20 mx-2" />
-                              <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                            </div>
-                          )}
+                          {isIngesting ? "Reading documents..." : "Start Analysis"}
                         </Button>
                       </div>
                     </div>
@@ -1653,26 +1676,16 @@ function AnalysisView({
                     <div className="flex flex-col rounded-3xl border border-black/5 bg-black/[0.01] overflow-hidden">
                       <div className="px-6 py-4 border-b border-black/5 bg-white flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-                          <span className="text-[10px] font-black uppercase tracking-widest text-black/60">Live Analysis Output</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-black/60">Live Analysis</span>
                         </div>
-                        <Badge variant="secondary" className="bg-blue-50 text-blue-600 border-blue-100 font-bold">Smart Care</Badge>
+                        <Badge variant="secondary" className="bg-blue-50 text-blue-600 border-none font-bold">Analysis Output</Badge>
                       </div>
 
                       <div className="flex-1 overflow-y-auto p-8 no-scrollbar bg-white/50">
                         {isIngesting ? (
                           <div className="h-full flex flex-col items-center justify-center gap-4 text-center">
-                            <div className="relative">
-                              <motion.div
-                                animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.3, 0.1] }}
-                                transition={{ repeat: Infinity, duration: 2 }}
-                                className="absolute -inset-10 rounded-full bg-blue-500 blur-3xl pointer-events-none"
-                              />
-                              <div className="h-20 w-20 rounded-3xl bg-blue-500/10 flex items-center justify-center">
-                                <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
-                              </div>
-                            </div>
-                            <p className="text-sm font-bold text-black/40 max-w-xs uppercase tracking-tighter">Scanning clinical data & mapping to RAG system knowledge base...</p>
+                            <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
+                            <p className="text-sm font-bold text-black/40">Reading your medical documents...</p>
                           </div>
                         ) : analysisResult ? (
                           <motion.div
@@ -1693,11 +1706,11 @@ function AnalysisView({
                           </div>
                         ) : (
                           <div className="h-full flex flex-col items-center justify-center p-10 text-center">
-                            <div className="h-20 w-20 rounded-full bg-black/[0.02] flex items-center justify-center mb-6 border-4 border-dashed border-black/5">
-                              <Bot className="h-8 w-8 text-black/10" />
+                            <div className="h-16 w-16 rounded-full bg-black/[0.02] flex items-center justify-center mb-6 border-2 border-dashed border-black/10">
+                              <Bot className="h-6 w-6 text-black/10" />
                             </div>
-                            <h4 className="font-bricolage text-xl font-bold text-black/40">Waiting for Data Ingestion</h4>
-                            <p className="text-sm text-black/20 font-medium max-w-[240px] mx-auto mt-2">Upload medical records to populate the intelligence engine for {userName}.</p>
+                            <h4 className="text-lg font-bold text-black/40">Waiting for Documents</h4>
+                            <p className="text-sm text-black/20 font-medium max-w-[240px] mx-auto mt-2">Upload medical records to generate your health summary.</p>
                           </div>
                         )}
                       </div>
@@ -1842,72 +1855,106 @@ function AnalysisView({
               )}
 
               {showSim === "research" && (
-                <div className="space-y-8">
-                  <div className="flex items-center gap-4">
-                    <div className="h-14 w-14 rounded-2xl bg-purple-500/10 flex items-center justify-center">
-                      <Search className="h-7 w-7 text-purple-500" />
-                    </div>
-                    <div>
-                      <h2 className="text-3xl font-bricolage font-extrabold tracking-tight">Issue Explorer</h2>
-                      <p className="text-black/50 font-medium">Validated health research for your context</p>
+                <div className="flex flex-col h-full">
+                  {/* Simple Header */}
+                  <div className="flex items-center justify-between mb-6 shrink-0">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center">
+                        <Search className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl md:text-3xl font-bricolage font-black text-black">Health Research</h2>
+                        <p className="text-[10px] md:text-xs font-bold text-black/40 uppercase tracking-widest">Search online for medical info</p>
+                      </div>
                     </div>
                   </div>
 
-                  <form 
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handleResearchSearch();
-                    }}
-                    className="relative group"
-                  >
-                    <Input
-                      placeholder="Search symptoms, conditions, or medications..."
-                      value={researchQuery}
-                      onChange={(e) => setResearchQuery(e.target.value)}
-                      className="h-16 rounded-2xl border-black/5 bg-black/5 pl-6 pr-14 text-lg font-bold"
-                    />
-                    <Button 
-                      type="submit"
-                      disabled={researching}
-                      className="absolute right-2 top-2 bottom-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl"
+                  {/* Compact Search Area */}
+                  <div className="mb-6 shrink-0">
+                    <form 
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleResearchSearch();
+                      }}
+                      className="relative"
                     >
-                      {researching ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
-                    </Button>
-                  </form>
+                      <div className="relative flex items-center">
+                        <Input
+                          placeholder="Search for symptoms or conditions..."
+                          value={researchQuery}
+                          onChange={(e) => setResearchQuery(e.target.value)}
+                          className="h-12 md:h-14 rounded-2xl border-black/10 bg-black/[0.02] pl-6 pr-16 text-sm md:text-lg font-bold placeholder:text-black/30 outline-none"
+                        />
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                          <Button 
+                            type="submit"
+                            disabled={researching || !researchQuery.trim()}
+                            className="h-10 w-10 bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
+                          >
+                            {researching ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowRight className="h-5 w-5" />}
+                          </Button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
 
-                  <div className="space-y-6 flex-1 overflow-y-auto no-scrollbar pb-10">
-                    <AnimatePresence mode="wait">
+                  {/* Content Area */}
+                  <div className="flex-1 overflow-y-auto no-scrollbar pb-6">
                       {researching ? (
-                        <motion.div 
-                          key="loading"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="py-20 flex flex-col items-center justify-center gap-4 text-center"
-                        >
-                          <div className="h-16 w-16 rounded-3xl bg-purple-500/10 flex items-center justify-center">
-                            <Loader2 className="h-8 w-8 text-purple-500 animate-spin" />
+                        <div className="py-20 flex flex-col items-center justify-center gap-4 text-center">
+                          <Loader2 className="h-10 w-10 text-blue-600 animate-spin" />
+                          <div className="space-y-1">
+                            <h3 className="text-lg font-bold text-black">Searching for research...</h3>
+                            <p className="text-xs font-medium text-black/40">Fetching latest results from medical sources</p>
                           </div>
-                          <p className="text-sm font-bold text-black/40 uppercase tracking-widest">Scanning clinical database & medical journals...</p>
-                        </motion.div>
+                        </div>
                       ) : researchResult ? (
                         <motion.div 
                           key="results"
-                          initial={{ opacity: 0, y: 10 }}
+                          initial={{ opacity: 0, y: 30 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="space-y-8"
+                          className="space-y-6"
                         >
-                          <div ref={researchReportRef} className="prose prose-sm max-w-none bg-purple-50/30 p-8 rounded-[2rem] border border-purple-100/50">
-                            <ReactMarkdown>{researchResult}</ReactMarkdown>
+                          {/* Clean Report View */}
+                          <div ref={researchReportRef} className="bg-white rounded-2xl border border-black/10 shadow-sm overflow-hidden relative">
+                            <div className="h-1.5 w-full bg-blue-600" />
+                            
+                            <div className="p-4 md:p-8 lg:p-10">
+                              <div className="border-b border-black/5 pb-6 mb-6">
+                                <span className="inline-block px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-lg mb-2">Research Summary</span>
+                                <h3 className="text-xl md:text-3xl font-bricolage font-black text-black">
+                                  Findings: {researchQuery}
+                                </h3>
+                              </div>
+
+                              <div className="prose prose-sm md:prose-base max-w-none text-black/70 leading-relaxed">
+                                <ReactMarkdown
+                                  components={{
+                                    h3: ({node, ...props}) => <h3 className="text-lg md:text-xl font-bold text-black mt-8 mb-4 border-l-4 border-blue-600 pl-3" {...props} />,
+                                    p: ({node, ...props}) => <p className="mb-4" {...props} />,
+                                    ul: ({node, ...props}) => <ul className="space-y-3 my-4" {...props} />,
+                                    li: ({node, ...props}) => (
+                                      <li className="bg-black/[0.02] border border-black/5 p-4 rounded-xl flex items-start gap-3" {...props}>
+                                        <div className="h-2 w-2 rounded-full bg-blue-600 mt-1.5 shrink-0" />
+                                        <div className="text-sm md:text-base font-medium text-black/80">{props.children}</div>
+                                      </li>
+                                    ),
+                                  }}
+                                >
+                                  {researchResult}
+                                </ReactMarkdown>
+                              </div>
+                            </div>
                           </div>
                           
+                          {/* Desktop/Mobile Actions */}
                           <div className="flex flex-col sm:flex-row gap-3">
                             <Button 
                               onClick={handleDownloadResearchPDF}
-                              className="flex-1 h-14 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20"
+                              className="flex-1 h-12 rounded-xl bg-black hover:bg-blue-600 text-white font-bold"
                             >
-                              <FileDown className="h-5 w-5" />
-                              Download Analysis PDF
+                              <FileDown className="mr-2 h-4 w-4" />
+                              Save as PDF
                             </Button>
                             
                             <Button 
@@ -1916,9 +1963,9 @@ function AnalysisView({
                                 setResearchResult(null);
                                 setResearchQuery("");
                               }}
-                              className="flex-1 h-14 rounded-2xl border-black/5 font-bold text-black/60 hover:bg-black/5"
+                              className="flex-1 h-12 rounded-xl border-black/10 bg-white"
                             >
-                              New Research
+                              New Search
                             </Button>
                           </div>
                         </motion.div>
@@ -1927,29 +1974,38 @@ function AnalysisView({
                           key="trending"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
-                          className="space-y-4"
+                          className="space-y-6"
                         >
-                          <p className="text-xs font-black text-black/20 uppercase tracking-widest">Trending Insights for you</p>
-                          {[
-                            "Optimizing Vitamin D for better sleep",
-                            "Recent study on cardio-respiratory health",
-                            "Impact of screen time on eye fatigue"
-                          ].map((topic, i) => (
-                            <div 
-                              key={topic} 
-                              onClick={() => {
-                                setResearchQuery(topic);
-                                handleResearchSearch(topic);
-                              }}
-                              className="p-5 rounded-2xl bg-white border border-black/5 flex items-center justify-between hover:border-purple-200 transition-colors cursor-pointer group"
-                            >
-                              <span className="font-bold text-sm text-black/70 group-hover:text-purple-600 transition-colors">{topic}</span>
-                              <ArrowRight className="h-4 w-4 text-black/20 group-hover:translate-x-1 transition-transform" />
-                            </div>
-                          ))}
+                          <div className="flex items-center gap-2">
+                            <History className="h-4 w-4 text-black/20" />
+                            <p className="text-[10px] font-black text-black/30 uppercase tracking-widest">Recent & Popular</p>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {[
+                              { topic: "Sleep & Vitamin D", desc: "Latest info on sleep quality" },
+                              { topic: "Heart Health", desc: "New cardio research" },
+                            ].map((item) => (
+                              <div 
+                                key={item.topic} 
+                                onClick={() => {
+                                  setResearchQuery(item.topic);
+                                  handleResearchSearch(item.topic);
+                                }}
+                                className="group p-6 rounded-2xl bg-white border border-black/10 flex flex-col items-start gap-4 hover:border-blue-600/50 transition-all cursor-pointer"
+                              >
+                                <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                                  <Search className="h-5 w-5" />
+                                </div>
+                                <div>
+                                  <h4 className="font-bold text-lg text-black">{item.topic}</h4>
+                                  <p className="text-xs text-black/40">{item.desc}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </motion.div>
                       )}
-                    </AnimatePresence>
                   </div>
                 </div>
               )}
@@ -2003,21 +2059,18 @@ function AnalysisView({
               </div>
 
               {/* Patient Identity Section */}
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 p-10 rounded-[2.5rem] bg-black/2 border border-black/5 mb-16">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 p-8 rounded-2xl bg-black/[0.02] border border-black/5 mb-12">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-black/30 mb-2">Subject Name</p>
-                  <p className="text-2xl font-black text-black font-bricolage">{userName}</p>
+                  <p className="text-xl font-black text-black">{userName}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-black/30 mb-2">Clinical Reference</p>
-                  <p className="text-2xl font-bold text-black font-mono">#{patientId?.slice(-6).toUpperCase() || "PAT-00X"}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-black/30 mb-2">Record Number</p>
+                  <p className="text-xl font-bold text-black font-mono">#{patientId?.slice(-6).toUpperCase() || "PAT-001"}</p>
                 </div>
                 <div className="col-span-2 lg:col-span-1 border-t lg:border-t-0 lg:border-l border-black/5 pt-6 lg:pt-0 lg:pl-8">
                   <p className="text-[10px] font-black uppercase tracking-widest text-black/30 mb-2">Report Status</p>
-                  <div className="flex items-center gap-2">
-                    <div className="h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse" />
-                    <p className="text-base font-black text-blue-600 uppercase">Live Context Sync</p>
-                  </div>
+                  <p className="text-sm font-black text-blue-600 uppercase">Active Updates</p>
                 </div>
               </div>
 
@@ -2038,12 +2091,11 @@ function AnalysisView({
               </div>
 
               {/* Professional Footer */}
-              <div className="mt-24 pt-10 border-t border-black/10 flex flex-col md:flex-row justify-between items-center gap-6 opacity-30">
+              <div className="mt-12 pt-8 border-t border-black/10 flex flex-col md:flex-row justify-between items-center gap-6 opacity-40">
                 <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-black" />
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em]">TakeCare V2.4 Clinical Intelligence Engine</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest">TakeCare Health System</p>
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em]">Confidential Medical Asset &copy; 2026</p>
+                <p className="text-[10px] font-black uppercase tracking-widest">TakeCare © 2026</p>
               </div>
             </article>
           </div>

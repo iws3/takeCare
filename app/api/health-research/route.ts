@@ -50,25 +50,28 @@ export async function POST(req: Request) {
       ${JSON.stringify(snippets, null, 2)}
       
       TASK:
-      Synthesize the above research results into a high-end clinical report. 
-      The report MUST be structured with the following sections:
+      Synthesize the above research results into a clear, patient-friendly report. 
+      The report MUST be written in PLAIN ENGLISH that a non-medical person can easily understand. Avoid excessive technical jargon or "decrypted" data styles.
       
-      ### 🔬 Latest Clinical Insights
-      Summarize the most recent and relevant medical findings regarding the user's query based on the search snippets. focus on 2024-2026 data if available.
+      Structure the report with the following sections:
       
-      ### 🧬 Personalized Correlation
-      Analyze how these findings relate specifically to the patient's context (medications, vitals, or diagnoses). Point out potential benefits or risks.
+      ### 🔬 Clinical Overview
+      Summarize the most relevant medical findings in simple terms. What does the latest research say about "${query}"?
       
-      ### 📋 Recommended Discussion Points
-      List 3-4 specific questions or topics the user should bring up with their healthcare provider based on this research.
+      ### 🧬 Relation to Your Health
+      How does this research possibly connect to your medical history or current vitals? Use simple comparisons.
       
-      ### ⚠️ Medical Disclaimer
-      State clearly that this is AI-synthesized research for educational purposes and not medical advice.
+      ### 📋 Suggested Next Steps
+      List 3 clear points to discuss with your doctor.
+      
+      ### ⚠️ Important Notice
+      A simple disclaimer that this is for informational purposes only.
       
       STYLE GUIDELINES:
-      - Use professional yet accessible language.
-      - Use Markdown for bolding key terms.
-      - Keep it concise but information-dense.
+      - Use CLEAR, USER-READABLE PLAIN ENGLISH.
+      - DO NOT use difficult-to-comprehend clinical shorthand.
+      - Use Markdown to highlight the most important points.
+      - Be direct and helpful.
     `;
 
     const { text } = await generateText({
