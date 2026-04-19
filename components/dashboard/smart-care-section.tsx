@@ -1854,7 +1854,7 @@ function AnalysisView({
               )}
 
               {showSim === "research" && (
-                <div className="grid grid-rows-[auto,1fr] h-full min-h-0 overflow-hidden">
+                <div className="flex flex-col h-full min-h-0 overflow-hidden">
                   {/* Simple Header */}
                   <div className="flex items-center justify-between mb-4 md:mb-6 shrink-0">
                     <div className="flex items-center gap-3">
@@ -1897,8 +1897,8 @@ function AnalysisView({
                     </form>
                   </div>
 
-                  {/* Content Area */}
-                  <div className="overflow-y-auto px-2 pb-12 sm:pb-6 scrollbar-thin scrollbar-thumb-blue-600/20" style={{ minHeight: 0 }}>
+                  {/* Content Area - Forced Scroll Region */}
+                  <div className="flex-1 h-0 min-h-0 overflow-y-auto px-2 pb-12 sm:pb-6 scrollbar-thin scrollbar-thumb-blue-600/20 scrollbar-track-transparent">
                     <div className="space-y-6">
                       {researching ? (
                         <div className="py-20 flex flex-col items-center justify-center gap-4 text-center">
@@ -1948,13 +1948,13 @@ function AnalysisView({
                           </div>
                           
                           {/* Desktop/Mobile Actions */}
-                          <div className="flex flex-col sm:flex-row gap-3">
+                          <div className="flex flex-col sm:flex-row gap-4 mt-8">
                             <Button 
                               onClick={handleDownloadResearchPDF}
-                              className="flex-1 h-12 rounded-xl bg-black hover:bg-blue-600 text-white font-bold"
+                              className="flex-1 h-14 md:h-16 rounded-2xl bg-black hover:bg-blue-600 text-white font-bold shadow-lg shadow-black/10 transition-all active:scale-95"
                             >
-                              <FileDown className="mr-2 h-4 w-4" />
-                              Save as PDF
+                              <FileDown className="mr-3 h-5 w-5" />
+                              Save research as PDF
                             </Button>
                             
                             <Button 
@@ -1963,7 +1963,7 @@ function AnalysisView({
                                 setResearchResult(null);
                                 setResearchQuery("");
                               }}
-                              className="flex-1 h-12 rounded-xl border-black/10 bg-white"
+                              className="flex-1 h-14 md:h-16 rounded-2xl border-black/10 bg-white font-bold hover:bg-black/5"
                             >
                               New Search
                             </Button>
