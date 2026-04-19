@@ -1517,7 +1517,7 @@ function AnalysisView({
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               className={cn(
-                "bg-white p-6 md:p-10 w-full max-w-5xl shadow-2xl relative flex flex-col h-[calc(100vh-140px)] sm:h-[80vh] rounded-3xl",
+                "bg-white p-6 md:p-10 w-full max-w-5xl shadow-2xl relative flex flex-col h-[calc(100vh-140px)] sm:h-[80vh] rounded-3xl overflow-hidden",
                 showSim === "research" && "sm:rounded-[2rem]"
               )}
             >
@@ -1898,7 +1898,7 @@ function AnalysisView({
                   </div>
 
                   {/* Content Area */}
-                  <ScrollArea className="flex-1 -mx-2 px-2 pb-12 sm:pb-6">
+                  <div className="flex-1 min-h-0 overflow-y-auto -mx-2 px-2 pb-12 sm:pb-6">
                     <div className="space-y-6">
                       {researching ? (
                         <div className="py-20 flex flex-col items-center justify-center gap-4 text-center">
@@ -1913,7 +1913,7 @@ function AnalysisView({
                           key="results"
                           initial={{ opacity: 0, y: 30 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="space-y-6"
+                          className="space-y-6 pb-24"
                         >
                           {/* Clean Report View */}
                           <div ref={researchReportRef} className="bg-white rounded-2xl border border-black/10 shadow-sm overflow-hidden relative">
@@ -2007,7 +2007,7 @@ function AnalysisView({
                         </motion.div>
                       )}
                     </div>
-                  </ScrollArea>
+                  </div>
                 </div>
               )}
             </motion.div>
