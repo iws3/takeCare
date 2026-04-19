@@ -1511,15 +1511,15 @@ function AnalysisView({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-6"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-md p-0 sm:p-6"
           >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: "100%", opacity: 0 }}
               className={cn(
-                "bg-white p-4 md:p-10 w-full max-w-5xl shadow-2xl relative flex flex-col h-[90vh] md:h-[80vh] mb-24 md:mb-0",
-                showSim === "research" ? "rounded-3xl md:rounded-[2rem]" : "rounded-3xl"
+                "bg-white p-6 md:p-10 w-full max-w-5xl shadow-2xl relative flex flex-col h-[85vh] sm:h-[80vh] mb-[88px] sm:mb-0",
+                showSim === "research" ? "rounded-t-3xl sm:rounded-[2rem]" : "rounded-t-3xl sm:rounded-3xl"
               )}
             >
               <button
@@ -1545,7 +1545,7 @@ function AnalysisView({
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 flex-1 overflow-hidden">
                     {/* Left Side: Upload / File List */}
-                    <div className="flex flex-col gap-6 overflow-y-auto pr-2 no-scrollbar">
+                    <div className="flex flex-col gap-6 overflow-y-auto pr-2 no-scrollbar pb-24 sm:pb-0">
                       {/* Action Buttons */}                      {/* Ingestion Zone */}
                       <div
                         className="relative group cursor-pointer"
@@ -1795,7 +1795,7 @@ function AnalysisView({
                       </div>
                     </motion.div>
                   ) : bleDevice ? (
-                    <div className="space-y-8 flex-1">
+                    <div className="space-y-8 flex-1 overflow-y-auto no-scrollbar pb-24 sm:pb-0">
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {[
                           { icon: Activity, label: "Heart Rate", val: heartRate || "--", unit: "bpm", color: "text-red-500", live: !!heartRate },
@@ -1855,9 +1855,9 @@ function AnalysisView({
               )}
 
               {showSim === "research" && (
-                <div className="flex flex-col h-full">
+                <div className="flex flex-col h-full overflow-hidden">
                   {/* Simple Header */}
-                  <div className="flex items-center justify-between mb-6 shrink-0">
+                  <div className="flex items-center justify-between mb-4 md:mb-6 shrink-0">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center">
                         <Search className="h-5 w-5 text-white" />
@@ -1899,7 +1899,7 @@ function AnalysisView({
                   </div>
 
                   {/* Content Area */}
-                  <div className="flex-1 overflow-y-auto no-scrollbar pb-6">
+                  <div className="flex-1 overflow-y-auto no-scrollbar pb-12 sm:pb-6">
                       {researching ? (
                         <div className="py-20 flex flex-col items-center justify-center gap-4 text-center">
                           <Loader2 className="h-10 w-10 text-blue-600 animate-spin" />
