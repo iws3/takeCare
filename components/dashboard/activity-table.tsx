@@ -14,64 +14,20 @@ import { motion } from "framer-motion";
 import { FileText, Calendar, Building2, User, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { DeleteConfirmationModal } from "./delete-confirmation-modal";
-import { RecordDetailsModal } from "./record-details-modal";
 
 interface ActivityTableProps {
   records?: any[];
-  onDelete?: (id: string, type: string) => Promise<void>;
+  onDelete?: (e: React.MouseEvent, id: string, type: string) => void;
+  onView?: (record: any) => void;
+  deletingId?: string | null;
 }
 
-export function ActivityTable({ records = [], onDelete }: ActivityTableProps) {
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [pendingDelete, setPendingDelete] = useState<{ id: string; type: string } | null>(null);
-  const [viewingRecord, setViewingRecord] = useState<any | null>(null);
-  const [detailsOpen, setDetailsOpen] = useState(false);
-
+export function ActivityTable({ records = [], onDelete, onView, deletingId }: ActivityTableProps) {
   // If no real records, we can show a placeholder message or empty state
   const hasRecords = records.length > 0;
 
-  const handleViewClick = (record: any) => {
-    setViewingRecord(record);
-    setDetailsOpen(true);
-  };
-
-  const handleDeleteClick = (e: React.MouseEvent, id: string, type: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setPendingDelete({ id, type });
-    setModalOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!onDelete || !pendingDelete) return;
-    setDeletingId(pendingDelete.id);
-    try {
-      await onDelete(pendingDelete.id, pendingDelete.type);
-    } catch (error) {
-      console.error("Delete failed:", error);
-    } finally {
-      setDeletingId(null);
-      setPendingDelete(null);
-    }
-  };
-
   return (
-    <>
-      <DeleteConfirmationModal 
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onConfirm={handleConfirmDelete}
-        title="Delete Record?"
-        description="Are you sure you want to remove this medical record? This will permanently delete it from your health history and AI context."
-      />
-      <RecordDetailsModal 
-        isOpen={detailsOpen}
-        onClose={() => setDetailsOpen(false)}
-        record={viewingRecord}
-      />
-      <motion.div
+    <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
@@ -131,7 +87,7 @@ export function ActivityTable({ records = [], onDelete }: ActivityTableProps) {
                       <TableCell className="py-7 pr-10 text-right">
                         <div className="flex items-center justify-end gap-3">
                           <Button 
-                            onClick={() => handleViewClick(record)}
+                            onClick={() => onView?.(record)}
                             variant="ghost" 
                             size="icon" 
                             className="h-10 w-10 rounded-2xl bg-primary shadow-lg shadow-primary/20 text-white opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 cursor-pointer"
@@ -139,7 +95,7 @@ export function ActivityTable({ records = [], onDelete }: ActivityTableProps) {
                             <FileText className="h-5 w-5" />
                           </Button>
                           <Button 
-                            onClick={(e) => handleDeleteClick(e, record.id, record.type)}
+                            onClick={(e) => onDelete?.(e, record.id, record.type)}
                             disabled={deletingId === record.id}
                             variant="ghost" 
                             size="icon" 
@@ -182,7 +138,7 @@ export function ActivityTable({ records = [], onDelete }: ActivityTableProps) {
                     <span className="text-[10px] font-black uppercase tracking-widest text-black/20 italic">{record.type}</span>
                     <div className="flex items-center gap-2">
                       <Button 
-                        onClick={() => handleViewClick(record)}
+                        onClick={() => onView?.(record)}
                         variant="outline" 
                         size="sm" 
                         className="h-10 px-6 rounded-xl border-black/5 font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all cursor-pointer"
@@ -190,7 +146,7 @@ export function ActivityTable({ records = [], onDelete }: ActivityTableProps) {
                         View Results
                       </Button>
                       <Button 
-                        onClick={(e) => handleDeleteClick(e, record.id, record.type)}
+                        onClick={(e) => onDelete?.(e, record.id, record.type)}
                         disabled={deletingId === record.id}
                         variant="outline" 
                         size="sm" 

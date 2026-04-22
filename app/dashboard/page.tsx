@@ -13,6 +13,8 @@ import { getMyMedicalHistory, deleteMedicalRecord, deleteDoctorInvitation } from
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { DeleteConfirmationModal } from "@/components/dashboard/delete-confirmation-modal";
+import { RecordDetailsModal } from "@/components/dashboard/record-details-modal";
 
 import { Heart, Activity, Pill, ShieldCheck, Loader2, Brain } from "lucide-react";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
@@ -158,7 +160,24 @@ export default function DashboardPage() {
     fetchData().finally(() => setTimeout(() => setLoading(false), 2000));
   }, [status, router]);
 
-  const handleRecordDelete = async (id: string, type: string) => {
+  // Modal States
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; type: string } | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [viewingRecord, setViewingRecord] = useState<any | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
+  const handleRecordDeleteClick = (e: React.MouseEvent, id: string, type: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPendingDelete({ id, type });
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!pendingDelete) return;
+    const { id, type } = pendingDelete;
+    setDeletingId(id);
     try {
       if (type.startsWith("INVITATION")) {
         await deleteDoctorInvitation(id);
@@ -166,11 +185,20 @@ export default function DashboardPage() {
         await deleteMedicalRecord(id);
       }
       toast.success("Record deleted successfully");
-      await fetchData(); // Refresh data
+      await fetchData();
     } catch (error) {
-      console.error("Failed to delete record:", error);
+      console.error("Delete failed:", error);
       toast.error("Failed to delete record");
+    } finally {
+      setDeletingId(null);
+      setPendingDelete(null);
+      setDeleteModalOpen(false);
     }
+  };
+
+  const handleViewRecord = (record: any) => {
+    setViewingRecord(record);
+    setDetailsOpen(true);
   };
 
   // Scroll to top when active tab changes to ensure visibility of new content
@@ -204,6 +232,20 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-1 flex-col pb-12 min-h-screen relative overflow-x-hidden bg-transparent">
+      {/* Global Modals */}
+      <DeleteConfirmationModal 
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Record?"
+        description="Are you sure you want to remove this medical record? This will permanently delete it from your health history and AI context."
+      />
+      <RecordDetailsModal 
+        isOpen={detailsOpen}
+        onClose={() => setDetailsOpen(false)}
+        record={viewingRecord}
+      />
+
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/2 rounded-full blur-[120px] -translate-y-1/2 pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-primary/2 rounded-full blur-[120px] translate-y-1/2 pointer-events-none" />
 
@@ -257,7 +299,9 @@ export default function DashboardPage() {
                 <StatsCards />
                 <ActivityTable 
                   records={combinedRecords} 
-                  onDelete={handleRecordDelete}
+                  onDelete={handleRecordDeleteClick}
+                  onView={handleViewRecord}
+                  deletingId={deletingId}
                 />
               </div>
             </motion.div>

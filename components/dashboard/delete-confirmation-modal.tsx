@@ -39,7 +39,7 @@ export function DeleteConfirmationModal({
     <Dialog open={isOpen} onOpenChange={(open) => !loading && !open && onClose()}>
       <DialogContent 
         showCloseButton={false}
-        className="w-[90vw] sm:max-w-md rounded-[3rem] bg-white p-12 md:p-16 pt-16 md:pt-20 border border-black/5 shadow-2xl overflow-hidden relative"
+        className="w-[90vw] sm:max-w-md rounded-[3rem] bg-white p-12 md:p-16 pt-16 md:pt-20 border border-black/5 shadow-2xl overflow-hidden"
       >
         <DialogClose className="absolute right-10 top-10 p-2 rounded-full hover:bg-black/5 transition-all text-black/20 hover:text-black/60">
           <X className="h-5 w-5" />
