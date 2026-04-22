@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Trash2, AlertTriangle, Loader2 } from "lucide-react";
+import { Trash2, AlertTriangle, Loader2, X } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface DeleteConfirmationModalProps {
@@ -37,7 +37,13 @@ export function DeleteConfirmationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !loading && !open && onClose()}>
-      <DialogContent className="w-[90vw] sm:max-w-md rounded-[3rem] bg-white p-10 md:p-16 border border-black/5 shadow-2xl overflow-hidden relative">
+      <DialogContent 
+        showCloseButton={false}
+        className="w-[90vw] sm:max-w-md rounded-[3rem] bg-white p-12 md:p-16 pt-16 md:pt-20 border border-black/5 shadow-2xl overflow-hidden relative"
+      >
+        <DialogClose className="absolute right-10 top-10 p-2 rounded-full hover:bg-black/5 transition-all text-black/20 hover:text-black/60">
+          <X className="h-5 w-5" />
+        </DialogClose>
         {/* Background Decor */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-3xl -mr-16 -mt-16" />
         
