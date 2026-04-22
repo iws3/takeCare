@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import { FileText, Calendar, Building2, User, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { DeleteConfirmationModal } from "./delete-confirmation-modal";
 
 interface ActivityTableProps {
   records?: any[];
@@ -22,25 +23,40 @@ interface ActivityTableProps {
 
 export function ActivityTable({ records = [], onDelete }: ActivityTableProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; type: string } | null>(null);
+
   // If no real records, we can show a placeholder message or empty state
   const hasRecords = records.length > 0;
 
-  const handleDelete = async (id: string, type: string) => {
-    if (!onDelete) return;
-    if (confirm("Are you sure you want to delete this record? This action cannot be undone.")) {
-      setDeletingId(id);
-      try {
-        await onDelete(id, type);
-      } catch (error) {
-        console.error("Delete failed:", error);
-      } finally {
-        setDeletingId(null);
-      }
+  const handleDeleteClick = (id: string, type: string) => {
+    setPendingDelete({ id, type });
+    setModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!onDelete || !pendingDelete) return;
+    setDeletingId(pendingDelete.id);
+    try {
+      await onDelete(pendingDelete.id, pendingDelete.type);
+    } catch (error) {
+      console.error("Delete failed:", error);
+    } finally {
+      setDeletingId(null);
+      setPendingDelete(null);
     }
   };
 
   return (
-    <motion.div
+    <>
+      <DeleteConfirmationModal 
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Record?"
+        description="Are you sure you want to remove this medical record? This will permanently delete it from your health history and AI context."
+      />
+      <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
@@ -103,7 +119,7 @@ export function ActivityTable({ records = [], onDelete }: ActivityTableProps) {
                             <FileText className="h-5 w-5" />
                           </Button>
                           <Button 
-                            onClick={() => handleDelete(record.id, record.type)}
+                            onClick={() => handleDeleteClick(record.id, record.type)}
                             disabled={deletingId === record.id}
                             variant="ghost" 
                             size="icon" 
@@ -149,7 +165,7 @@ export function ActivityTable({ records = [], onDelete }: ActivityTableProps) {
                         View Results
                       </Button>
                       <Button 
-                        onClick={() => handleDelete(record.id, record.type)}
+                        onClick={() => handleDeleteClick(record.id, record.type)}
                         disabled={deletingId === record.id}
                         variant="outline" 
                         size="sm" 
