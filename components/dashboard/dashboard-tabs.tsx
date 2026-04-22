@@ -35,7 +35,7 @@ export function DashboardTabs({
               className={cn(
                 "rounded-2xl md:rounded-3xl px-8 py-4 md:px-12 md:py-5 transition-all duration-500 cursor-pointer whitespace-nowrap relative group shrink-0",
                 "data-[state=active]:text-white",
-                "data-[state=inactive]:text-black data-[state=inactive]:bg-red-600 data-[state=inactive]:shadow-sm data-[state=inactive]:hover:bg-white/90",
+                "data-[state=inactive]:text-black data-[state=inactive]:bg-blue-600 data-[state=inactive]:shadow-sm data-[state=inactive]:hover:bg-blue-600",
                 "flex items-center justify-center gap-2 md:gap-4 font-outfit font-black text-sm md:text-lg border border-transparent"
               )}
             >
@@ -71,7 +71,7 @@ export function DashboardTabs({
 
               <span className={cn(
                 "capitalize text-[10px] md:text-xs font-black tracking-normal md:tracking-wider transition-colors duration-500",
-                value === tab.id ? "text-white" : "text-black"
+                value === tab.id ? "text-blue-700" : "text-black"
               )}>{tab.label}</span>
 
               {value === tab.id && (

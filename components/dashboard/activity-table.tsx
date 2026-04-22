@@ -11,16 +11,33 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { FileText, Calendar, Building2, User } from "lucide-react";
+import { FileText, Calendar, Building2, User, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 interface ActivityTableProps {
   records?: any[];
+  onDelete?: (id: string, type: string) => Promise<void>;
 }
 
-export function ActivityTable({ records = [] }: ActivityTableProps) {
+export function ActivityTable({ records = [], onDelete }: ActivityTableProps) {
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   // If no real records, we can show a placeholder message or empty state
   const hasRecords = records.length > 0;
+
+  const handleDelete = async (id: string, type: string) => {
+    if (!onDelete) return;
+    if (confirm("Are you sure you want to delete this record? This action cannot be undone.")) {
+      setDeletingId(id);
+      try {
+        await onDelete(id, type);
+      } catch (error) {
+        console.error("Delete failed:", error);
+      } finally {
+        setDeletingId(null);
+      }
+    }
+  };
 
   return (
     <motion.div
@@ -81,9 +98,20 @@ export function ActivityTable({ records = [] }: ActivityTableProps) {
                         </div>
                       </TableCell>
                       <TableCell className="py-7 pr-10 text-right">
-                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl bg-primary shadow-lg shadow-primary/20 text-white opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300">
-                          <FileText className="h-5 w-5" />
-                        </Button>
+                        <div className="flex items-center justify-end gap-3">
+                          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl bg-primary shadow-lg shadow-primary/20 text-white opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+                            <FileText className="h-5 w-5" />
+                          </Button>
+                          <Button 
+                            onClick={() => handleDelete(record.id, record.type)}
+                            disabled={deletingId === record.id}
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-10 w-10 rounded-2xl bg-red-500 shadow-lg shadow-red-500/20 text-white opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 delay-75"
+                          >
+                            {deletingId === record.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-5 w-5" />}
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -116,9 +144,20 @@ export function ActivityTable({ records = [] }: ActivityTableProps) {
 
                   <div className="flex items-center justify-between mt-2">
                     <span className="text-[10px] font-black uppercase tracking-widest text-black/20 italic">{record.type}</span>
-                    <Button variant="outline" size="sm" className="h-10 px-6 rounded-xl border-black/5 font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all">
-                      View Results
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" className="h-10 px-6 rounded-xl border-black/5 font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all">
+                        View Results
+                      </Button>
+                      <Button 
+                        onClick={() => handleDelete(record.id, record.type)}
+                        disabled={deletingId === record.id}
+                        variant="outline" 
+                        size="sm" 
+                        className="h-10 w-10 p-0 rounded-xl border-red-100 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all"
+                      >
+                        {deletingId === record.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}

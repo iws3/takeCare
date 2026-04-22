@@ -9,9 +9,10 @@ import { ActivityTable } from "@/components/dashboard/activity-table";
 import { MessengerSection } from "@/components/dashboard/messenger-section";
 import { SmartCareSection } from "@/components/dashboard/smart-care-section";
 import { motion, AnimatePresence } from "framer-motion";
-import { getMyMedicalHistory } from "@/app/actions/medical";
+import { getMyMedicalHistory, deleteMedicalRecord, deleteDoctorInvitation } from "@/app/actions/medical";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 import { Heart, Activity, Pill, ShieldCheck, Loader2, Brain } from "lucide-react";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
@@ -157,6 +158,21 @@ export default function DashboardPage() {
     fetchData().finally(() => setTimeout(() => setLoading(false), 2000));
   }, [status, router]);
 
+  const handleRecordDelete = async (id: string, type: string) => {
+    try {
+      if (type.startsWith("INVITATION")) {
+        await deleteDoctorInvitation(id);
+      } else {
+        await deleteMedicalRecord(id);
+      }
+      toast.success("Record deleted successfully");
+      await fetchData(); // Refresh data
+    } catch (error) {
+      console.error("Failed to delete record:", error);
+      toast.error("Failed to delete record");
+    }
+  };
+
   // Scroll to top when active tab changes to ensure visibility of new content
   useEffect(() => {
     if (!loading) {
@@ -239,7 +255,10 @@ export default function DashboardPage() {
             >
               <div className="mt-6 flex flex-col gap-10">
                 <StatsCards />
-                <ActivityTable records={combinedRecords} />
+                <ActivityTable 
+                  records={combinedRecords} 
+                  onDelete={handleRecordDelete}
+                />
               </div>
             </motion.div>
           ) : activeTab === "messenger" ? (

@@ -382,6 +382,48 @@ export async function createMedicalRecord(clerkId: string, data: {
   return record;
 }
 
+export async function deleteMedicalRecord(recordId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  // Ensure the record belongs to the user
+  const record = await prisma.medicalRecord.findUnique({
+    where: { id: recordId }
+  });
+
+  if (!record || record.userId !== session.user.id) {
+    throw new Error("Record not found or unauthorized");
+  }
+
+  await prisma.medicalRecord.delete({
+    where: { id: recordId }
+  });
+
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function deleteDoctorInvitation(inviteId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  // Ensure the invitation belongs to the user
+  const invitation = await prisma.doctorInvitation.findUnique({
+    where: { id: inviteId }
+  });
+
+  if (!invitation || invitation.userId !== session.user.id) {
+    throw new Error("Invitation not found or unauthorized");
+  }
+
+  await prisma.doctorInvitation.delete({
+    where: { id: inviteId }
+  });
+
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
 export async function restoreSessionByEmail(email: string) {
   const user = await prisma.user.findUnique({
     where: { email },
