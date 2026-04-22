@@ -15,6 +15,7 @@ import { FileText, Calendar, Building2, User, Trash2, Loader2 } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { DeleteConfirmationModal } from "./delete-confirmation-modal";
+import { RecordDetailsModal } from "./record-details-modal";
 
 interface ActivityTableProps {
   records?: any[];
@@ -25,9 +26,16 @@ export function ActivityTable({ records = [], onDelete }: ActivityTableProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<{ id: string; type: string } | null>(null);
+  const [viewingRecord, setViewingRecord] = useState<any | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   // If no real records, we can show a placeholder message or empty state
   const hasRecords = records.length > 0;
+
+  const handleViewClick = (record: any) => {
+    setViewingRecord(record);
+    setDetailsOpen(true);
+  };
 
   const handleDeleteClick = (e: React.MouseEvent, id: string, type: string) => {
     e.preventDefault();
@@ -57,6 +65,11 @@ export function ActivityTable({ records = [], onDelete }: ActivityTableProps) {
         onConfirm={handleConfirmDelete}
         title="Delete Record?"
         description="Are you sure you want to remove this medical record? This will permanently delete it from your health history and AI context."
+      />
+      <RecordDetailsModal 
+        isOpen={detailsOpen}
+        onClose={() => setDetailsOpen(false)}
+        record={viewingRecord}
       />
       <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -117,7 +130,12 @@ export function ActivityTable({ records = [], onDelete }: ActivityTableProps) {
                       </TableCell>
                       <TableCell className="py-7 pr-10 text-right">
                         <div className="flex items-center justify-end gap-3">
-                          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl bg-primary shadow-lg shadow-primary/20 text-white opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+                          <Button 
+                            onClick={() => handleViewClick(record)}
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-10 w-10 rounded-2xl bg-primary shadow-lg shadow-primary/20 text-white opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 cursor-pointer"
+                          >
                             <FileText className="h-5 w-5" />
                           </Button>
                           <Button 
@@ -163,7 +181,12 @@ export function ActivityTable({ records = [], onDelete }: ActivityTableProps) {
                   <div className="flex items-center justify-between mt-2">
                     <span className="text-[10px] font-black uppercase tracking-widest text-black/20 italic">{record.type}</span>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" className="h-10 px-6 rounded-xl border-black/5 font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all">
+                      <Button 
+                        onClick={() => handleViewClick(record)}
+                        variant="outline" 
+                        size="sm" 
+                        className="h-10 px-6 rounded-xl border-black/5 font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all cursor-pointer"
+                      >
                         View Results
                       </Button>
                       <Button 
