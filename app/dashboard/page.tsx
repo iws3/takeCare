@@ -170,16 +170,6 @@ export default function DashboardPage() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredRecords = combinedRecords.filter(record => {
-    const searchLower = searchQuery.toLowerCase();
-    return (
-      record.fileName?.toLowerCase().includes(searchLower) ||
-      record.type?.toLowerCase().includes(searchLower) ||
-      record.analysis?.summary?.toLowerCase().includes(searchLower) ||
-      record.fallbackSummary?.toLowerCase().includes(searchLower)
-    );
-  });
-
   const handleRecordDeleteClick = (e: React.MouseEvent, id: string, type: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -235,6 +225,16 @@ export default function DashboardPage() {
       analysis: inv.status === 'PENDING' ? undefined : { summary: `Status: ${inv.status}. Contact: ${inv.contactInfo}` }
     }))
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const filteredRecords = combinedRecords.filter(record => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      record.fileName?.toLowerCase().includes(searchLower) ||
+      record.type?.toLowerCase().includes(searchLower) ||
+      record.analysis?.summary?.toLowerCase().includes(searchLower) ||
+      record.fallbackSummary?.toLowerCase().includes(searchLower)
+    );
+  });
 
   const getGreeting = () => {
     const hour = new Date().getHours();
