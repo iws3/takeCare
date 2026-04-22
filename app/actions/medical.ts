@@ -36,6 +36,29 @@ export async function getMyMedicalHistory() {
 }
 
 /**
+ * Get a doctor invitation by its ID, including the linked user (patient).
+ */
+export async function getDoctorInvitation(inviteId: string) {
+  const invitation = await prisma.doctorInvitation.findUnique({
+    where: { id: inviteId },
+    include: {
+      user: {
+        include: {
+          personalization: true,
+          medicalRecords: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
+            include: { analysis: true }
+          }
+        }
+      }
+    }
+  });
+
+  return invitation;
+}
+
+/**
  * Check if the current user has completed personalization.
  */
 export async function checkMyPersonalization() {

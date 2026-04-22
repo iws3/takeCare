@@ -153,11 +153,17 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
             <VoiceAgentView
               medicalContext={medicalContext}
               userName={userName}
-              allConsultations={allRecords.filter(r => r.analysis)}
+              allConsultations={allRecords.filter(r => r.analysis || r.type === "CLINICAL_NOTE")}
               onSelectionChange={(record: any) => {
                 setSelectedRecordId(record.id);
-                setMedicalContext(record.analysis.rawJson);
-                setAnalysisResult(record.analysis.summary);
+                if (record.analysis) {
+                  setMedicalContext(record.analysis.rawJson);
+                  setAnalysisResult(record.analysis.summary);
+                } else if (record.type === "CLINICAL_NOTE") {
+                  // For clinical notes, we use the extracted text as the analysis summary
+                  setAnalysisResult(record.extractedText);
+                  setMedicalContext(null); // Or some default context
+                }
               }}
               selectedRecordId={selectedRecordId}
             />
@@ -174,6 +180,7 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
               analysisResult={analysisResult}
               setAnalysisResult={setAnalysisResult}
               patientId={patientId}
+              allRecords={allRecords}
             />
           </TabsContent>
 
@@ -476,12 +483,17 @@ function VoiceAgentView({
                         <div className="flex items-center gap-2">
                           <div className={cn(
                             "h-8 w-8 rounded-full flex items-center justify-center shrink-0",
-                            selectedRecordId === record.id ? "bg-white/10" : "bg-black/5"
+                            selectedRecordId === record.id ? "bg-white/10" : 
+                            record.type === "CLINICAL_NOTE" ? "bg-[#25D366]/10" : "bg-black/5"
                           )}>
-                            <FileText className={cn("h-4 w-4", selectedRecordId === record.id ? "text-white" : "text-black/40")} />
+                            {record.type === "CLINICAL_NOTE" ? (
+                              <ShieldCheck className={cn("h-4 w-4", selectedRecordId === record.id ? "text-white" : "text-[#25D366]")} />
+                            ) : (
+                              <FileText className={cn("h-4 w-4", selectedRecordId === record.id ? "text-white" : "text-black/40")} />
+                            )}
                           </div>
                           <p className="text-[10px] font-black uppercase tracking-widest truncate w-[85%]">
-                            {record.fileName}
+                            {record.type === "CLINICAL_NOTE" ? "Doctor Assessment" : record.fileName}
                           </p>
                         </div>
                         <div>
@@ -618,16 +630,19 @@ function AnalysisView({
   onContextUpdate,
   analysisResult,
   setAnalysisResult,
-  patientId
+  patientId,
+  allRecords
 }: {
   medicalContext: any,
   userName: string,
   onContextUpdate: (ctx: any) => void,
   analysisResult: string | null,
   setAnalysisResult: (res: string | null) => void,
-  patientId: string | null
+  patientId: string | null,
+  allRecords: any[]
 }) {
-  const [analysisTab, setAnalysisTab] = useState<"upload" | "results">("upload");
+  const [analysisTab, setAnalysisTab] = useState<"upload" | "results" | "professional">("upload");
+  const doctorNotes = allRecords.filter(r => r.type === "CLINICAL_NOTE");
 
   const [analyzing, setAnalyzing] = useState(false);
   const [researching, setResearching] = useState(false);
@@ -1115,6 +1130,26 @@ function AnalysisView({
           <BarChart3 className={cn("h-4 w-4", analysisTab === "results" ? "text-blue-500" : "text-black/20")} />
           Analysis Results
         </button>
+        <button
+          onClick={() => setAnalysisTab("professional")}
+          className={cn(
+            "px-6 md:px-8 py-3 md:py-3 rounded-xl md:rounded-2xl text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all duration-500 relative flex items-center justify-center gap-2 flex-1 sm:flex-none whitespace-nowrap",
+            analysisTab === "professional"
+              ? "bg-black text-white shadow-2xl shadow-black/20"
+              : "text-black/40 hover:text-black/60 hover:bg-black/5"
+          )}
+        >
+          <ShieldCheck className={cn("h-4 w-4", analysisTab === "professional" ? "text-[#25D366]" : "text-black/20")} />
+          Doctor's Advice
+          {doctorNotes.length > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-green-500 text-[8px] font-black text-white items-center justify-center">
+                {doctorNotes.length}
+              </span>
+            </span>
+          )}
+        </button>
       </div>
 
       <AnimatePresence mode="wait">
@@ -1193,6 +1228,102 @@ function AnalysisView({
                 />
               )}
             </div>
+          </motion.div>
+        ) : analysisTab === "professional" ? (
+          <motion.div
+            key="professional"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="flex flex-col gap-6"
+          >
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/40 backdrop-blur-xl p-5 md:p-6 rounded-3xl md:rounded-4xl border border-black/5 shadow-sm mb-2">
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="h-12 w-12 md:h-14 md:w-14 rounded-2xl bg-[#25D366]/10 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="h-6 w-6 md:h-7 md:w-7 text-[#25D366]" />
+                </div>
+                <div>
+                  <h3 className="font-bricolage text-xl md:text-2xl font-black tracking-tight leading-tight">Professional Advice</h3>
+                  <p className="text-[10px] md:text-xs font-bold text-black/40 uppercase tracking-widest mt-0.5">Verified Medical Guidance</p>
+                </div>
+              </div>
+            </div>
+
+            <ScrollArea className="h-[calc(100vh-320px)] md:h-[calc(100vh-400px)] pr-2 md:pr-4 no-scrollbar">
+              <div className="flex flex-col gap-6 pb-10">
+                {doctorNotes.length > 0 ? (
+                  doctorNotes.map((note) => (
+                    <motion.div 
+                      key={note.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="bg-white rounded-4xl p-8 md:p-10 border border-black/5 shadow-xl relative overflow-hidden group"
+                    >
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#25D366]/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-[#25D366]/10 transition-colors duration-700" />
+                      
+                      <div className="flex items-start justify-between mb-8">
+                        <div className="flex items-center gap-4">
+                          <div className="h-12 w-12 rounded-2xl bg-black flex items-center justify-center shadow-lg shadow-black/10">
+                            <User className="h-6 w-6 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-bricolage text-xl font-black">{note.fileName.replace("Doctor Note - ", "") || "Medical Professional"}</h4>
+                            <p className="text-[10px] font-bold text-black/30 uppercase tracking-widest mt-0.5">
+                              {new Date(note.createdAt).toLocaleDateString(undefined, { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge className="bg-[#25D366]/10 text-[#25D366] border-[#25D366]/20 font-black text-[9px] uppercase tracking-widest px-3 py-1">
+                          Verified
+                        </Badge>
+                      </div>
+
+                      <div className="prose prose-sm md:prose-base max-w-none text-black/70 leading-relaxed font-medium bg-black/[0.02] p-8 rounded-3xl border border-black/5">
+                        <ReactMarkdown>
+                          {note.extractedText}
+                        </ReactMarkdown>
+                      </div>
+
+                      <div className="mt-8 flex items-center gap-6 pt-6 border-t border-black/5">
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck className="h-4 w-4 text-[#25D366]" />
+                          <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest">End-to-End Encrypted</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <History className="h-4 w-4 text-black/20" />
+                          <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest">Added to Twin</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-20 bg-white/40 backdrop-blur-xl rounded-5xl border border-dashed border-black/10 text-center space-y-6">
+                    <div className="h-20 w-20 bg-black/5 rounded-full flex items-center justify-center">
+                      <ShieldCheck className="h-10 w-10 text-black/10" />
+                    </div>
+                    <div className="space-y-2 max-w-xs">
+                      <h4 className="font-bricolage text-xl font-black">No assessments yet</h4>
+                      <p className="text-sm font-medium text-black/40 leading-relaxed">
+                        Once a medical professional reviews your record, their expert advice will appear here.
+                      </p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowSim("records")}
+                      className="rounded-2xl border-black/10 text-[10px] font-black uppercase tracking-widest hover:bg-black/5"
+                    >
+                      Invite a Doctor
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
           </motion.div>
         ) : (
           <motion.div

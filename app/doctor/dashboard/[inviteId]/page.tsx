@@ -9,28 +9,35 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { getDoctorInvitation } from "@/app/actions/medical";
+
 export default function DoctorDashboardPage({ params }: { params: Promise<{ inviteId: string }> }) {
   const { inviteId } = React.use(params);
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(true);
-  const [patientData, setPatientData] = useState<any>(null); // Normally fetched from backend
+  const [invitation, setInvitation] = useState<any>(null);
   const [note, setNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // In a real app, we'd verify the `inviteId` from localStorage here
-    // const storedInvite = localStorage.getItem("takecare_doctor_invite");
-    // if (storedInvite !== inviteId) { router.push("/doctor/verify"); }
-
-    // Mock patient data for UI
-    setPatientData({
-      name: "John Doe",
-      age: 42,
-      gender: "Male",
-      lastVisit: "2023-10-15",
-      primaryConcern: "Routine Checkup / Vitals Tracking"
-    });
+    async function loadData() {
+      setIsLoading(true);
+      try {
+        const data = await getDoctorInvitation(inviteId);
+        if (!data) {
+          router.push("/doctor/verify");
+          return;
+        }
+        setInvitation(data);
+      } catch (error) {
+        console.error("Failed to load patient data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
   }, [inviteId, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,6 +69,9 @@ export default function DoctorDashboardPage({ params }: { params: Promise<{ invi
   };
 
   if (!isAuthorized) return null;
+
+  const patient = invitation?.user;
+  const latestAnalysis = patient?.medicalRecords?.[0]?.analysis;
 
   return (
     <div className="min-h-screen bg-black/2">
@@ -99,27 +109,60 @@ export default function DoctorDashboardPage({ params }: { params: Promise<{ invi
             
             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-black/40 mb-6">Patient Context</h2>
             
-            {patientData ? (
+            {!isLoading && patient ? (
               <div className="flex flex-col gap-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-black/5 flex items-center justify-center">
-                    <User className="w-8 h-8 text-black/40" />
+                  <div className="w-16 h-16 rounded-full bg-black/5 flex items-center justify-center overflow-hidden">
+                    {patient.avatarUrl ? (
+                      <img src={patient.avatarUrl} alt={patient.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-8 h-8 text-black/40" />
+                    )}
                   </div>
                   <div>
-                    <h3 className="font-bricolage text-2xl font-black">{patientData.name}</h3>
-                    <p className="text-sm font-medium text-black/60">{patientData.age} yrs • {patientData.gender}</p>
+                    <h3 className="font-bricolage text-2xl font-black">{patient.name || "Anonymous Patient"}</h3>
+                    <p className="text-sm font-medium text-black/60">
+                      {patient.personalization?.bloodType ? `${patient.personalization.bloodType} • ` : ""}
+                      {patient.email}
+                    </p>
                   </div>
                 </div>
 
                 <div className="space-y-4 pt-6 border-t border-black/5">
+                  {latestAnalysis && (
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-black/40">Latest Health Summary</p>
+                      <p className="font-semibold text-black/80 text-sm mt-1 line-clamp-3">
+                        {latestAnalysis.summary}
+                      </p>
+                      <Badge className={cn(
+                        "mt-2 text-[9px] font-black uppercase tracking-widest",
+                        latestAnalysis.severity === "HIGH" ? "bg-red-500/10 text-red-500 border-red-500/20" :
+                        latestAnalysis.severity === "MEDIUM" ? "bg-amber-500/10 text-amber-500 border-amber-500/20" :
+                        "bg-green-500/10 text-green-500 border-green-500/20"
+                      )}>
+                        {latestAnalysis.severity || "LOW"} SEVERITY
+                      </Badge>
+                    </div>
+                  )}
+                  
+                  {patient.personalization?.allergies?.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-black/40 mb-2">Allergies</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {patient.personalization.allergies.map((allergy: string) => (
+                          <span key={allergy} className="px-2 py-0.5 bg-red-50 text-red-600 rounded text-[9px] font-bold uppercase tracking-wider border border-red-100">
+                            {allergy}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div>
-                    <p className="text-[10px] font-bold uppercase text-black/40">Primary Concern</p>
-                    <p className="font-semibold text-black/80">{patientData.primaryConcern}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase text-black/40">Patient ID Reference</p>
-                    <p className="font-mono text-xs text-black/60 bg-black/5 px-2 py-1 rounded inline-block mt-1">
-                      {inviteId.slice(0, 8).toUpperCase()}
+                    <p className="text-[10px] font-bold uppercase text-black/40">Reference ID</p>
+                    <p className="font-mono text-[10px] text-black/40 bg-black/5 px-2 py-1 rounded inline-block mt-1">
+                      {inviteId.toUpperCase()}
                     </p>
                   </div>
                 </div>
@@ -129,65 +172,82 @@ export default function DoctorDashboardPage({ params }: { params: Promise<{ invi
                 <div className="h-16 w-16 bg-black/10 rounded-full" />
                 <div className="h-6 w-3/4 bg-black/10 rounded-full" />
                 <div className="h-4 w-1/2 bg-black/10 rounded-full" />
+                <div className="h-20 w-full bg-black/5 rounded-2xl mt-4" />
               </div>
             )}
           </div>
 
-          <div className="bg-[#4f46e5]/10 rounded-4xl p-6 border border-[#4f46e5]/20">
-            <h3 className="font-bold text-[#4f46e5] flex items-center gap-2 mb-2">
-              <ShieldCheck className="w-4 h-4" /> Secure Transmission
+          <div className="bg-primary/5 rounded-4xl p-6 border border-primary/10">
+            <h3 className="font-bold text-primary flex items-center gap-2 mb-2">
+              <ShieldCheck className="w-4 h-4" /> HIPAA Compliant
             </h3>
-            <p className="text-xs text-[#4f46e5]/80 font-medium">
-              Data submitted here is encrypted and added directly to the patient's TakeCare AI Digital Twin.
+            <p className="text-[11px] text-primary/70 font-medium leading-relaxed">
+              Your assessment is securely encrypted. Only the patient and their authorized care team can access this record.
             </p>
           </div>
         </div>
 
         {/* Action Area */}
-        <div className="bg-white rounded-4xl p-8 lg:p-10 shadow-2xl border border-black/5">
-          <h2 className="text-2xl font-bricolage font-black mb-2">Clinical Assessment</h2>
-          <p className="text-sm font-medium text-black/50 mb-8">
-            Add diagnostic notes, prescriptions, or upload medical records for {patientData?.name || "the patient"}.
+        <div className="bg-white rounded-4xl p-8 lg:p-12 shadow-2xl border border-black/5 relative">
+          <div className="absolute top-0 right-0 p-8">
+             <div className="h-12 w-12 rounded-2xl bg-black/5 flex items-center justify-center">
+                <FileText className="h-6 w-6 text-black/20" />
+             </div>
+          </div>
+          
+          <h2 className="text-3xl font-bricolage font-black mb-2 tracking-tighter">Clinical Assessment</h2>
+          <p className="text-sm font-medium text-black/40 mb-10 max-w-md">
+            Provide your expert medical guidance for {patient?.name || "this patient"}. This will be added to their health record immediately.
           </p>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            <div className="grid gap-2">
-              <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-black/40 pl-1">
-                Clinical Notes
+          <form onSubmit={handleSubmit} className="flex flex-col gap-8">
+            <div className="grid gap-3">
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-black/40 pl-1 flex items-center justify-between">
+                <span>Diagnostic Notes & Advice</span>
+                {note.length > 0 && <span className="text-primary">{note.length} characters</span>}
               </Label>
               <Textarea 
                 required
                 value={note}
                 onChange={(e: any) => setNote(e.target.value)}
-                placeholder="Patient presents with normal vitals. Recommend continued monitoring..."
-                className="min-h-[200px] resize-none rounded-2xl bg-black/5 border-none p-6 font-medium focus-visible:ring-2 focus-visible:ring-black placeholder:text-black/30"
+                placeholder="Ex: Patient shows stable vitals. I recommend increasing hydration and following up in 2 weeks..."
+                className="min-h-[300px] resize-none rounded-3xl bg-black/[0.03] border-none p-8 font-medium focus-visible:ring-2 focus-visible:ring-primary placeholder:text-black/20 text-lg transition-all"
               />
             </div>
 
-            <div className="grid gap-2">
-              <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-black/40 pl-1">
-                Attach Medical Documents (Optional)
+            <div className="flex flex-col gap-4">
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-black/40 pl-1">
+                Supplementary Evidence (Optional)
               </Label>
-              <div className="border-2 border-dashed border-black/10 rounded-2xl p-8 flex flex-col items-center justify-center gap-4 hover:bg-black/5 transition-colors cursor-pointer group">
-                <div className="w-12 h-12 rounded-full bg-black/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <FileUp className="w-6 h-6 text-black/40" />
+              <div className="border-2 border-dashed border-black/5 rounded-3xl p-10 flex flex-col items-center justify-center gap-4 hover:bg-black/[0.01] transition-all cursor-pointer group">
+                <div className="w-16 h-16 rounded-full bg-black/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                  <FileUp className="w-7 h-7 text-black/30" />
                 </div>
                 <div className="text-center">
-                  <p className="font-bold text-sm">Click to upload or drag and drop</p>
-                  <p className="text-xs text-black/40 mt-1">PDF, JPG, PNG (max 10MB)</p>
+                  <p className="font-bold text-sm">Upload Medical Reports</p>
+                  <p className="text-[11px] text-black/40 mt-1">PDF, DICOM, or High-Res Images</p>
                 </div>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-black/5 flex justify-end">
+            <div className="pt-6 border-t border-black/5 flex items-center justify-between">
+               <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-[10px] font-bold text-black/30 uppercase tracking-widest">System Ready</span>
+               </div>
+               
               <Button 
                 type="submit" 
                 disabled={isSubmitting || !note.trim()}
-                className="h-14 px-8 bg-black hover:bg-black/80 text-white rounded-2xl font-bold text-base transition-all shadow-xl shadow-black/10 disabled:opacity-70 flex items-center gap-2"
+                className="h-16 px-10 bg-black hover:bg-black/90 text-white rounded-3xl font-black text-base transition-all shadow-2xl shadow-black/20 disabled:opacity-50 flex items-center gap-3 hover:scale-[1.02] active:scale-[0.98]"
               >
-                {isSubmitting ? "Transmitting..." : (
+                {isSubmitting ? (
                   <>
-                    <Send className="w-5 h-5" /> Submit to Patient Record
+                    <Loader2 className="w-5 h-5 animate-spin" /> Transmitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-5 h-5" /> Sign & Submit Record
                   </>
                 )}
               </Button>

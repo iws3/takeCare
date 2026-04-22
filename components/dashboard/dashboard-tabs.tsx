@@ -27,7 +27,7 @@ export function DashboardTabs({
   return (
     <div className="px-6 lg:px-0 my-8 lg:my-12">
       <Tabs value={value} onValueChange={onValueChange} className="w-full">
-        <TabsList className="bg-white/60 backdrop-blur-3xl p-1 md:p-1.5 rounded-3xl md:rounded-4xl w-full lg:w-fit h-auto flex gap-1 md:gap-1.5 overflow-x-auto no-scrollbar border border-black/[0.03] shadow-sm relative">
+        <TabsList className="bg-black/[0.04] p-1 md:p-1.5 rounded-3xl md:rounded-4xl w-full lg:w-fit h-auto flex gap-1 md:gap-1.5 overflow-x-auto no-scrollbar border border-black/[0.03] shadow-sm relative">
           {TABS.map((tab) => (
             <TabsTrigger
               key={tab.id}
@@ -35,14 +35,14 @@ export function DashboardTabs({
               className={cn(
                 "rounded-2xl md:rounded-3xl px-5 py-3 md:px-10 md:py-4 transition-all duration-500 cursor-pointer whitespace-nowrap relative group shrink-0",
                 "data-[state=active]:text-white",
-                "data-[state=inactive]:text-black/70 data-[state=inactive]:hover:text-black/80 data-[state=inactive]:hover:bg-black/5",
+                "data-[state=inactive]:text-black data-[state=inactive]:bg-white data-[state=inactive]:shadow-sm data-[state=inactive]:hover:bg-white/90",
                 "flex items-center justify-center gap-2 md:gap-4 font-outfit font-black text-xs md:text-base border border-transparent"
               )}
             >
               <div className="relative">
                 <tab.icon className={cn(
                   "h-4 w-4 md:h-6 md:w-6 transition-transform duration-500 group-hover:scale-110",
-                  value === tab.id ? "text-white" : "text-black/70",
+                  value === tab.id ? "text-white" : "text-black",
                   tab.id === "smart-care" && value !== "smart-care" && "text-vital-orange animate-pulse"
                 )} />
 
@@ -71,13 +71,13 @@ export function DashboardTabs({
 
               <span className={cn(
                 "capitalize text-[10px] md:text-xs font-black tracking-normal md:tracking-wider transition-colors duration-500",
-                value === tab.id ? "text-white" : "text-black/70"
+                value === tab.id ? "text-white" : "text-black"
               )}>{tab.label}</span>
 
               {value === tab.id && (
                 <motion.div
                   layoutId="active-pill"
-                  className="absolute inset-0 bg-primary rounded-2xl md:rounded-3xl -z-10 shadow-xl shadow-primary/30"
+                  className="absolute inset-0 bg-linear-to-tr from-blue-600 to-blue-500 rounded-2xl md:rounded-3xl -z-10 shadow-xl shadow-blue-500/30"
                   transition={{ type: "spring", bounce: 0.15, duration: 0.6 }}
                 />
               )}
