@@ -15,6 +15,8 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { DeleteConfirmationModal } from "@/components/dashboard/delete-confirmation-modal";
 import { RecordDetailsModal } from "@/components/dashboard/record-details-modal";
+import { Input } from "@/components/ui/input";
+import { Search, Filter, XCircle } from "lucide-react";
 
 import { Heart, Activity, Pill, ShieldCheck, Loader2, Brain } from "lucide-react";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
@@ -166,6 +168,17 @@ export default function DashboardPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [viewingRecord, setViewingRecord] = useState<any | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredRecords = combinedRecords.filter(record => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      record.fileName?.toLowerCase().includes(searchLower) ||
+      record.type?.toLowerCase().includes(searchLower) ||
+      record.analysis?.summary?.toLowerCase().includes(searchLower) ||
+      record.fallbackSummary?.toLowerCase().includes(searchLower)
+    );
+  });
 
   const handleRecordDeleteClick = (e: React.MouseEvent, id: string, type: string) => {
     e.preventDefault();
@@ -295,10 +308,53 @@ export default function DashboardPage() {
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
-              <div className="mt-6 flex flex-col gap-10">
+              <div className="mt-6 flex flex-col gap-8">
                 <StatsCards />
+                
+                {/* Search & Filter Header */}
+                <div className="flex flex-col gap-6">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex flex-col gap-1">
+                      <h2 className="font-bricolage text-2xl md:text-3xl font-extrabold tracking-tight text-black">Health History</h2>
+                      <p className="text-xs md:text-sm font-bold text-black/30 uppercase tracking-widest">Manage and search your clinical records</p>
+                    </div>
+                    <div className="relative group w-full md:w-80">
+                      <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-black/20 group-focus-within:text-primary transition-colors">
+                        <Search className="h-4 w-4" />
+                      </div>
+                      <Input
+                        placeholder="Search records..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="h-14 pl-12 pr-4 rounded-2xl border-black/5 bg-white shadow-sm focus:ring-primary/20 focus:border-primary transition-all font-bold text-sm"
+                      />
+                      {searchQuery && (
+                        <button 
+                          onClick={() => setSearchQuery("")}
+                          className="absolute inset-y-0 right-4 flex items-center text-black/20 hover:text-black/60 transition-colors"
+                        >
+                          <XCircle className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {searchQuery && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center gap-2 px-4 py-2 bg-primary/5 rounded-xl border border-primary/10 w-fit"
+                    >
+                      <Filter className="h-3 w-3 text-primary" />
+                      <span className="text-[10px] font-black text-primary uppercase tracking-widest">
+                        Filtered by: "{searchQuery}" — {filteredRecords.length} results
+                      </span>
+                    </motion.div>
+                  )}
+                </div>
+
                 <ActivityTable 
-                  records={combinedRecords} 
+                  records={filteredRecords} 
                   onDelete={handleRecordDeleteClick}
                   onView={handleViewRecord}
                   deletingId={deletingId}
