@@ -23,6 +23,13 @@ interface ActivityTableProps {
 }
 
 export function ActivityTable({ records = [], onDelete, onView, deletingId }: ActivityTableProps) {
+  const truncateWords = (text: string, maxWords: number) => {
+    if (!text) return "";
+    const words = text.split(/\s+/);
+    if (words.length <= maxWords) return text;
+    return words.slice(0, maxWords).join(" ") + "...";
+  };
+
   // If no real records, we can show a placeholder message or empty state
   const hasRecords = records.length > 0;
 
@@ -78,8 +85,20 @@ export function ActivityTable({ records = [], onDelete, onView, deletingId }: Ac
                       <TableCell className="py-7 font-medium text-black/40 text-sm hidden lg:table-cell italic">{record.type}</TableCell>
                       <TableCell className="py-7">
                         <div className="flex items-center gap-3">
-                          <span className="font-bold text-black text-sm max-w-[200px] truncate">{record.analysis?.summary || record.fallbackSummary || "Analyzing context..."}</span>
-                          <Badge variant="outline" className="rounded-full bg-black/5 text-black border-transparent font-black text-[9px] px-3 py-0.5 whitespace-nowrap">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-bold text-black text-sm max-w-[300px] leading-snug">
+                              {truncateWords(record.analysis?.summary || record.fallbackSummary || "Analyzing context...", 29)}
+                            </span>
+                            {(record.analysis?.summary || record.fallbackSummary)?.split(/\s+/).length > 29 && (
+                              <button 
+                                onClick={() => onView?.(record)}
+                                className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline text-left"
+                              >
+                                Read More
+                              </button>
+                            )}
+                          </div>
+                          <Badge variant="outline" className="rounded-full bg-black/5 text-black border-transparent font-black text-[9px] px-3 py-0.5 whitespace-nowrap self-start">
                             {record.analysis ? "Verified" : "Pending"}
                           </Badge>
                         </div>
@@ -129,9 +148,17 @@ export function ActivityTable({ records = [], onDelete, onView, deletingId }: Ac
                   
                   <div className="bg-black/2 p-4 rounded-2xl border border-black/5">
                     <p className="text-[10px] font-black uppercase tracking-widest text-black/30 mb-2">Details:</p>
-                    <p className="text-sm font-bold text-black leading-relaxed line-clamp-3">
-                      {record.analysis?.summary || record.fallbackSummary || "Status is pending..."}
+                    <p className="text-sm font-bold text-black leading-relaxed">
+                      {truncateWords(record.analysis?.summary || record.fallbackSummary || "Status is pending...", 29)}
                     </p>
+                    {(record.analysis?.summary || record.fallbackSummary)?.split(/\s+/).length > 29 && (
+                      <button 
+                        onClick={() => onView?.(record)}
+                        className="text-[10px] font-black text-primary uppercase tracking-widest mt-2 block"
+                      >
+                        Read More
+                      </button>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between mt-2">
@@ -163,6 +190,5 @@ export function ActivityTable({ records = [], onDelete, onView, deletingId }: Ac
         )}
       </div>
     </motion.div>
-    </>
   );
 }
