@@ -29,7 +29,9 @@ export function ActivityTable({ records = [], onDelete }: ActivityTableProps) {
   // If no real records, we can show a placeholder message or empty state
   const hasRecords = records.length > 0;
 
-  const handleDeleteClick = (id: string, type: string) => {
+  const handleDeleteClick = (e: React.MouseEvent, id: string, type: string) => {
+    e.preventDefault();
+    e.stopPropagation();
     setPendingDelete({ id, type });
     setModalOpen(true);
   };
@@ -119,11 +121,11 @@ export function ActivityTable({ records = [], onDelete }: ActivityTableProps) {
                             <FileText className="h-5 w-5" />
                           </Button>
                           <Button 
-                            onClick={() => handleDeleteClick(record.id, record.type)}
+                            onClick={(e) => handleDeleteClick(e, record.id, record.type)}
                             disabled={deletingId === record.id}
                             variant="ghost" 
                             size="icon" 
-                            className="h-10 w-10 rounded-2xl bg-red-500 shadow-lg shadow-red-500/20 text-white opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 delay-75"
+                            className="h-10 w-10 rounded-2xl bg-red-500 shadow-lg shadow-red-500/20 text-white opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 delay-75 cursor-pointer"
                           >
                             {deletingId === record.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-5 w-5" />}
                           </Button>
@@ -165,11 +167,11 @@ export function ActivityTable({ records = [], onDelete }: ActivityTableProps) {
                         View Results
                       </Button>
                       <Button 
-                        onClick={() => handleDeleteClick(record.id, record.type)}
+                        onClick={(e) => handleDeleteClick(e, record.id, record.type)}
                         disabled={deletingId === record.id}
                         variant="outline" 
                         size="sm" 
-                        className="h-10 w-10 p-0 rounded-xl border-red-100 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all"
+                        className="h-10 w-10 p-0 rounded-xl border-red-100 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all cursor-pointer"
                       >
                         {deletingId === record.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                       </Button>

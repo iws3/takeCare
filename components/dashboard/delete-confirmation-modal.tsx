@@ -37,7 +37,7 @@ export function DeleteConfirmationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !loading && !open && onClose()}>
-      <DialogContent className="sm:max-w-md rounded-[2.5rem] bg-white p-8 md:p-10 border border-black/5 shadow-2xl overflow-hidden relative">
+      <DialogContent className="sm:max-w-md rounded-[3rem] bg-white p-12 md:p-16 border border-black/5 shadow-2xl overflow-hidden relative">
         {/* Background Decor */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-3xl -mr-16 -mt-16" />
         
@@ -61,7 +61,7 @@ export function DeleteConfirmationModal({
           </div>
         </DialogHeader>
 
-        <div className="flex flex-col sm:flex-row gap-3 mt-10">
+        <div className="flex flex-col sm:flex-row gap-4 mt-12">
           <Button 
             variant="outline" 
             disabled={loading}
