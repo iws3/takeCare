@@ -182,5 +182,6 @@ export function ActivityTable({ records = [], onDelete }: ActivityTableProps) {
         )}
       </div>
     </motion.div>
+    </>
   );
 }
