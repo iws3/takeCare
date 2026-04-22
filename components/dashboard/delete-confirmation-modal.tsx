@@ -65,14 +65,14 @@ export function DeleteConfirmationModal({
           <Button 
             variant="outline" 
             disabled={loading}
-            className="flex-1 h-16 md:h-14 rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest border-black/5 hover:bg-black/5 transition-all" 
+            className="flex-1 h-20 md:h-14 rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest border-black/5 hover:bg-black/5 transition-all" 
             onClick={onClose}
           >
             Go Back
           </Button>
           <Button 
             disabled={loading}
-            className="flex-1 h-16 md:h-14 rounded-2xl bg-red-600 text-white font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-red-700 shadow-xl shadow-red-200 transition-all flex items-center justify-center gap-2" 
+            className="flex-1 h-20 md:h-14 rounded-2xl bg-red-600 text-white font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-red-700 shadow-xl shadow-red-200 transition-all flex items-center justify-center gap-2" 
             onClick={handleConfirm}
           >
             {loading ? (
