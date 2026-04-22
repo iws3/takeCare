@@ -33,10 +33,10 @@ export function DashboardTabs({
               key={tab.id}
               value={tab.id}
               className={cn(
-                "rounded-2xl md:rounded-3xl px-5 py-3 md:px-10 md:py-4 transition-all duration-500 cursor-pointer whitespace-nowrap relative group shrink-0",
+                "rounded-2xl md:rounded-3xl px-8 py-4 md:px-12 md:py-5 transition-all duration-500 cursor-pointer whitespace-nowrap relative group shrink-0",
                 "data-[state=active]:text-white",
-                "data-[state=inactive]:text-black data-[state=inactive]:bg-white data-[state=inactive]:shadow-sm data-[state=inactive]:hover:bg-white/90",
-                "flex items-center justify-center gap-2 md:gap-4 font-outfit font-black text-xs md:text-base border border-transparent"
+                "data-[state=inactive]:text-black data-[state=inactive]:bg-red-600 data-[state=inactive]:shadow-sm data-[state=inactive]:hover:bg-white/90",
+                "flex items-center justify-center gap-2 md:gap-4 font-outfit font-black text-sm md:text-lg border border-transparent"
               )}
             >
               <div className="relative">
