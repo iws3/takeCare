@@ -125,34 +125,76 @@ export function RecordDetailsModal({
             <div className="flex-1 overflow-y-auto custom-scrollbar bg-[#FAFAFA]">
               <div className="px-6 py-8 md:px-10 md:py-10 space-y-8">
                 
-                {/* AI Intelligence Hero */}
-                <motion.div 
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.1 }}
-                  className="relative overflow-hidden bg-white rounded-[2.5rem] p-8 border border-black/[0.03] shadow-sm"
-                >
-                  <div className="flex flex-col gap-6">
-                    <div className="flex items-center gap-3 text-primary">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Brain className="h-4 w-4" />
-                      </div>
-                      <span className="font-black text-[10px] uppercase tracking-[0.2em]">Clinical Extraction</span>
+                {/* Clinical Data Section - Priority for Doctor Notes */}
+                {(record.type === "CLINICAL_NOTE" || record.extractedText) && (
+                  <motion.div 
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className="relative overflow-hidden bg-white rounded-[2.5rem] p-8 md:p-10 border border-black/[0.03] shadow-xl shadow-black/[0.02]"
+                  >
+                    <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none">
+                      <ClipboardList className="h-24 w-24" />
                     </div>
                     
-                    <div className="space-y-3">
-                      <h3 className="font-bricolage text-xl font-extrabold text-black">Summary</h3>
-                      <p className="text-sm md:text-base text-black/60 font-medium leading-relaxed italic">
-                        "{record.analysis?.summary || record.fallbackSummary || "Our AI engine is currently processing the clinical context of this file. Full report will be available shortly."}"
-                      </p>
+                    <div className="flex flex-col gap-8 relative z-10">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                          <Activity className="h-5 w-5" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-black text-[10px] uppercase tracking-[0.2em] text-primary">Clinical Observation</span>
+                          <span className="text-[9px] font-bold text-black/30 uppercase tracking-widest">Medical Assessment Data</span>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-bricolage text-2xl font-black text-black tracking-tight">Doctor's Note</h3>
+                          <Badge className="rounded-full bg-[#10B981]/10 text-[#10B981] border-none text-[8px] font-black uppercase tracking-widest px-3 py-1">
+                            Official Report
+                          </Badge>
+                        </div>
+                        
+                        <div className="p-6 md:p-8 bg-black/[0.02] rounded-3xl border border-black/[0.03] relative">
+                          <p className="text-sm md:text-lg text-black/80 font-medium leading-relaxed font-serif italic">
+                            {record.extractedText || "No clinical text available for this record."}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
+                )}
+
+                {/* AI Intelligence Hero */}
+                {record.type !== "CLINICAL_NOTE" && (
+                  <motion.div 
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                    className="relative overflow-hidden bg-white rounded-[2.5rem] p-8 border border-black/[0.03] shadow-sm"
+                  >
+                    <div className="flex flex-col gap-6">
+                      <div className="flex items-center gap-3 text-primary">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Brain className="h-4 w-4" />
+                        </div>
+                        <span className="font-black text-[10px] uppercase tracking-[0.2em]">Clinical Extraction</span>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <h3 className="font-bricolage text-xl font-extrabold text-black">Summary</h3>
+                        <p className="text-sm md:text-base text-black/60 font-medium leading-relaxed italic">
+                          "{record.analysis?.summary || record.fallbackSummary || "Our AI engine is currently processing the clinical context of this file. Full report will be available shortly."}"
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
 
                 {/* Key Insights Section */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 px-2">
-                    <Activity className="h-4 w-4 text-primary" />
+                    <Shield className="h-4 w-4 text-primary" />
                     <span className="font-black text-[10px] uppercase tracking-[0.2em] text-black/40">Clinical Insights</span>
                   </div>
                   
@@ -174,6 +216,16 @@ export function RecordDetailsModal({
                           </div>
                         </motion.div>
                       ))
+                    ) : record.type === "CLINICAL_NOTE" ? (
+                      <div className="p-8 bg-white rounded-[2rem] border border-black/[0.03] flex items-center gap-4">
+                         <div className="h-12 w-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0">
+                           <CheckCircle2 className="h-6 w-6" />
+                         </div>
+                         <div>
+                            <p className="text-sm font-bold text-black">Professional Assessment</p>
+                            <p className="text-[10px] text-black/40 font-bold uppercase tracking-widest">This record contains direct medical feedback.</p>
+                         </div>
+                      </div>
                     ) : (
                       <div className="py-12 bg-white rounded-3xl border border-dashed border-black/10 flex flex-col items-center justify-center gap-4">
                         <ClipboardList className="h-10 w-10 text-black/10" />

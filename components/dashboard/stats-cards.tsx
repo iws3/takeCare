@@ -27,43 +27,43 @@ function StatCard({ title, value, subtitle, icon: Icon, delay = 0, colorClass = 
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-      className="group relative overflow-hidden rounded-[2rem] border border-black/[0.04] bg-white p-6 transition-all duration-700 hover:-translate-y-2"
+      className="group relative overflow-hidden rounded-[2.5rem] border border-black/[0.04] bg-white p-6 md:p-8 transition-all duration-700 hover:-translate-y-2"
       style={{
         boxShadow: `
-          0 8px 16px -4px rgba(0,0,0,0.02),
-          0 20px 40px -10px rgba(0,0,0,0.06),
+          0 10px 30px -5px rgba(0,0,0,0.03),
+          0 20px 50px -15px rgba(0,0,0,0.08),
           0 0 0 1px rgba(0,0,0,0.01)
         `
       }}
     >
       {/* Hyper-Artistic Glow Background */}
       <div className={cn(
-        "absolute -right-12 -top-12 h-40 w-40 rounded-full opacity-10 blur-[60px] transition-all duration-1000 group-hover:scale-150 group-hover:opacity-20",
+        "absolute -right-16 -top-16 h-48 w-48 rounded-full opacity-10 blur-[70px] transition-all duration-1000 group-hover:scale-150 group-hover:opacity-20",
         colorClass
       )} />
       
       {/* Floating Glass Element */}
-      <div className="absolute top-6 right-6 h-10 w-10 rounded-xl bg-black/[0.02] backdrop-blur-sm border border-black/[0.03] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-700 group-hover:translate-x-1 group-hover:-translate-y-1">
-         <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
+      <div className="absolute top-8 right-8 h-12 w-12 rounded-2xl bg-black/[0.02] backdrop-blur-sm border border-black/[0.03] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-700 group-hover:translate-x-1 group-hover:-translate-y-1">
+         <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
       </div>
 
       <div className="relative flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <div className={cn(
-            "flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-700 shadow-[0_15px_30px_-8px_rgba(0,0,0,0.2)] group-hover:rotate-[12deg] group-hover:scale-110",
+            "flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-700 shadow-[0_12px_24px_-6px_rgba(0,0,0,0.15)] group-hover:rotate-[12deg] group-hover:scale-110",
             colorClass,
             colorClass === "bg-blue-600" ? "shadow-blue-600/30" : 
             colorClass === "bg-vital-orange" ? "shadow-orange-600/30" : 
             "shadow-emerald-600/30"
           )}>
-            <Icon className="h-6 w-6 text-white" />
+            <Icon className="h-5 w-5 text-white" />
           </div>
           <div className="flex flex-col items-end">
-             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-black/20 group-hover:text-black/80 transition-all duration-500">
+             <span className="text-[10px] font-black uppercase tracking-[0.25em] text-black/20 group-hover:text-black/80 transition-all duration-500">
               {title}
             </span>
             <div className={cn(
-              "h-1 w-10 rounded-full mt-1.5 transition-all duration-700 group-hover:w-16",
+              "h-1 w-8 rounded-full mt-1.5 transition-all duration-700 group-hover:w-12",
               colorClass
             )} style={{ opacity: 0.15 }} />
           </div>
@@ -74,16 +74,16 @@ function StatCard({ title, value, subtitle, icon: Icon, delay = 0, colorClass = 
             <motion.span 
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="font-bricolage text-5xl md:text-6xl font-black tracking-tighter text-black leading-none"
+              className="font-bricolage text-4xl md:text-5xl font-black tracking-tighter text-black leading-none"
             >
               {value.replace('%', '')}
             </motion.span>
             {value.includes('%') && (
-              <span className="text-lg font-black text-black/20 uppercase tracking-tighter -translate-y-5">%</span>
+              <span className="text-base font-black text-black/20 uppercase tracking-tighter -translate-y-4">%</span>
             )}
           </div>
           <div className="flex items-center gap-2.5 mt-3">
-            <span className="font-outfit text-[11px] font-black text-black/40 uppercase tracking-widest">
+            <span className="font-outfit text-[10px] font-black text-black/30 uppercase tracking-widest group-hover:text-black/50 transition-colors">
               {subtitle}
             </span>
             <div className="h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
@@ -92,7 +92,7 @@ function StatCard({ title, value, subtitle, icon: Icon, delay = 0, colorClass = 
       </div>
 
       {/* Decorative Gradient Border on hover */}
-      <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+      <div className="absolute inset-x-0 bottom-0 h-1.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
     </motion.div>
   );
 }
