@@ -230,6 +230,28 @@ export default function DashboardPage() {
   const handleConfirmDelete = async () => {
     if (!pendingDelete) return;
     const { id, type } = pendingDelete;
+    
+    // Optimistic Update: Close modal and remove from state immediately
+    setDeleteModalOpen(false);
+    
+    // Save current state in case we need to roll back
+    const previousUserData = { ...userData };
+    
+    // Locally remove the record/invitation from state for instant feedback
+    if (userData) {
+      if (type.startsWith("INVITATION")) {
+        setUserData({
+          ...userData,
+          doctorInvitations: userData.doctorInvitations.filter((inv: any) => inv.id !== id)
+        });
+      } else {
+        setUserData({
+          ...userData,
+          medicalRecords: userData.medicalRecords.filter((rec: any) => rec.id !== id)
+        });
+      }
+    }
+
     setDeletingId(id);
     try {
       if (type.startsWith("INVITATION")) {
@@ -237,15 +259,21 @@ export default function DashboardPage() {
       } else {
         await deleteMedicalRecord(id);
       }
-      toast.success("Record deleted successfully");
-      await fetchData();
+      toast.success("Record deleted successfully", {
+        description: "Your health history has been updated instantly."
+      });
+      // Silent refresh to ensure data integrity without showing a loader
+      fetchData();
     } catch (error) {
       console.error("Delete failed:", error);
-      toast.error("Failed to delete record");
+      toast.error("Failed to delete record", {
+        description: "The request timed out or was unauthorized. Restoring your data..."
+      });
+      // Rollback on error
+      setUserData(previousUserData);
     } finally {
       setDeletingId(null);
       setPendingDelete(null);
-      setDeleteModalOpen(false);
     }
   };
 
