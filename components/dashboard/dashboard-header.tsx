@@ -8,11 +8,14 @@ import { EditProfileModal } from "./edit-profile-modal";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 
+import { cn } from "@/lib/utils";
+
 interface DashboardHeaderProps {
   user: any;
+  notificationCount?: number;
 }
 
-export function DashboardHeader({ user }: DashboardHeaderProps) {
+export function DashboardHeader({ user, notificationCount = 0 }: DashboardHeaderProps) {
   const router = useRouter();
   const [currentUser, setCurrentUser] = React.useState(user);
 
@@ -42,7 +45,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
       </div>
 
       <div className="flex items-center gap-3 lg:gap-6">
-        <div className="hidden items-center gap-2 rounded-full bg-black/5 px-4 py-2 lg:flex">
+        <div className="hidden items-center gap-2 rounded-full bg-black/5 px-4 py-2 lg:flex border border-transparent focus-within:border-primary/20 transition-all">
           <Search className="h-4 w-4 text-black/40" />
           <input 
             type="text" 
@@ -52,13 +55,17 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         </div>
         
         <div className="flex items-center gap-2 lg:gap-3">
-          <Button variant="ghost" size="icon" className="hidden lg:flex rounded-full hover:bg-black/5 h-10 w-10">
-            <Bell className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="hidden lg:flex rounded-full hover:bg-black/5 h-10 w-10">
-            <Settings className="h-5 w-5" />
-          </Button>
-          
+          <div className="relative">
+            <Button variant="ghost" size="icon" className="hidden lg:flex rounded-full hover:bg-black/5 h-10 w-10">
+              <Bell className="h-5 w-5" />
+            </Button>
+            {notificationCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white ring-2 ring-white animate-in zoom-in duration-300">
+                {notificationCount > 9 ? '9+' : notificationCount}
+              </span>
+            )}
+          </div>
+
           <div className="hidden lg:block h-8 w-px bg-black/5 mx-2" />
           
           <div className="flex items-center gap-3 lg:gap-6">

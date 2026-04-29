@@ -43,7 +43,6 @@ export function ActivityTable({ records = [], onDelete, onView, deletingId }: Ac
     >
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-black/5 bg-black/1 px-8 py-7 gap-4">
         <div className="flex flex-col gap-1">
-          <h3 className="font-bricolage text-xl font-bold lg:text-3xl tracking-tight">Health History</h3>
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-3.5 h-3.5 text-green-500" />
             <p className="text-xs font-medium text-black/30 lg:text-sm">Secure patient access • Verified chronology</p>

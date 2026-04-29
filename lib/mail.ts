@@ -12,31 +12,46 @@ export const sendInvitationEmail = async (email: string, doctorName: string, otp
   const mailOptions = {
     from: `"TakeCare AI" <${process.env.EMAIL_USER}>`,
     to: email,
-    subject: `Urgent: Request for Medical Records - ${patientName}`,
+    subject: `Medical Consultation Request - ${patientName}`,
     html: `
-      <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px; background-color: #ffffff;">
-        <h2 style="color: #4f46e5; font-size: 24px; margin-bottom: 20px;">TakeCare AI Invitation</h2>
-        <p style="color: #374151; font-size: 16px; line-height: 1.5;">
+      <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: auto; padding: 40px; border: 1px solid #e2e8f0; border-radius: 24px; background-color: #ffffff; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);">
+        <div style="margin-bottom: 32px;">
+          <h2 style="color: #2563eb; font-size: 28px; font-weight: 800; letter-spacing: -0.025em; margin: 0;">TakeCare</h2>
+          <p style="color: #94a3b8; font-size: 10px; font-weight: 800; text-transform: uppercase; tracking: 0.1em; margin-top: 4px;">Professional Medical Portal</p>
+        </div>
+
+        <p style="color: #1e293b; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
           Dear Dr. <strong>${doctorName}</strong>,
         </p>
-        <p style="color: #374151; font-size: 16px; line-height: 1.5;">
-          A patient, <strong>${patientName}</strong>, has requested your expert medical evaluation on their clinical profile.
+
+        <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 32px;">
+          You have been invited to review the clinical profile and medical history of <strong>${patientName}</strong>. 
+          Please visit your specialized <strong>Doctor Dashboard</strong> to provide your expert assessment and medical guidance.
         </p>
-        <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; text-align: center; margin: 30px 0;">
-          <p style="margin: 0; font-size: 14px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Your One-Time Access Code</p>
-          <h1 style="margin: 10px 0; font-size: 42px; color: #111827; letter-spacing: 0.1em; font-weight: bold;">${otp}</h1>
-          <p style="margin: 0; font-size: 12px; color: #9ca3af;">(Expires in 1 hour)</p>
+
+        <div style="background-color: #f8fafc; padding: 32px; border-radius: 20px; text-align: center; margin-bottom: 32px; border: 1px solid #f1f5f9;">
+          <p style="margin: 0 0 16px 0; font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;">Your Secure Access Code</p>
+          <h1 style="margin: 0; font-size: 48px; color: #0f172a; letter-spacing: 0.2em; font-weight: 900;">${otp}</h1>
+          <p style="margin: 12px 0 0 0; font-size: 11px; color: #94a3b8; font-weight: 500;">Valid for 60 minutes</p>
         </div>
-        <p style="color: #374151; font-size: 16px; line-height: 1.5;">
-          Please use this code to sign in and securely provide medical records or notes for this patient.
-        </p>
-        <div style="text-align: center; margin-top: 30px;">
-          <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/doctor/verify" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; display: inline-block;">Access Patient Profile</a>
+
+        <div style="text-align: center; margin-bottom: 40px;">
+          <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/doctor/verify" 
+             style="background-color: #2563eb; color: #ffffff; padding: 18px 36px; text-decoration: none; border-radius: 16px; font-weight: 700; font-size: 15px; display: inline-block;">
+            Access Doctor Dashboard
+          </a>
         </div>
-        <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 30px 0;" />
-        <p style="color: #9ca3af; font-size: 12px; text-align: center;">
-          This is a direct, secure clinical invitation via TakeCare AI. If you did not expect this, please ignore this email.
+
+        <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin-bottom: 40px;">
+          This secure access allows you to directly upload clinical reports, provide diagnostic notes, and synchronize your findings with the patient's digital health record.
         </p>
+
+        <div style="border-top: 1px solid #f1f5f9; padding-top: 32px;">
+          <p style="color: #94a3b8; font-size: 11px; line-height: 1.5; text-align: center; margin: 0;">
+            CONFIDENTIALITY NOTICE: This clinical invitation is intended only for Dr. ${doctorName}. 
+            If you are not the intended recipient, please notify the sender and delete this message.
+          </p>
+        </div>
       </div>
     `,
   };

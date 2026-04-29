@@ -303,7 +303,7 @@ export default function DashboardPage() {
 
       <header className="sticky top-0 z-50 w-full border-b border-black/5 bg-white/80 backdrop-blur-md">
         <div className="responsive-container">
-          <DashboardHeader user={userData} />
+          <DashboardHeader user={userData} notificationCount={unreadNotifications} />
         </div>
       </header>
 
@@ -348,14 +348,39 @@ export default function DashboardPage() {
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
               <div className="mt-6 flex flex-col gap-8">
-                <StatsCards />
+                <StatsCards stats={{
+                  doctorsCount: userData?.doctorInvitations?.length || 0,
+                  recordsCount: userData?.medicalRecords?.length || 0,
+                  healthScore: userData?.medicalRecords?.length > 0 
+                    ? Math.round((userData.medicalRecords.filter((r: any) => r.analysis).length / userData.medicalRecords.length) * 100)
+                    : 0
+                }} />
                 
                 {/* Search & Filter Header */}
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex flex-col gap-1">
-                      <h2 className="font-bricolage text-2xl md:text-3xl font-extrabold tracking-tight text-black">Health History</h2>
-                      <p className="text-xs md:text-sm font-bold text-black/30 uppercase tracking-widest">Manage and search your clinical records</p>
+                      <div className="flex items-center">
+                        <h2 className="font-bricolage text-2xl md:text-3xl font-extrabold tracking-tight text-black">Health History</h2>
+                        <div className="flex -space-x-3 overflow-hidden ml-6">
+                          {[
+                            "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=100&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1594824476967-48c8b964273f?q=80&w=100&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=100&auto=format&fit=crop"
+                          ].map((src, i) => (
+                            <img
+                              key={i}
+                              className="inline-block h-10 w-10 rounded-full ring-[4px] ring-[#f8f9fa] object-cover transition-transform hover:scale-110 cursor-pointer"
+                              src={src}
+                              alt="Medical Expert"
+                            />
+                          ))}
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-black text-[10px] ring-[4px] ring-[#f8f9fa] transition-all hover:bg-primary hover:text-white cursor-pointer">
+                            +12
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-xs md:text-sm font-bold text-black/30 uppercase tracking-widest mt-1">Manage and search your clinical records</p>
                     </div>
                     <div className="relative group w-full md:w-96">
                       <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-black/20 group-focus-within:text-primary transition-colors">
