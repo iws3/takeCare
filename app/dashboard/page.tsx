@@ -221,8 +221,13 @@ export default function DashboardPage() {
       fileName: `Invite: Dr. ${inv.doctorName}`,
       type: `INVITATION (${inv.platform.toUpperCase()})`,
       url: "#",
-      fallbackSummary: "Awaiting Doctor Response",
-      analysis: inv.status === 'PENDING' ? undefined : { summary: `Status: ${inv.status}. Contact: ${inv.contactInfo}` }
+      fallbackSummary: inv.status === 'ACCEPTED' ? "Doctor has accepted your invite and is reviewing your records." : "Awaiting Doctor Response",
+      analysis: inv.status === 'PENDING' ? undefined : { 
+        summary: inv.status === 'ACCEPTED' 
+          ? `Status: ACCEPTED. Dr. ${inv.doctorName} is now reviewing your health profile via ${inv.platform}.` 
+          : `Status: ${inv.status}. Contact Info: ${inv.contactInfo || 'N/A'}`,
+        insights: inv.status === 'ACCEPTED' ? ["Secure connection established", "Privacy-first data sharing enabled"] : []
+      }
     }))
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 

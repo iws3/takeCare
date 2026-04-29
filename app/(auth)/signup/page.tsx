@@ -45,7 +45,7 @@ export default function SignUpPage() {
       }
 
       toast.success("Account created successfully!");
-      
+
       // Auto Sign In after signing up
       const signInRes = await signIn("credentials", {
         redirect: false,
