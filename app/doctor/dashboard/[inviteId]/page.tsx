@@ -20,6 +20,8 @@ export default function DoctorDashboardPage({ params }: { params: Promise<{ invi
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -40,18 +42,39 @@ export default function DoctorDashboardPage({ params }: { params: Promise<{ invi
     loadData();
   }, [inviteId, router]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      const validFiles = files.filter(file => {
+        if (file.size > 2 * 1024 * 1024) {
+          alert(`File "${file.name}" is too large. Max size is 2MB.`);
+          return false;
+        }
+        return true;
+      });
+      setSelectedFiles(prev => [...prev, ...validFiles]);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      const formData = new FormData();
+      formData.append("inviteId", inviteId);
+      formData.append("note", note);
+      selectedFiles.forEach((file) => {
+        formData.append("files", file);
+      });
+
       const res = await fetch("/api/doctor/submit-record", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          inviteId: inviteId, 
-          note: note 
-        }),
+        body: formData,
       });
 
       if (!res.ok) {
@@ -60,6 +83,7 @@ export default function DoctorDashboardPage({ params }: { params: Promise<{ invi
 
       setIsSuccess(true);
       setNote("");
+      setSelectedFiles([]);
     } catch (error) {
       console.error(error);
       alert("Failed to submit record. Please try again.");
@@ -216,18 +240,47 @@ export default function DoctorDashboardPage({ params }: { params: Promise<{ invi
             </div>
 
             <div className="flex flex-col gap-4">
-              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-black/40 pl-1">
-                Supplementary Evidence (Optional)
-              </Label>
-              <div className="border-2 border-dashed border-black/5 rounded-3xl p-10 flex flex-col items-center justify-center gap-4 hover:bg-black/[0.01] transition-all cursor-pointer group">
+              <input 
+                type="file"
+                multiple
+                accept="image/*,application/pdf"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+              />
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-black/5 rounded-3xl p-10 flex flex-col items-center justify-center gap-4 hover:bg-black/[0.01] transition-all cursor-pointer group"
+              >
                 <div className="w-16 h-16 rounded-full bg-black/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
                   <FileUp className="w-7 h-7 text-black/30" />
                 </div>
                 <div className="text-center">
                   <p className="font-bold text-sm">Upload Medical Reports</p>
-                  <p className="text-[11px] text-black/40 mt-1">PDF, DICOM, or High-Res Images</p>
+                  <p className="text-[11px] text-black/40 mt-1">PDF, Images (Max 2MB per file)</p>
                 </div>
               </div>
+
+              {selectedFiles.length > 0 && (
+                <div className="grid gap-2 mt-2">
+                  {selectedFiles.map((file, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-black/2 px-4 py-2 rounded-xl border border-black/5">
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <FileText className="w-4 h-4 text-black/40 shrink-0" />
+                        <span className="text-xs font-bold text-black/60 truncate">{file.name}</span>
+                        <span className="text-[10px] text-black/20 font-mono">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => removeFile(idx)}
+                        className="text-black/40 hover:text-red-500 transition-colors"
+                      >
+                        <XCircle className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="pt-6 border-t border-black/5 flex items-center justify-between">

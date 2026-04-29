@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import { FileText, Calendar, Building2, User, Trash2, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useRef } from "react";
+import { cn } from "@/lib/utils";
 
 interface ActivityTableProps {
   records?: any[];
