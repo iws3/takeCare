@@ -18,6 +18,23 @@ export async function POST(req: Request) {
     const mediaUrl = payload.mediaUrl || payload.fileUrl || null;
     const from = payload.from || payload.whatsappNumber || "Unknown Doctor";
     
+    // Normalize phone number for lookup (remove non-digits or handle +)
+    // The DB stores it as formatted by the invitation route (e.g., +237...)
+    const normalizedFrom = from.startsWith('+') ? from : `+${from.replace(/\D/g, "")}`;
+
+    // Look up which user this doctor belongs to
+    const { prisma } = await import("@/lib/prisma");
+    const invitation = await prisma.doctorInvitation.findFirst({
+      where: {
+        contactInfo: {
+          contains: normalizedFrom.replace('+', '') // Loose match to handle formatting diffs
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const userId = invitation?.userId || "anonymous";
+
     // Generate AI Context: A structured string for the LLM to understand the interaction
     const aiContext = `[DOCTOR_INBOUND] Type: ${type.toUpperCase()} | From: ${from} | Content: ${text} | Media: ${mediaUrl || "None"}`;
 
@@ -28,6 +45,7 @@ export async function POST(req: Request) {
       mediaUrl,
       sender: "doctor",
       from,
+      userId, // CRITICAL: Security isolation
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       receivedAt: new Date().toISOString(),
       aiContext // This is the gold for your AI training/context
@@ -47,7 +65,7 @@ export async function POST(req: Request) {
     history.push(doctorMsg);
     fs.writeFileSync(MESSAGES_FILE, JSON.stringify(history, null, 2));
 
-    console.log(`[Webhook] Captured ${type} from ${from}. Ready for AI context.`);
+    console.log(`[Webhook] Captured ${type} from ${from} for User ${userId}. Ready for AI context.`);
     
     return NextResponse.json({ success: true, messageId: doctorMsg.id });
   } catch (error: any) {

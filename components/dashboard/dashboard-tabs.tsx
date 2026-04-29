@@ -34,15 +34,15 @@ export function DashboardTabs({
               value={tab.id}
               className={cn(
                 "rounded-2xl md:rounded-3xl px-8 py-4 md:px-12 md:py-5 transition-all duration-500 cursor-pointer whitespace-nowrap relative group shrink-0",
-                "data-[state=active]:text-white",
-                "data-[state=inactive]:text-black data-[state=inactive]:bg-blue-600 data-[state=inactive]:shadow-sm data-[state=inactive]:hover:bg-blue-600",
+                "data-[state=active]:text-primary",
+                "data-[state=inactive]:text-black/40 data-[state=inactive]:hover:text-black/60",
                 "flex items-center justify-center gap-2 md:gap-4 font-outfit font-black text-sm md:text-lg border border-transparent"
               )}
             >
               <div className="relative">
                 <tab.icon className={cn(
                   "h-4 w-4 md:h-6 md:w-6 transition-transform duration-500 group-hover:scale-110",
-                  value === tab.id ? "text-white" : "text-black",
+                  value === tab.id ? "text-primary" : "text-black/30",
                   tab.id === "smart-care" && value !== "smart-care" && "text-vital-orange animate-pulse"
                 )} />
 
@@ -71,13 +71,13 @@ export function DashboardTabs({
 
               <span className={cn(
                 "capitalize text-[10px] md:text-xs font-black tracking-normal md:tracking-wider transition-colors duration-500",
-                value === tab.id ? "text-blue-700" : "text-black"
+                value === tab.id ? "text-primary" : "text-black/40"
               )}>{tab.label}</span>
 
               {value === tab.id && (
                 <motion.div
                   layoutId="active-pill"
-                  className="absolute inset-0 bg-linear-to-tr from-blue-600 to-blue-500 rounded-2xl md:rounded-3xl -z-10 shadow-xl shadow-blue-500/30"
+                  className="absolute inset-0 bg-blue-50 border border-blue-100 rounded-2xl md:rounded-3xl -z-10 shadow-sm"
                   transition={{ type: "spring", bounce: 0.15, duration: 0.6 }}
                 />
               )}

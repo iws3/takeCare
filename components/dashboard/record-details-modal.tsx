@@ -67,7 +67,7 @@ export function RecordDetailsModal({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 bottom-0 w-full sm:w-[500px] md:w-[650px] bg-[#FDFDFD] z-[101] shadow-[-20px_0_50px_rgba(0,0,0,0.1)] flex flex-col border-l border-black/5"
+            className="fixed right-0 top-0 bottom-0 w-full sm:w-[500px] md:w-[650px] bg-linear-to-b from-white to-[#FAFAFA] z-[101] shadow-[-20px_0_50px_rgba(0,0,0,0.05)] flex flex-col border-l border-black/5"
           >
             {/* High-End Header */}
             <div className="relative px-6 py-8 md:px-10 md:py-10 bg-white border-b border-black/[0.03] shrink-0">
@@ -112,6 +112,10 @@ export function RecordDetailsModal({
                   <div className="flex items-center gap-2 text-primary/40">
                     <Shield className="h-4 w-4" />
                     <span>Encrypted Record</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[#10B981]">
+                    <Lock className="h-3 w-3" />
+                    <span className="font-black text-[10px] uppercase tracking-widest">Private Access</span>
                   </div>
                 </div>
               </div>
@@ -182,8 +186,9 @@ export function RecordDetailsModal({
                 </div>
 
                 {/* Security & Action Footer */}
-                <div className="bg-black text-white p-8 rounded-[2.5rem] shadow-2xl flex flex-col gap-6 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-8 opacity-10">
+                <div className="bg-white text-black p-8 rounded-[2.5rem] shadow-xl shadow-black/5 border border-black/5 flex flex-col gap-6 relative overflow-hidden">
+                  <div className="absolute top-0 inset-x-0 h-1.5 bg-linear-to-r from-primary/40 via-primary to-primary/40 opacity-50" />
+                  <div className="absolute top-0 right-0 p-8 opacity-[0.03]">
                     <Lock className="h-20 w-20" />
                   </div>
                   <div className="relative z-10 space-y-2">
@@ -192,11 +197,11 @@ export function RecordDetailsModal({
                       <span className="font-black text-[10px] uppercase tracking-widest text-primary/80">Security Protocol</span>
                     </div>
                     <h4 className="font-bricolage text-lg font-extrabold">Data Governance</h4>
-                    <p className="text-xs text-white/50 font-medium leading-relaxed">
+                    <p className="text-xs text-black/40 font-medium leading-relaxed">
                       This clinical record is encrypted using AES-256 standards. Only you and authorized medical entities can view the full metadata.
                     </p>
                   </div>
-                  <Button className="w-full h-14 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-widest hover:bg-white hover:text-black transition-all">
+                  <Button className="w-full h-14 rounded-2xl bg-black text-white font-black text-xs uppercase tracking-widest hover:bg-primary transition-all shadow-lg shadow-black/10">
                     View Audit Log
                   </Button>
                 </div>
@@ -206,11 +211,12 @@ export function RecordDetailsModal({
 
             {/* Quick Actions Footer - Sticky */}
             <div className="p-6 md:p-8 bg-white border-t border-black/[0.03] flex items-center gap-4 shrink-0">
-              <Button className="flex-1 h-16 rounded-2xl bg-black text-white font-black text-xs uppercase tracking-widest hover:bg-primary transition-all shadow-xl shadow-black/10 flex items-center justify-center gap-3">
-                <Download className="h-5 w-5" />
+              <Button className="flex-1 h-16 rounded-2xl bg-white border border-black/5 text-black font-black text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-xl shadow-black/[0.03] flex items-center justify-center gap-3 relative overflow-hidden group">
+                <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Download className="h-5 w-5 text-primary" />
                 <span>Download Report</span>
               </Button>
-              <Button variant="outline" className="h-16 w-16 rounded-2xl border-black/5 hover:bg-black/5 flex items-center justify-center text-black/40">
+              <Button variant="outline" className="h-16 w-16 rounded-2xl border-black/5 bg-black/[0.02] hover:bg-black/5 flex items-center justify-center text-black/40 shadow-sm">
                 <ExternalLink className="h-5 w-5" />
               </Button>
             </div>

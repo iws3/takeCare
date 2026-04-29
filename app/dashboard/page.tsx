@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
@@ -16,9 +16,9 @@ import { toast } from "sonner";
 import { DeleteConfirmationModal } from "@/components/dashboard/delete-confirmation-modal";
 import { RecordDetailsModal } from "@/components/dashboard/record-details-modal";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, XCircle } from "lucide-react";
-
-import { Heart, Activity, Pill, ShieldCheck, Loader2, Brain } from "lucide-react";
+import { Search, Filter, XCircle, CheckCircle2, BellRing, ArrowRight, Bell, Heart, Activity, Pill, ShieldCheck, Loader2, Brain } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
 
 function DashboardLoading() {
@@ -136,6 +136,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { data: session, status } = useSession();
+  const processedInvitesRef = useRef<Set<string>>(new Set());
 
   const fetchData = async () => {
     try {
@@ -145,6 +146,32 @@ export default function DashboardPage() {
       if (!data) {
          router.push("/signin");
          return;
+      }
+
+      // Check for status changes to trigger notifications
+      if (userData) {
+        const oldInvites = userData.doctorInvitations || [];
+        const newInvites = data.doctorInvitations || [];
+
+        newInvites.forEach((newInv: any) => {
+          const oldInv = oldInvites.find((o: any) => o.id === newInv.id);
+          const inviteKey = `${newInv.id}-${newInv.status}`;
+
+          if (oldInv && oldInv.status === 'PENDING' && newInv.status !== 'PENDING' && !processedInvitesRef.current.has(inviteKey)) {
+            processedInvitesRef.current.add(inviteKey);
+            
+            if (newInv.status === 'ACCEPTED') {
+              toast.success(`Dr. ${newInv.doctorName} has accepted your invitation!`, {
+                description: "You can now communicate and share records.",
+                duration: 5000
+              });
+              setUnreadNotifications(prev => prev + 1);
+            } else if (newInv.status === 'REJECTED') {
+              toast.error(`Dr. ${newInv.doctorName} declined the invitation.`);
+              setUnreadNotifications(prev => prev + 1);
+            }
+          }
+        });
       }
 
       setUserData(data);
@@ -160,7 +187,14 @@ export default function DashboardPage() {
       return;
     }
     fetchData().finally(() => setTimeout(() => setLoading(false), 2000));
-  }, [status, router]);
+
+    // Real-time synchronization polling for doctor status updates
+    const syncInterval = setInterval(() => {
+      fetchData();
+    }, 10000); // 10 seconds for a responsive feel
+
+    return () => clearInterval(syncInterval);
+  }, [status, router, userData?.doctorInvitations?.length]);
 
   // Modal States
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -323,22 +357,22 @@ export default function DashboardPage() {
                       <h2 className="font-bricolage text-2xl md:text-3xl font-extrabold tracking-tight text-black">Health History</h2>
                       <p className="text-xs md:text-sm font-bold text-black/30 uppercase tracking-widest">Manage and search your clinical records</p>
                     </div>
-                    <div className="relative group w-full md:w-80">
+                    <div className="relative group w-full md:w-96">
                       <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-black/20 group-focus-within:text-primary transition-colors">
-                        <Search className="h-4 w-4" />
+                        <Search className="h-5 w-5" />
                       </div>
                       <Input
-                        placeholder="Search records..."
+                        placeholder="Search by doctor, date, or clinical diagnosis..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="h-14 pl-12 pr-4 rounded-2xl border-black/5 bg-white shadow-sm focus:ring-primary/20 focus:border-primary transition-all font-bold text-sm"
+                        className="h-16 pl-12 pr-12 rounded-[24px] border-black/5 bg-white shadow-xl shadow-black/5 focus:ring-4 focus:ring-primary/5 transition-all font-bold text-[15px] placeholder:text-black/20"
                       />
                       {searchQuery && (
                         <button 
                           onClick={() => setSearchQuery("")}
-                          className="absolute inset-y-0 right-4 flex items-center text-black/20 hover:text-black/60 transition-colors"
+                          className="absolute inset-y-0 right-4 flex items-center text-black/40 hover:text-black transition-colors p-2"
                         >
-                          <XCircle className="h-4 w-4" />
+                          <XCircle className="h-5 w-5 fill-black/5" />
                         </button>
                       )}
                     </div>
@@ -417,6 +451,74 @@ export default function DashboardPage() {
                  <div className="flex gap-4">
                     <div className="px-6 py-3 rounded-2xl bg-white/10 text-[10px] font-black uppercase tracking-widest">Available Q3</div>
                  </div>
+              </div>
+            </motion.div>
+          ) : activeTab === "notifications" ? (
+            <motion.div
+              key="notifications"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="mt-6 flex flex-col gap-6"
+            >
+              <div className="flex flex-col gap-1">
+                <h2 className="font-bricolage text-2xl md:text-3xl font-extrabold tracking-tight text-black">Notifications Center</h2>
+                <p className="text-xs md:text-sm font-bold text-black/30 uppercase tracking-widest">Real-time health updates and clinical alerts</p>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                {(userData?.doctorInvitations || []).length > 0 ? (
+                  userData.doctorInvitations.map((inv: any, idx: number) => (
+                    <motion.div
+                      key={inv.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="p-6 bg-white rounded-3xl border border-black/5 shadow-sm flex items-center gap-6 group hover:border-primary/20 transition-all"
+                    >
+                      <div className={cn(
+                        "h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 shadow-inner",
+                        inv.status === 'ACCEPTED' ? "bg-green-50 text-green-500" : 
+                        inv.status === 'REJECTED' ? "bg-red-50 text-red-500" : "bg-black/5 text-black/20"
+                      )}>
+                        {inv.status === 'ACCEPTED' ? <CheckCircle2 className="h-6 w-6" /> : 
+                         inv.status === 'REJECTED' ? <XCircle className="h-6 w-6" /> : <BellRing className="h-6 w-6" />}
+                      </div>
+                      <div className="flex-1 flex flex-col gap-1">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-bold text-black">
+                            {inv.status === 'ACCEPTED' ? "Connection Established" : 
+                             inv.status === 'REJECTED' ? "Invitation Declined" : "Invitation Pending"}
+                          </h4>
+                          <span className="text-[10px] font-black text-black/20 uppercase tracking-widest">
+                            {new Date(inv.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <p className="text-sm text-black/50 font-medium">
+                          {inv.status === 'ACCEPTED' 
+                            ? `Dr. ${inv.doctorName} has accepted your secure clinical invitation. You can now start sharing records.`
+                            : inv.status === 'REJECTED'
+                            ? `Dr. ${inv.doctorName} was unable to accept your invitation at this time.`
+                            : `Awaiting response from Dr. ${inv.doctorName} on ${inv.platform}.`}
+                        </p>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => setActiveTab("overview")}
+                        className="rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-32 bg-black/2 rounded-[2.5rem] border border-dashed border-black/10">
+                    <Bell className="h-12 w-12 text-black/10 mb-4" />
+                    <p className="text-[10px] font-black text-black/30 uppercase tracking-[0.3em]">No alerts at this time</p>
+                    <p className="text-xs text-black/10 mt-2 font-bold">New status updates will appear here instantly.</p>
+                  </div>
+                )}
               </div>
             </motion.div>
           ) : (

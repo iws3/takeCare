@@ -6,6 +6,13 @@ const MESSAGES_FILE = path.join(process.cwd(), "messages.json");
 
 export async function GET(req: Request) {
   try {
+    const { auth } = await import("@/auth");
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const lastSeen = searchParams.get("lastSeen");
 
@@ -15,10 +22,11 @@ export async function GET(req: Request) {
 
     const history = JSON.parse(fs.readFileSync(MESSAGES_FILE, "utf-8"));
     
-    // Filter out old messages if lastSeen is provided
-    let newMessages = history;
+    // Filter by User ID AND Time
+    let newMessages = history.filter((m: any) => m.userId === session.user.id);
+    
     if (lastSeen) {
-      newMessages = history.filter((m: any) => new Date(m.receivedAt) > new Date(lastSeen));
+      newMessages = newMessages.filter((m: any) => new Date(m.receivedAt) > new Date(lastSeen));
     }
 
     return NextResponse.json({ 

@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { FileText, Calendar, Building2, User, Trash2, Loader2 } from "lucide-react";
+import { FileText, Calendar, Building2, User, Trash2, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 interface ActivityTableProps {
   records?: any[];
@@ -43,7 +43,10 @@ export function ActivityTable({ records = [], onDelete, onView, deletingId }: Ac
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-black/5 bg-black/1 px-8 py-7 gap-4">
         <div className="flex flex-col gap-1">
           <h3 className="font-bricolage text-xl font-bold lg:text-3xl tracking-tight">Health History</h3>
-          <p className="text-xs font-medium text-black/30 lg:text-sm">Your verified medical visits and clinical record chronology</p>
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-3.5 h-3.5 text-green-500" />
+            <p className="text-xs font-medium text-black/30 lg:text-sm">Secure patient access • Verified chronology</p>
+          </div>
         </div>
         <Button variant="outline" className="rounded-2xl border-black/5 bg-black/5 font-black text-xs uppercase tracking-widest hover:bg-primary hover:text-white transition-all px-8 h-12 shadow-sm">
           {hasRecords ? "View Full Timeline" : "No Records Available"}
@@ -69,6 +72,7 @@ export function ActivityTable({ records = [], onDelete, onView, deletingId }: Ac
                     <TableHead className="py-6 pl-10 font-black text-black/40 uppercase tracking-[0.2em] text-[10px]">Date</TableHead>
                     <TableHead className="py-6 font-black text-black/40 uppercase tracking-[0.2em] text-[10px]">Source Record</TableHead>
                     <TableHead className="py-6 font-black text-black/40 uppercase tracking-[0.2em] text-[10px] hidden lg:table-cell">Type</TableHead>
+                    <TableHead className="py-6 font-black text-black/40 uppercase tracking-[0.2em] text-[10px]">Status</TableHead>
                     <TableHead className="py-6 font-black text-black/40 uppercase tracking-[0.2em] text-[10px]">Clinical Summary</TableHead>
                     <TableHead className="py-6 pr-10 font-black text-black/40 uppercase tracking-[0.2em] text-[10px] text-right">Action</TableHead>
                   </TableRow>
@@ -84,23 +88,29 @@ export function ActivityTable({ records = [], onDelete, onView, deletingId }: Ac
                       </TableCell>
                       <TableCell className="py-7 font-medium text-black/40 text-sm hidden lg:table-cell italic">{record.type}</TableCell>
                       <TableCell className="py-7">
-                        <div className="flex items-center gap-3">
-                          <div className="flex flex-col gap-1">
-                            <span className="font-bold text-black text-sm max-w-[300px] leading-snug">
-                              {truncateWords(record.analysis?.summary || record.fallbackSummary || "Analyzing context...", 29)}
-                            </span>
-                            {(record.analysis?.summary || record.fallbackSummary)?.split(/\s+/).length > 29 && (
-                              <button 
-                                onClick={() => onView?.(record)}
-                                className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline text-left"
-                              >
-                                Read More
-                              </button>
-                            )}
-                          </div>
-                          <Badge variant="outline" className="rounded-full bg-black/5 text-black border-transparent font-black text-[9px] px-3 py-0.5 whitespace-nowrap self-start">
-                            {record.analysis ? "Verified" : "Pending"}
-                          </Badge>
+                        <Badge className={cn(
+                          "rounded-full font-black text-[9px] px-3 py-1 uppercase tracking-wider border-none shadow-sm",
+                          record.analysis ? "bg-emerald-500/10 text-emerald-600" : 
+                          record.type === "CLINICAL_ASSESSMENT" ? "bg-blue-500/10 text-blue-600" :
+                          "bg-amber-500/10 text-amber-600"
+                        )}>
+                          {record.analysis ? "Verified" : 
+                           record.type === "CLINICAL_ASSESSMENT" ? "Assessment" : "Pending"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="py-7">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-bold text-black text-sm max-w-[300px] leading-snug">
+                            {truncateWords(record.analysis?.summary || record.fallbackSummary || "Analyzing context...", 29)}
+                          </span>
+                          {(record.analysis?.summary || record.fallbackSummary)?.split(/\s+/).length > 29 && (
+                            <button 
+                              onClick={() => onView?.(record)}
+                              className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline text-left mt-1"
+                            >
+                              Read More
+                            </button>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className="py-7 pr-10 text-right">
@@ -141,8 +151,14 @@ export function ActivityTable({ records = [], onDelete, onView, deletingId }: Ac
                       </span>
                       <h4 className="font-outfit text-lg font-extrabold text-primary leading-tight">{record.fileName}</h4>
                     </div>
-                    <Badge variant="outline" className="rounded-full bg-black/5 text-black border-transparent font-black text-[8px] px-2.5 py-0.5">
-                      {record.analysis ? "Verified" : "Pending"}
+                    <Badge className={cn(
+                      "rounded-full font-black text-[8px] px-2.5 py-0.5 uppercase tracking-wider border-none shadow-sm",
+                      record.analysis ? "bg-emerald-500/10 text-emerald-600" : 
+                      record.type === "CLINICAL_ASSESSMENT" ? "bg-blue-500/10 text-blue-600" :
+                      "bg-amber-500/10 text-amber-600"
+                    )}>
+                      {record.analysis ? "Verified" : 
+                       record.type === "CLINICAL_ASSESSMENT" ? "Assessment" : "Pending"}
                     </Badge>
                   </div>
                   
