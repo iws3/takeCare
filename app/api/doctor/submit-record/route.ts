@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sendReportNotificationEmail } from "@/lib/mail";
 
 export async function POST(req: Request) {
   try {
@@ -50,6 +51,20 @@ export async function POST(req: Request) {
         }
       });
       fileRecords.push(record);
+    }
+
+    // Trigger Email Notification to Patient
+    try {
+      if (invitation.user.email) {
+        await sendReportNotificationEmail(
+          invitation.user.email,
+          invitation.user.name || "Patient",
+          invitation.doctorName
+        );
+      }
+    } catch (emailError) {
+      console.error("[Email Notification Error]", emailError);
+      // Don't fail the request if email fails
     }
 
     return NextResponse.json({ 

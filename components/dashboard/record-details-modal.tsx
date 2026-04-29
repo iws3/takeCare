@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 interface RecordDetailsPanelProps {
   isOpen: boolean;
@@ -263,12 +264,27 @@ export function RecordDetailsModal({
 
             {/* Quick Actions Footer - Sticky */}
             <div className="p-6 md:p-8 bg-white border-t border-black/[0.03] flex items-center gap-4 shrink-0">
-              <Button className="flex-1 h-16 rounded-2xl bg-white border border-black/5 text-black font-black text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-xl shadow-black/[0.03] flex items-center justify-center gap-3 relative overflow-hidden group">
+              <Button 
+                onClick={() => {
+                  if (record.url && record.url !== "N/A") {
+                    window.open(record.url, "_blank");
+                  } else {
+                    toast.info("Processing original file...", {
+                      description: "The source document is being synchronized from the clinical vault."
+                    });
+                  }
+                }}
+                className="flex-1 h-16 rounded-2xl bg-white border border-black/5 text-black font-black text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-xl shadow-black/[0.03] flex items-center justify-center gap-3 relative overflow-hidden group"
+              >
                 <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <Download className="h-5 w-5 text-primary" />
-                <span>Download Report</span>
+                <span>{record.type === "CLINICAL_NOTE" ? "View Report" : "Download Document"}</span>
               </Button>
-              <Button variant="outline" className="h-16 w-16 rounded-2xl border-black/5 bg-black/[0.02] hover:bg-black/5 flex items-center justify-center text-black/40 shadow-sm">
+              <Button 
+                variant="outline" 
+                onClick={() => record.url && window.open(record.url, "_blank")}
+                className="h-16 w-16 rounded-2xl border-black/5 bg-black/[0.02] hover:bg-black/5 flex items-center justify-center text-black/40 shadow-sm"
+              >
                 <ExternalLink className="h-5 w-5" />
               </Button>
             </div>

@@ -174,6 +174,22 @@ export default function DashboardPage() {
         });
       }
 
+      // Check for new medical records to trigger a "World-Class" notification
+      if (userData && userData.medicalRecords) {
+        const oldRecordsCount = userData.medicalRecords.length;
+        const newRecordsCount = data.medicalRecords.length;
+
+        if (newRecordsCount > oldRecordsCount) {
+          const newRecord = data.medicalRecords[0]; // Assuming records are sorted by date desc
+          toast.success("New Clinical Assessment Received!", {
+            description: `A new report "${newRecord.fileName}" has been added to your record by your doctor.`,
+            duration: 8000,
+            icon: <CheckCircle2 className="h-5 w-5 text-emerald-500" />,
+          });
+          setUnreadNotifications(prev => prev + 1);
+        }
+      }
+
       setUserData(data);
     } catch (e) {
       console.error(e);
