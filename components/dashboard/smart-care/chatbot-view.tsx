@@ -38,24 +38,32 @@ import { Button } from "@/components/ui/button";
 
 interface ChatbotViewProps {
   userName: string;
-  messages: any[];
-  input?: string;
-  handleInputChange: (e: any) => void;
-  handleSubmit: (e: any) => void;
-  isLoading: boolean;
-  setInput?: (input: string) => void;
-  append: (message: any) => Promise<string | null | undefined>;
+  initialMessages?: any[];
+  onMessagesChange?: (messages: any[]) => void;
 }
 
 export function ChatbotView({ 
   userName, 
-  messages, 
-  handleInputChange, 
-  handleSubmit, 
-  isLoading, 
-  setInput,
-  append 
+  initialMessages = [], 
+  onMessagesChange 
 }: ChatbotViewProps) {
+  const { messages, input, handleInputChange, handleSubmit, isLoading, setInput, append } = useChat({
+    api: "/api/smart-care/chat",
+    initialMessages,
+    onFinish: (message) => {
+      if (onMessagesChange) {
+        // Sync back to parent
+        // Note: we might need to wait for the next tick or use messages from the hook
+      }
+    }
+  });
+
+  // Sync messages to parent whenever they change
+  useEffect(() => {
+    if (onMessagesChange && messages.length > initialMessages.length) {
+      onMessagesChange(messages);
+    }
+  }, [messages, onMessagesChange, initialMessages.length]);
   
   // Use local state for the input to guarantee responsiveness and bypass any hook-related typing issues
   const [localInput, setLocalInput] = useState("");

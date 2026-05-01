@@ -93,21 +93,7 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
     },
   ], [userName]);
 
-  const { 
-    messages, 
-    input, 
-    handleInputChange, 
-    handleSubmit, 
-    isLoading, 
-    setInput, 
-    append,
-    // @ts-ignore - check for 'submit' in newer SDK versions
-    submit 
-  } = useChat({
-    api: "/api/smart-care/chat",
-    initialMessages: initialChatMessages,
-    initialInput: "",
-  });
+  const [chatMessages, setChatMessages] = useState<any[]>(initialChatMessages);
 
   // Automatically load the extracted context from the database
   useEffect(() => {
@@ -199,13 +185,8 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
           <TabsContent value="text" key="text">
             <ChatbotView 
               userName={userName} 
-              messages={messages}
-              input={input}
-              handleInputChange={handleInputChange}
-              handleSubmit={handleSubmit || (submit as any)}
-              isLoading={isLoading}
-              setInput={setInput}
-              append={append}
+              initialMessages={chatMessages}
+              onMessagesChange={setChatMessages}
             />
           </TabsContent>
           <TabsContent value="analyze" key="analyze">
