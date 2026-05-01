@@ -83,11 +83,22 @@ export function ChatbotView({ userName, chatState }: ChatbotViewProps) {
     setLocalInput("");
 
     try {
-      // Use append instead of handleSubmit to bypass input state sync issues
-      await append({
-        role: "user",
-        content: messageToSend,
-      });
+      // Use append if available, otherwise fallback to handleSubmit with state sync
+      if (typeof append === "function") {
+        await append({
+          role: "user",
+          content: messageToSend,
+        });
+      } else {
+        // Fallback: sync input and then submit
+        if (typeof setInput === 'function') {
+          setInput(messageToSend);
+        }
+        // We use a small timeout to ensure the SDK state has updated before handleSubmit reads it
+        setTimeout(() => {
+          handleSubmit(e);
+        }, 50);
+      }
     } catch (error) {
       console.error("Failed to send message:", error);
       // Fallback: restore input if it failed
