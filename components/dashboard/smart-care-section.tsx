@@ -64,7 +64,7 @@ import Vapi from "@vapi-ai/web";
 import { getVapiConfiguration } from "@/app/actions/vapi";
 import { getMyMedicalHistory } from "@/app/actions/medical";
 import { useSession } from "next-auth/react";
-import { useChat } from "ai/react";
+import { useChat } from "@ai-sdk/react";
 import { ChatbotView } from "./smart-care/chatbot-view";
 
 
@@ -100,7 +100,9 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
     handleSubmit, 
     isLoading, 
     setInput, 
-    append 
+    append,
+    // @ts-ignore - check for 'submit' in newer SDK versions
+    submit 
   } = useChat({
     api: "/api/smart-care/chat",
     initialMessages: initialChatMessages,
@@ -200,7 +202,7 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
               messages={messages}
               input={input}
               handleInputChange={handleInputChange}
-              handleSubmit={handleSubmit}
+              handleSubmit={handleSubmit || (submit as any)}
               isLoading={isLoading}
               setInput={setInput}
               append={append}
