@@ -38,11 +38,24 @@ import { Button } from "@/components/ui/button";
 
 interface ChatbotViewProps {
   userName: string;
-  chatState: ReturnType<typeof useChat>;
+  messages: any[];
+  input?: string;
+  handleInputChange: (e: any) => void;
+  handleSubmit: (e: any) => void;
+  isLoading: boolean;
+  setInput?: (input: string) => void;
+  append: (message: any) => Promise<string | null | undefined>;
 }
 
-export function ChatbotView({ userName, chatState }: ChatbotViewProps) {
-  const { messages, handleInputChange, handleSubmit, isLoading, setInput, append } = chatState;
+export function ChatbotView({ 
+  userName, 
+  messages, 
+  handleInputChange, 
+  handleSubmit, 
+  isLoading, 
+  setInput,
+  append 
+}: ChatbotViewProps) {
   
   // Use local state for the input to guarantee responsiveness and bypass any hook-related typing issues
   const [localInput, setLocalInput] = useState("");

@@ -93,7 +93,15 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
     },
   ], [userName]);
 
-  const chatState = useChat({
+  const { 
+    messages, 
+    input, 
+    handleInputChange, 
+    handleSubmit, 
+    isLoading, 
+    setInput, 
+    append 
+  } = useChat({
     api: "/api/smart-care/chat",
     initialMessages: initialChatMessages,
     initialInput: "",
@@ -187,7 +195,16 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
           </TabsContent>
 
           <TabsContent value="text" key="text">
-            <ChatbotView userName={userName} chatState={chatState} />
+            <ChatbotView 
+              userName={userName} 
+              messages={messages}
+              input={input}
+              handleInputChange={handleInputChange}
+              handleSubmit={handleSubmit}
+              isLoading={isLoading}
+              setInput={setInput}
+              append={append}
+            />
           </TabsContent>
           <TabsContent value="analyze" key="analyze">
             <AnalysisView
