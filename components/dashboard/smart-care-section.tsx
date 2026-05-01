@@ -64,7 +64,7 @@ import Vapi from "@vapi-ai/web";
 import { getVapiConfiguration } from "@/app/actions/vapi";
 import { getMyMedicalHistory } from "@/app/actions/medical";
 import { useSession } from "next-auth/react";
-import { useChat } from "@ai-sdk/react";
+import { useChat } from "ai/react";
 import { ChatbotView } from "./smart-care/chatbot-view";
 
 

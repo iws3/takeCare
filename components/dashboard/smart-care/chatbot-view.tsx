@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { useChat } from "@ai-sdk/react";
+import { useChat } from "ai/react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { 
@@ -102,15 +102,21 @@ export function ChatbotView({
           role: "user",
           content: messageToSend,
         });
-      } else {
+      } else if (typeof handleSubmit === "function") {
         // Fallback: sync input and then submit
         if (typeof setInput === 'function') {
           setInput(messageToSend);
         }
         // We use a small timeout to ensure the SDK state has updated before handleSubmit reads it
         setTimeout(() => {
-          handleSubmit(e);
+          if (typeof handleSubmit === "function") {
+            handleSubmit(e);
+          }
         }, 50);
+      } else {
+        console.error("Critical: Neither append nor handleSubmit is a function");
+        // Final fallback: just add the user message locally so they see what they typed
+        // but this won't trigger the AI without a working hook
       }
     } catch (error) {
       console.error("Failed to send message:", error);
