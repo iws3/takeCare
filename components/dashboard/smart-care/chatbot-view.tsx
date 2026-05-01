@@ -42,7 +42,7 @@ interface ChatbotViewProps {
 }
 
 export function ChatbotView({ userName, chatState }: ChatbotViewProps) {
-  const { messages, handleInputChange, handleSubmit, isLoading, setInput } = chatState;
+  const { messages, handleInputChange, handleSubmit, isLoading, setInput, append } = chatState;
   
   // Use local state for the input to guarantee responsiveness and bypass any hook-related typing issues
   const [localInput, setLocalInput] = useState("");
@@ -75,18 +75,24 @@ export function ChatbotView({ userName, chatState }: ChatbotViewProps) {
 
   const onFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!localInput.trim()) return;
+    if (!localInput.trim() || isLoading) return;
 
-    // Sync local input to SDK state before submitting
-    if (typeof setInput === 'function') {
-      await setInput(localInput);
-    }
+    const messageToSend = localInput.trim();
     
-    // Trigger submission
-    handleSubmit(e);
-    
-    // Clear local input
+    // Clear local input immediately for better UX
     setLocalInput("");
+
+    try {
+      // Use append instead of handleSubmit to bypass input state sync issues
+      await append({
+        role: "user",
+        content: messageToSend,
+      });
+    } catch (error) {
+      console.error("Failed to send message:", error);
+      // Fallback: restore input if it failed
+      setLocalInput(messageToSend);
+    }
   };
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
