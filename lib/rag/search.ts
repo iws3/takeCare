@@ -1,0 +1,55 @@
+import { embed } from 'ai';
+import { google } from '@ai-sdk/google';
+import { prisma } from '@/lib/prisma';
+
+const embeddingModel = google.textEmbeddingModel('text-embedding-004');
+
+export interface SearchResult {
+  id: string;
+  fileName: string;
+  type: string;
+  extractedText: string | null;
+  similarity: number;
+  createdAt: Date;
+}
+
+export async function searchMedicalRecords(
+  userId: string,
+  query: string,
+  limit: number = 3
+): Promise<SearchResult[]> {
+  // Embed the user's query into the same vector space as the stored records
+  const { embedding } = await embed({ model: embeddingModel, value: query });
+  const vectorString = JSON.stringify(embedding);
+
+  // <=> is the pgvector cosine distance operator (lower = more similar)
+  // We filter by userId first so the vector search only touches this patient's data
+  return prisma.$queryRaw<SearchResult[]>`
+    SELECT
+      id, "fileName", type, "extractedText", "createdAt",
+      1 - (embedding <=> ${vectorString}::vector) AS similarity
+    FROM "MedicalRecord"
+    WHERE "userId" = ${userId}
+    AND embedding IS NOT NULL
+    ORDER BY embedding <=> ${vectorString}::vector
+    LIMIT ${limit}
+  `;
+}
+
+export async function searchVapiTranscripts(
+  userId: string,
+  query: string,
+  limit: number = 2
+): Promise<any[]> {
+  const { embedding } = await embed({ model: embeddingModel, value: query });
+  const vectorString = JSON.stringify(embedding);
+
+  return prisma.$queryRaw`
+    SELECT id, transcript, summary, "createdAt",
+    1 - (embedding <=> ${vectorString}::vector) AS similarity
+    FROM "VapiTranscript"
+    WHERE "userId" = ${userId} AND embedding IS NOT NULL
+    ORDER BY embedding <=> ${vectorString}::vector
+    LIMIT ${limit}
+  `;
+}

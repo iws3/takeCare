@@ -1,28 +1,31 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
 }
 
-
-
-
 model User {
-  id               String           @id @default(cuid())
-  clerkId          String?          @unique
-  username         String?          @unique
-  email            String           @unique
-  password         String?
-  name             String?
-  avatarUrl        String?
-  coverImageUrl    String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  personalization  Personalization?
-  medicalRecords   MedicalRecord[]
+  id                String              @id @default(cuid())
+  clerkId           String?             @unique
+  username          String?             @unique
+  email             String              @unique
+  password          String?
+  name              String?
+  avatarUrl         String?
+  coverImageUrl     String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  personalization   Personalization?
+  medicalRecords    MedicalRecord[]
   doctorInvitations DoctorInvitation[]
+  conversations     Conversation[]
+  vapiTranscripts   VapiTranscript[]
+  doctorIntelligence DoctorIntelligence?
 }
 
 model DoctorInvitation {
@@ -31,7 +34,7 @@ model DoctorInvitation {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   doctorName  String
   contactInfo String
-  platform    String   // e.g. "whatsapp", "telegram", "gmail"
+  platform    String // e.g. "whatsapp", "telegram", "gmail"
   status      String   @default("PENDING") // "PENDING", "ACCEPTED", "DECLINED"
   otp         String?
   otpExpires  DateTime?
@@ -39,30 +42,29 @@ model DoctorInvitation {
   updatedAt   DateTime @updatedAt
 }
 
-
 model Personalization {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  healthGoals     String[]
-  bloodType       String?
-  allergies       String[]
-  emergencyPhone  String?
-  theme           String?
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  healthGoals    String[]
+  bloodType      String?
+  allergies      String[]
+  emergencyPhone String?
+  theme          String?
+  updatedAt      DateTime @updatedAt
 }
 
-
 model MedicalRecord {
-  id           String      @id @default(cuid())
-  userId       String
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type         String      // e.g., "IMAGE", "PDF", "REPORT"
-  url          String      // URL to the stored file
-  fileName     String
-  description  String?
-  extractedText String?     @db.Text
-  createdAt    DateTime    @default(now())
+  id            String                      @id @default(cuid())
+  userId        String
+  user          User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          String // e.g., "IMAGE", "PDF", "REPORT"
+  url           String // URL to the stored file
+  fileName      String
+  description   String?
+  extractedText String?                     @db.Text
+  embedding     Unsupported("vector(768)")?
+  createdAt     DateTime                    @default(now())
   analysis      Analysis?
 }
 
@@ -71,9 +73,52 @@ model Analysis {
   medicalRecordId String        @unique
   medicalRecord   MedicalRecord @relation(fields: [medicalRecordId], references: [id], onDelete: Cascade)
   summary         String        @db.Text
-  severity        String?       // "LOW", "MEDIUM", "HIGH"
+  severity        String? // "LOW", "MEDIUM", "HIGH"
   recommendations String[]
   rawJson         Json?
   createdAt       DateTime      @default(now())
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String?
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String // 'user' | 'assistant'
+  content        String       @db.Text
+  uiMessageJson  Json? // full UIMessage snapshot for stream restoration
+  createdAt      DateTime     @default(now())
+}
+
+model VapiTranscript {
+  id         String                      @id @default(cuid())
+  userId     String
+  user       User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  callId     String                      @unique
+  transcript String                      @db.Text
+  summary    String?                     @db.Text
+  embedding  Unsupported("vector(768)")?
+  metadata   Json?
+  createdAt  DateTime                    @default(now())
+}
+
+model DoctorIntelligence {
+  id             String                      @id @default(cuid())
+  userId         String                      @unique
+  user           User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  structuredJson Json
+  summary        String                      @db.Text
+  embedding      Unsupported("vector(768)")?
+  lastSyncedAt   DateTime                    @default(now())
+  updatedAt      DateTime                    @updatedAt
 }
 

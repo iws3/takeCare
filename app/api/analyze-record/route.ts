@@ -3,6 +3,7 @@ import { google } from "@ai-sdk/google";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { embed } from "ai";
 
 export async function POST(req: Request) {
   try {
@@ -145,6 +146,33 @@ Do not include any text outside of the JSON object.
         });
 
         console.log("[Route] Successfully saved medical record and analysis for user:", session.user.id);
+
+        // INDEXING: Embed record for RAG
+        try {
+          const textForEmbedding = [
+            parsedResult.analysis,
+            parsedResult.structuredData?.patient_summary?.diagnosis || "",
+            (parsedResult.structuredData?.patient_summary?.symptoms || []).join(", "),
+            (parsedResult.structuredData?.patient_summary?.medications || [])
+              .map((m: any) => `${m.name} ${m.dosage}`).join(", "),
+            parsedResult.structuredData?.patient_summary?.clinical_history || "",
+          ].filter(Boolean).join(" | ");
+
+          const { embedding } = await embed({
+            model: google.textEmbeddingModel("text-embedding-004"),
+            value: textForEmbedding,
+          });
+
+          const vectorString = JSON.stringify(embedding);
+          await prisma.$executeRaw`
+            UPDATE "MedicalRecord"
+            SET embedding = ${vectorString}::vector
+            WHERE id = ${record.id}
+          `;
+          console.log("[RAG] Indexing complete for record:", record.id);
+        } catch (indexingError) {
+          console.error("[RAG] Indexing failed:", indexingError);
+        }
       }
     } catch (authDbError) {
       // In production, log error but don't crash the entire request

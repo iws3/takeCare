@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,11 +64,13 @@ import Vapi from "@vapi-ai/web";
 import { getVapiConfiguration } from "@/app/actions/vapi";
 import { getMyMedicalHistory } from "@/app/actions/medical";
 import { useSession } from "next-auth/react";
+import { useChat } from "@ai-sdk/react";
+import { ChatbotView } from "./smart-care/chatbot-view";
 
 
 const SMART_CARE_TABS = [
   { id: "talk", label: "Talk", icon: Mic, description: "Voice interaction with AI medical agent" },
-  { id: "text", label: "Text", icon: MessageSquareText, description: "Secure chat with medical AI" },
+  { id: "text", label: "Chat", icon: MessageSquareText, description: "Secure chat with medical AI" },
   { id: "analyze", label: "Analyze", icon: BarChart3, description: "Deep analysis of health records" },
 ];
 
@@ -81,6 +83,21 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
   const [patientId, setPatientId] = useState<string | null>(null);
 
   const { data: session, status } = useSession();
+
+  // Memoize initial messages to prevent useChat from resetting
+  const initialChatMessages = useMemo(() => [
+    {
+      id: "welcome",
+      role: "assistant" as const,
+      content: `Hello ${userName.split(" ")[0]}! I'm Dr. Leo. I have access to your medical records and consultation history. How can I assist you with your health today?`,
+    },
+  ], [userName]);
+
+  const chatState = useChat({
+    api: "/api/smart-care/chat",
+    initialMessages: initialChatMessages,
+    initialInput: "",
+  });
 
   // Automatically load the extracted context from the database
   useEffect(() => {
@@ -170,7 +187,7 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
           </TabsContent>
 
           <TabsContent value="text" key="text">
-            <ChatbotView userName={userName} />
+            <ChatbotView userName={userName} chatState={chatState} />
           </TabsContent>
           <TabsContent value="analyze" key="analyze">
             <AnalysisView
@@ -309,6 +326,10 @@ function VoiceAgentView({
           voiceId: "Leo",
         },
         backgroundDenoisingEnabled: true,
+        metadata: {
+          userId: session?.user?.id,
+          userName: userName,
+        },
       });
 
     } catch (error) {
@@ -538,91 +559,7 @@ function VoiceAgentView({
 
 
 
-function ChatbotView({ userName }: { userName: string }) {
-  const [messages, setMessages] = useState([
-    { role: "assistant", content: `Hello ${userName.split(' ')[0]}! I'm your Smart Care assistant. How are you feeling today?` }
-  ]);
-  const [isLoading, setIsLoading] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const handleSendMessage = (content: string) => {
-    const userMsg = { role: "user", content };
-    setMessages(prev => [...prev, userMsg]);
-    setIsLoading(true);
-
-    // Mock AI response
-    setTimeout(() => {
-      setMessages(prev => [...prev, {
-        role: "assistant",
-        content: "I understand. Based on your recent health records, I'd recommend monitoring your activity levels today. Would you like me to analyze your latest blood test results?"
-      }]);
-      setIsLoading(false);
-    }, 1000);
-  };
-
-
-  return (    <motion.div
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col flex-1 min-h-[500px] h-[calc(100vh-280px)] bg-slate-50/50 rounded-[2rem] md:rounded-[3rem] border border-black/[0.05] overflow-hidden relative group"
-    >
-      {/* Blurred Background Chat Mockup */}
-      <div className="absolute inset-0 opacity-20 blur-xl scale-110 pointer-events-none select-none">
-        <div className="flex flex-col gap-8 p-10">
-          <div className="h-20 w-3/4 bg-primary/20 rounded-3xl self-start" />
-          <div className="h-16 w-1/2 bg-black/10 rounded-3xl self-end" />
-          <div className="h-24 w-2/3 bg-primary/20 rounded-3xl self-start" />
-          <div className="h-12 w-1/3 bg-black/10 rounded-3xl self-end" />
-        </div>
-      </div>
-
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-8 text-center space-y-6">
-        <div className="relative">
-          <div className="h-24 w-24 bg-white rounded-[2rem] shadow-2xl flex items-center justify-center relative z-10 border border-black/[0.03]">
-            <Bot className="h-10 w-10 text-primary animate-pulse" />
-          </div>
-          <div className="absolute -inset-4 bg-primary/5 rounded-full blur-2xl animate-pulse" />
-        </div>
-
-        <div className="space-y-2 max-w-sm">
-          <h2 className="text-3xl font-black font-bricolage tracking-tighter">AI Chat Refining</h2>
-          <p className="text-sm font-medium text-black/50 leading-relaxed">
-            We're currently fine-tuning our medical intelligence engine for a more precise diagnostic experience.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <span className="px-5 py-2 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase tracking-widest border border-primary/20">
-            Coming Soon
-          </span>
-          <span className="px-5 py-2 bg-black/[0.03] text-black/40 rounded-full text-[10px] font-black uppercase tracking-widest border border-black/[0.05]">
-            Q2 2026
-          </span>
-        </div>
-      </div>
-
-      {/* Modern Glass Footer */}
-      <div className="p-8 mt-auto flex justify-center border-t border-black/[0.03]">
-         <div className="flex items-center gap-6 opacity-30">
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
-              <div className="h-1 w-1 bg-green-500 rounded-full" />
-              Secure Ingestion active
-            </span>
-            <span className="text-[9px] font-black uppercase tracking-[0.2em]">Next-Gen Medical AI</span>
-          </div>
-      </div>
-    </motion.div>
-
-  );
-}
 
 function AnalysisView({
   medicalContext,
