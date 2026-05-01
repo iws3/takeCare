@@ -73,6 +73,22 @@ export function ChatbotView({ userName, chatState }: ChatbotViewProps) {
     }, 100);
   };
 
+  const onFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!localInput.trim()) return;
+
+    // Sync local input to SDK state before submitting
+    if (typeof setInput === 'function') {
+      await setInput(localInput);
+    }
+    
+    // Trigger submission
+    handleSubmit(e);
+    
+    // Clear local input
+    setLocalInput("");
+  };
+
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll logic
@@ -229,7 +245,7 @@ export function ChatbotView({ userName, chatState }: ChatbotViewProps) {
       <div className="p-6 bg-slate-50/50 backdrop-blur-xl border-t border-black/5 shrink-0">
         <div className="max-w-3xl mx-auto flex flex-col gap-3">
           {/* Tool Suggestion Chips */}
-          {!input && !isLoading && (
+          {!localInput && !isLoading && (
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -249,7 +265,7 @@ export function ChatbotView({ userName, chatState }: ChatbotViewProps) {
           )}
 
           <form
-            onSubmit={handleSubmit}
+            onSubmit={onFormSubmit}
             className="flex items-center gap-2 bg-white rounded-[2rem] p-2 pl-2 border border-black/5 shadow-2xl shadow-black/5 focus-within:border-primary/30 transition-all relative group"
           >
             {/* Claude-style Tool/Plus Menu */}
@@ -290,10 +306,10 @@ export function ChatbotView({ userName, chatState }: ChatbotViewProps) {
 
             <button
               type="submit"
-              disabled={isLoading || !input?.trim()}
+              disabled={isLoading || !localInput?.trim()}
               className={cn(
                 "h-12 w-12 rounded-full flex items-center justify-center transition-all shadow-lg",
-                input?.trim() 
+                localInput?.trim() 
                   ? "bg-black text-white shadow-black/20 hover:scale-105 active:scale-95" 
                   : "bg-black/5 text-black/20 scale-95"
               )}
