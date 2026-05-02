@@ -38,29 +38,20 @@ import { Button } from "@/components/ui/button";
 
 interface ChatbotViewProps {
   userName: string;
-  initialMessages?: any[];
-  onMessagesChange?: (messages: any[]) => void;
+  messages: any[];
+  sendMessage: (content: string) => void;
+  status: string;
+  setMessages: (messages: any[]) => void;
 }
 
 export function ChatbotView({ 
   userName, 
-  initialMessages = [], 
-  onMessagesChange 
+  messages, 
+  sendMessage, 
+  status,
+  setMessages 
 }: ChatbotViewProps) {
-  // Based on SDK inspection, this version uses sendMessage and status
-  const { messages, sendMessage, status, setMessages } = useChat({
-    api: "/api/smart-care/chat",
-    initialMessages,
-  });
-
   const isLoading = status === "submitting" || status === "streaming";
-
-  // Sync messages to parent whenever they change for tab persistence
-  useEffect(() => {
-    if (onMessagesChange && messages.length > initialMessages.length) {
-      onMessagesChange(messages);
-    }
-  }, [messages, onMessagesChange, initialMessages.length]);
   
   // Use local state for the input to guarantee responsiveness and bypass any hook-related typing issues
   const [localInput, setLocalInput] = useState("");
@@ -103,7 +94,7 @@ export function ChatbotView({
     try {
       // Direct call to sendMessage which is the correct method for this SDK version
       if (typeof sendMessage === "function") {
-        await sendMessage(messageToSend);
+        sendMessage(messageToSend);
       } else {
         console.error("Critical: sendMessage is not a function in this SDK version", { status, sendMessage });
       }

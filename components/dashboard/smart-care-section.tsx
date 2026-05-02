@@ -93,7 +93,12 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
     },
   ], [userName]);
 
-  const [chatMessages, setChatMessages] = useState<any[]>(initialChatMessages);
+  // Use stable id to ensure state persistence in v6
+  const { messages, sendMessage, status, setMessages } = useChat({
+    id: "smart-care-chat",
+    api: "/api/smart-care/chat",
+    initialMessages: initialChatMessages,
+  });
 
   // Automatically load the extracted context from the database
   useEffect(() => {
@@ -185,8 +190,10 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
           <TabsContent value="text" key="text">
             <ChatbotView 
               userName={userName} 
-              initialMessages={chatMessages}
-              onMessagesChange={setChatMessages}
+              messages={messages}
+              sendMessage={sendMessage}
+              status={status}
+              setMessages={setMessages}
             />
           </TabsContent>
           <TabsContent value="analyze" key="analyze">
