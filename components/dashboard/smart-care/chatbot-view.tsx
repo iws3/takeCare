@@ -47,18 +47,15 @@ export function ChatbotView({
   initialMessages = [], 
   onMessagesChange 
 }: ChatbotViewProps) {
-  const { messages, input, handleInputChange, handleSubmit, isLoading, setInput, append } = useChat({
+  // Based on SDK inspection, this version uses sendMessage and status
+  const { messages, sendMessage, status, setMessages } = useChat({
     api: "/api/smart-care/chat",
     initialMessages,
-    onFinish: (message) => {
-      if (onMessagesChange) {
-        // Sync back to parent
-        // Note: we might need to wait for the next tick or use messages from the hook
-      }
-    }
   });
 
-  // Sync messages to parent whenever they change
+  const isLoading = status === "submitting" || status === "streaming";
+
+  // Sync messages to parent whenever they change for tab persistence
   useEffect(() => {
     if (onMessagesChange && messages.length > initialMessages.length) {
       onMessagesChange(messages);
@@ -104,27 +101,11 @@ export function ChatbotView({
     setLocalInput("");
 
     try {
-      // Use append if available, otherwise fallback to handleSubmit with state sync
-      if (typeof append === "function") {
-        await append({
-          role: "user",
-          content: messageToSend,
-        });
-      } else if (typeof handleSubmit === "function") {
-        // Fallback: sync input and then submit
-        if (typeof setInput === 'function') {
-          setInput(messageToSend);
-        }
-        // We use a small timeout to ensure the SDK state has updated before handleSubmit reads it
-        setTimeout(() => {
-          if (typeof handleSubmit === "function") {
-            handleSubmit(e);
-          }
-        }, 50);
+      // Direct call to sendMessage which is the correct method for this SDK version
+      if (typeof sendMessage === "function") {
+        await sendMessage(messageToSend);
       } else {
-        console.error("Critical: Neither append nor handleSubmit is a function");
-        // Final fallback: just add the user message locally so they see what they typed
-        // but this won't trigger the AI without a working hook
+        console.error("Critical: sendMessage is not a function in this SDK version", { status, sendMessage });
       }
     } catch (error) {
       console.error("Failed to send message:", error);
