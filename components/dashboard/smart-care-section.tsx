@@ -94,7 +94,7 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
   ], [userName]);
 
   // Use stable id to ensure state persistence in v6
-  const { messages, sendMessage, status, setMessages } = useChat({
+  const { messages, sendMessage, status: chatStatus, setMessages } = useChat({
     id: "smart-care-chat",
     api: "/api/smart-care/chat",
     initialMessages: initialChatMessages,
@@ -192,7 +192,7 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
               userName={userName} 
               messages={messages}
               sendMessage={sendMessage}
-              status={status}
+              status={chatStatus}
               setMessages={setMessages}
             />
           </TabsContent>
