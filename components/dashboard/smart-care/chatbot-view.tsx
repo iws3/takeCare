@@ -94,7 +94,7 @@ export function ChatbotView({
     try {
       // Direct call to sendMessage which is the correct method for this SDK version
       if (typeof sendMessage === "function") {
-        sendMessage(messageToSend);
+        sendMessage({ text: messageToSend });
       } else {
         console.error("Critical: sendMessage is not a function in this SDK version", { status, sendMessage });
       }

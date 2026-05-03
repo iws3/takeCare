@@ -23,7 +23,7 @@ export async function GET(req: Request) {
     const history = JSON.parse(fs.readFileSync(MESSAGES_FILE, "utf-8"));
     
     // Filter by User ID AND Time
-    let newMessages = history.filter((m: any) => m.userId === session.user.id);
+    let newMessages = history.filter((m: any) => m.userId === session?.user?.id);
     
     if (lastSeen) {
       newMessages = newMessages.filter((m: any) => new Date(m.receivedAt) > new Date(lastSeen));
