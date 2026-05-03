@@ -48,7 +48,7 @@ export async function POST(req: Request) {
   const tools = createHealthTools(userId);
 
   const result = await streamText({
-    model: google('gemini-2.5-flash'),
+    model: google('gemini-1.5-flash'),
     system: `
 You are Dr. Leo, a compassionate and brilliant AI health assistant for TakeCare.
 You have tools to search the patient's actual medical records, vitals, doctor notes, voice consultation history, and current medical research.

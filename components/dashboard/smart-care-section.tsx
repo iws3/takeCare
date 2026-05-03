@@ -102,10 +102,17 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
 
   // Provide a stable sendMessage function for the ChatbotView component
   const sendMessage = React.useCallback(async ({ text }: { text: string }) => {
-    await append({
-      role: "user",
-      content: text,
-    });
+    console.log("SmartCareSection: sendMessage triggered with:", text);
+    try {
+      const response = await append({
+        role: "user",
+        content: text,
+      });
+      console.log("SmartCareSection: append completed successfully", response);
+    } catch (error) {
+      console.error("SmartCareSection: append failed!", error);
+      toast.error("Failed to send message. Please check your connection.");
+    }
   }, [append]);
 
   // Automatically load the extracted context from the database

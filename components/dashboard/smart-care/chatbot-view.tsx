@@ -39,7 +39,7 @@ import { Button } from "@/components/ui/button";
 interface ChatbotViewProps {
   userName: string;
   messages: any[];
-  sendMessage: (content: string) => void;
+  sendMessage: (message: { text: string }) => void;
   status: string;
   setMessages: (messages: any[]) => void;
 }
@@ -51,7 +51,7 @@ export function ChatbotView({
   status,
   setMessages 
 }: ChatbotViewProps) {
-  const isLoading = status === "submitting" || status === "streaming";
+  const isLoading = status === "submitting" || status === "submitted" || status === "streaming";
   
   // Use local state for the input to guarantee responsiveness and bypass any hook-related typing issues
   const [localInput, setLocalInput] = useState("");
@@ -94,9 +94,10 @@ export function ChatbotView({
     try {
       // Direct call to sendMessage which is the correct method for this SDK version
       if (typeof sendMessage === "function") {
+        console.log("ChatbotView: Sending message", messageToSend);
         sendMessage({ text: messageToSend });
       } else {
-        console.error("Critical: sendMessage is not a function in this SDK version", { status, sendMessage });
+        console.error("Critical: sendMessage is not a function", { status, sendMessage });
       }
     } catch (error) {
       console.error("Failed to send message:", error);
