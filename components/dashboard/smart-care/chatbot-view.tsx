@@ -38,7 +38,7 @@ import { Button } from "@/components/ui/button";
 interface ChatbotViewProps {
   userName: string;
   messages: any[];
-  sendMessage: (message: { text: string }) => void;
+  sendMessage: (message: { text: string }) => Promise<void>;
   status: string;
   setMessages: (messages: any[]) => void;
 }
@@ -67,12 +67,6 @@ export function ChatbotView({
 
   const handleToolSelect = (toolPrompt: string) => {
     setLocalInput(toolPrompt);
-    
-    // Also try to update the SDK state in the background
-    if (typeof setInput === 'function') {
-      setInput(toolPrompt);
-    }
-    
     setIsToolMenuOpen(false);
     
     // Focus the input field after selection

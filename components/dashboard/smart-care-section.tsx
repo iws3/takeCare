@@ -93,41 +93,19 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
     },
   ], [userName]);
 
-  // Use stable id to ensure state persistence in v6
-  const { messages, append, status: chatStatus, setMessages } = useChat({
-    // id: "smart-care-chat", 
+  // useChat v6 API: returns sendMessage (not append!) which accepts { text: string }
+  const { messages, sendMessage: sdkSendMessage, status: chatStatus, setMessages } = useChat({
+    id: "smart-care-chat",
     api: "/api/smart-care/chat",
     initialMessages: initialChatMessages,
-    onResponse: (response) => {
-      console.log("SmartCareSection: API responded with status", response.status);
-    },
     onError: (error) => {
       console.error("useChat SDK Error:", error);
       toast.error(`Chat Error: ${error.message || "Something went wrong"}`);
     },
   });
 
-  // Provide a stable sendMessage function for the ChatbotView component
-  const sendMessage = React.useCallback(async ({ text }: { text: string }) => {
-    console.log("SmartCareSection: sendMessage triggered with:", text);
-    try {
-      // In some SDK versions, append is not meant to be awaited for the full stream completion
-      append({
-        role: "user",
-        content: text,
-      });
-      console.log("SmartCareSection: append call initiated");
-    } catch (error: any) {
-      console.error("SmartCareSection: append EXCEPTION!", error);
-      console.error("Error Object Details:", {
-        message: error.message,
-        name: error.name,
-        stack: error.stack,
-        cause: error.cause
-      });
-      toast.error(`Connection Error: ${error.message || "Unknown error"}. Check console for details.`);
-    }
-  }, [append]);
+  // sdkSendMessage already accepts { text: string } — pass it directly
+  const sendMessage = sdkSendMessage;
 
   // Automatically load the extracted context from the database
   useEffect(() => {
