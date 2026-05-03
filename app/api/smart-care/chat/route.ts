@@ -40,12 +40,21 @@ export async function POST(req: Request) {
 
   const lastUserMessage = messages[messages.length - 1];
 
+  // SDK v6 UIMessages use parts[] not content. Extract text from either format.
+  function getMessageText(msg: any): string {
+    if (typeof msg.content === 'string') return msg.content;
+    if (Array.isArray(msg.parts)) {
+      const textPart = msg.parts.find((p: any) => p.type === 'text');
+      return textPart?.text || '';
+    }
+    return '';
+  }
+
   // Get or create a conversation record for persistence
   let conversationId = bodyConversationId;
   try {
     if (!conversationId) {
-      console.log("[ChatAPI] Creating new conversation");
-      const firstMsg = lastUserMessage?.content?.slice(0, 60) || 'Health Chat';
+      const firstMsg = getMessageText(lastUserMessage).slice(0, 60) || 'Health Chat';
       const conv = await prisma.conversation.create({
         data: { userId, title: firstMsg },
       });
@@ -53,25 +62,22 @@ export async function POST(req: Request) {
     }
   } catch (err) {
     console.error("[ChatAPI] Prisma Conversation Error:", err);
-    // Continue anyway without persistence if possible, or return error
     return NextResponse.json({ error: 'Database error: Conversation creation failed' }, { status: 500 });
   }
 
   // Persist the user message
   try {
     if (lastUserMessage && lastUserMessage.role === 'user') {
-      console.log("[ChatAPI] Persisting user message");
       await prisma.message.create({
         data: {
           conversationId,
           role: 'user',
-          content: lastUserMessage.content,
+          content: getMessageText(lastUserMessage),
         },
       });
     }
   } catch (err) {
     console.error("[ChatAPI] Prisma Message Error (User):", err);
-    // Non-blocking for the AI response, but good to know
   }
 
   // Convert UIMessages (from useChat) to ModelMessages (for the LLM)

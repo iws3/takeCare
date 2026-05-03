@@ -84,12 +84,17 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
 
   const { data: session, status } = useSession();
 
-  // Memoize initial messages to prevent useChat from resetting
+  // Memoize initial messages in SDK v6 UIMessage format (uses parts[], not content)
   const initialChatMessages = useMemo(() => [
     {
       id: "welcome",
       role: "assistant" as const,
-      content: `Hello ${userName.split(" ")[0]}! I'm Dr. Leo. I have access to your medical records and consultation history. How can I assist you with your health today?`,
+      parts: [
+        {
+          type: "text" as const,
+          text: `Hello ${userName.split(" ")[0]}! I'm Dr. Leo. I have access to your medical records and consultation history. How can I assist you with your health today?`,
+        },
+      ],
     },
   ], [userName]);
 
