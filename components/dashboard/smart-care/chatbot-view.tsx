@@ -170,15 +170,17 @@ export function ChatbotView({
                     {msg.parts.map((part, i) => {
                       if (part.type === "text") {
                         return (
-                          <ReactMarkdown 
-                            key={i} 
+                          <div
+                            key={i}
                             className={cn(
-                              "prose prose-sm max-w-none", 
+                              "prose prose-sm max-w-none",
                               msg.role === "user" ? "prose-invert" : "prose-emerald"
                             )}
                           >
-                            {part.text}
-                          </ReactMarkdown>
+                            <ReactMarkdown>
+                              {part.text}
+                            </ReactMarkdown>
+                          </div>
                         );
                       }
                       if (part.type === "tool-invocation") {
@@ -224,14 +226,16 @@ export function ChatbotView({
                     })}
                   </div>
                 ) : (
-                  <ReactMarkdown 
+                  <div
                     className={cn(
-                      "prose prose-sm max-w-none", 
+                      "prose prose-sm max-w-none",
                       msg.role === "user" ? "prose-invert" : "prose-emerald"
                     )}
                   >
-                    {msg.content}
-                  </ReactMarkdown>
+                    <ReactMarkdown>
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
                 )}
               </div>
               <span className="text-[9px] font-black text-black/20 uppercase tracking-widest px-2">
@@ -286,14 +290,17 @@ export function ChatbotView({
           >
             {/* Claude-style Tool/Plus Menu */}
             <DropdownMenu open={isToolMenuOpen} onOpenChange={setIsToolMenuOpen}>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="h-12 w-12 rounded-full hover:bg-slate-100 text-black/40 hover:text-black transition-all shrink-0"
-                >
-                  <Plus className={cn("h-6 w-6 transition-transform duration-300", isToolMenuOpen && "rotate-45")} />
-                </Button>
-              </DropdownMenuTrigger>
+              <DropdownMenuTrigger
+                render={(triggerProps) => (
+                  <Button
+                    {...triggerProps}
+                    variant="ghost"
+                    className="h-12 w-12 rounded-full hover:bg-slate-100 text-black/40 hover:text-black transition-all shrink-0"
+                  >
+                    <Plus className={cn("h-6 w-6 transition-transform duration-300", isToolMenuOpen && "rotate-45")} />
+                  </Button>
+                )}
+              />
               <DropdownMenuContent align="start" className="w-64 p-2 rounded-2xl border-black/5 shadow-2xl bg-white/95 backdrop-blur-xl">
                 <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-black/30 px-3 py-2">Select Health Tool</DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-black/5" />

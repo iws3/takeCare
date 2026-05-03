@@ -94,11 +94,19 @@ export function SmartCareSection({ userName = "Patient" }: { userName?: string }
   ], [userName]);
 
   // Use stable id to ensure state persistence in v6
-  const { messages, sendMessage, status: chatStatus, setMessages } = useChat({
+  const { messages, append, status: chatStatus, setMessages } = useChat({
     id: "smart-care-chat",
     api: "/api/smart-care/chat",
     initialMessages: initialChatMessages,
   });
+
+  // Provide a stable sendMessage function for the ChatbotView component
+  const sendMessage = React.useCallback(async ({ text }: { text: string }) => {
+    await append({
+      role: "user",
+      content: text,
+    });
+  }, [append]);
 
   // Automatically load the extracted context from the database
   useEffect(() => {
@@ -1229,9 +1237,11 @@ function AnalysisView({
                       </div>
 
                       <div className="prose prose-sm md:prose-base max-w-none text-black/70 leading-relaxed font-medium bg-black/[0.02] p-8 rounded-3xl border border-black/5">
+                      <div className="prose prose-sm prose-emerald max-w-none">
                         <ReactMarkdown>
                           {note.extractedText}
                         </ReactMarkdown>
+                      </div>
                       </div>
 
                       <div className="mt-8 flex items-center gap-6 pt-6 border-t border-black/5">
@@ -1327,43 +1337,28 @@ function AnalysisView({
                       <Badge className="bg-blue-50 text-blue-600 border-none font-black text-[9px] uppercase tracking-widest">Gemini 1.5</Badge>
                     </div>
 
-                    <div className="prose prose-sm md:prose-base max-w-none text-black/70 leading-relaxed overflow-x-hidden">
-                      {analysisResult ? (
+                      <div className="prose prose-sm md:prose-base max-w-none text-black/70 leading-relaxed overflow-x-hidden">
                         <ReactMarkdown
                           components={{
                             h1: ({node, ...props}) => <h1 className="text-2xl font-bricolage font-black tracking-tighter text-black mt-8 mb-4 border-b-2 border-black/5 pb-2" {...props} />,
-                            h2: ({node, ...props}) => <h2 className="text-xl font-bricolage font-black text-black mt-6 mb-3 flex items-center gap-2" {...props}><div className="h-4 w-1 bg-primary rounded-full" /> {props.children}</h2>,
-                            p: ({node, ...props}) => <p className="mb-4 font-medium" {...props} />,
-                            strong: ({node, ...props}) => <strong className="text-black font-black" {...props} />,
-                            ul: ({node, ...props}) => <ul className="space-y-3 my-6" {...props} />,
+                            h2: ({node, ...props}) => <h2 className="text-xl font-bricolage font-black tracking-tighter text-black mt-6 mb-3 flex items-center gap-2" {...props} />,
+                            h3: ({node, ...props}) => <h3 className="text-lg font-black text-black mt-6 mb-2" {...props} />,
+                            p: ({node, ...props}) => <p className="mb-4 text-black/70 font-medium leading-relaxed" {...props} />,
+                            ul: ({node, ...props}) => <ul className="mb-6 space-y-3 list-none p-0" {...props} />,
                             li: ({node, ...props}) => (
-                              <li className="flex items-start gap-3 bg-black/[0.02] p-4 rounded-2xl border border-black/5" {...props}>
-                                <div className="h-2 w-2 rounded-full bg-primary mt-1.5 shrink-0" />
-                                <div className="text-sm font-bold">{props.children}</div>
+                              <li className="flex items-start gap-3 bg-black/2 p-4 rounded-2xl border border-black/5" {...props}>
+                                <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                                  <Sparkles className="h-3 w-3 text-primary" />
+                                </div>
+                                <span className="text-black/70">{props.children}</span>
                               </li>
                             ),
+                            strong: ({node, ...props}) => <strong className="font-black text-black" {...props} />,
                           }}
                         >
                           {analysisResult}
                         </ReactMarkdown>
-                      ) : (
-                        <div className="space-y-6 py-4">
-                          <div className="flex gap-4 items-center">
-                            <div className="h-10 w-10 bg-black/5 rounded-xl animate-pulse" />
-                            <div className="h-4 w-1/2 bg-black/5 rounded-full animate-pulse" />
-                          </div>
-                          <div className="space-y-3">
-                            <div className="h-4 w-full bg-black/5 rounded-full animate-pulse" />
-                            <div className="h-4 w-full bg-black/5 rounded-full animate-pulse" />
-                            <div className="h-4 w-3/4 bg-black/5 rounded-full animate-pulse" />
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="h-24 bg-black/5 rounded-3xl animate-pulse" />
-                            <div className="h-24 bg-black/5 rounded-3xl animate-pulse" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                      </div>
                   </div>
 
                   {/* High-Impact Vitals Card */}
@@ -1734,7 +1729,9 @@ function AnalysisView({
                             animate={{ opacity: 1 }}
                             className="prose prose-sm font-medium text-black/80 max-w-none prose-p:leading-relaxed prose-headings:font-bricolage prose-headings:font-extrabold"
                           >
-                            <ReactMarkdown>{analysisResult}</ReactMarkdown>
+                            <div className="prose prose-sm max-w-none">
+                              <ReactMarkdown>{analysisResult}</ReactMarkdown>
+                            </div>
                           </motion.div>
                         ) : analysisError ? (
                           <div className="h-full flex flex-col items-center justify-center p-6 text-center">
@@ -2120,16 +2117,18 @@ function AnalysisView({
               {/* Clinical Analysis Content */}
               <div className="flex-1 prose prose-sm md:prose-base lg:prose-xl max-w-none prose-headings:font-bricolage prose-headings:text-black prose-headings:font-black prose-headings:tracking-tighter prose-headings:uppercase prose-p:text-black/80 prose-p:leading-relaxed prose-strong:text-black prose-strong:font-black prose-ul:list-disc prose-li:text-black/70">
                 {fullAnalysisResult && (
-                  <ReactMarkdown
-                    components={{
-                      h1: ({node, ...props}) => <h1 className="text-3xl border-l-4 border-black pl-5 my-10" {...props} />,
-                      h2: ({node, ...props}) => <h2 className="text-xl bg-black/5 p-4 rounded-xl mt-12 mb-6" {...props} />,
-                      ul: ({node, ...props}) => <ul className="space-y-2 mt-4" {...props} />,
-                      li: ({node, ...props}) => <li className="bg-white border border-black/5 p-3 rounded-2xl list-none flex items-start gap-4 before:content-['•'] before:text-black before:font-bold before:text-xl" {...props} />,
-                    }}
-                  >
-                    {fullAnalysisResult}
-                  </ReactMarkdown>
+                  <div className="prose prose-sm max-w-none">
+                    <ReactMarkdown
+                      components={{
+                        p: ({ children }) => <p className="mb-4 leading-relaxed">{children}</p>,
+                        ul: ({ children }) => <ul className="space-y-2 mb-4 list-disc pl-4">{children}</ul>,
+                        li: ({ children }) => <li className="text-black/70">{children}</li>,
+                        h3: ({ children }) => <h3 className="text-lg font-bold mb-2">{children}</h3>,
+                      }}
+                    >
+                      {fullAnalysisResult}
+                    </ReactMarkdown>
+                  </div>
                 )}
               </div>
 
